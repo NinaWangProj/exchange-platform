@@ -1,10 +1,8 @@
 # Default ignored files
-/shelf/
+/.idea/shelf/
 # Default ignored files
 /workspace.xml
 
 # Default ignored files
 .idea/
-/misc.xml
-/modules.xml
-/nina-exchange-platform.iml
+
