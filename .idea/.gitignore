@@ -4,4 +4,7 @@
 /workspace.xml
 
 # Default ignored files
-/.idea/
+.idea/
+/misc.xml
+/modules.xml
+/nina-exchange-platform.iml
