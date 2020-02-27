@@ -1,4 +1,4 @@
-package nw.NinaExchangePlatform.clearing;
+package nw.ExchangePlatform.clearing;
 
 public enum ClearingStatus {
     CLEARED,

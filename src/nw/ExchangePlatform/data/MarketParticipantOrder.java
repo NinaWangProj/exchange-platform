@@ -1,4 +1,4 @@
-package nw.NinaExchangePlatform.data;
+package nw.ExchangePlatform.data;
 
 public class MarketParticipantOrder {
 

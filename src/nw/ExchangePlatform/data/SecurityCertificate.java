@@ -1,6 +1,6 @@
-package nw.NinaExchangePlatform.data;
+package nw.ExchangePlatform.data;
 
-public class SecurityCerfiticate {
+public class SecurityCertificate {
 
     //fields
     String shareHolderName;
@@ -11,7 +11,7 @@ public class SecurityCerfiticate {
     int certificateNum;
 
     //constructor
-    public SecurityCerfiticate(String shareHolderName, String tickerSymbol, int quantity, double parValue, String typeOfStock, int certificateNum)
+    public SecurityCertificate(String shareHolderName, String tickerSymbol, int quantity, double parValue, String typeOfStock, int certificateNum)
     {
         this.shareHolderName = shareHolderName;
         this.tickerSymbol = tickerSymbol;
