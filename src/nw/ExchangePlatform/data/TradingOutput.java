@@ -3,6 +3,7 @@ package nw.ExchangePlatform.data;
 import java.util.ArrayList;
 
 public class TradingOutput {
+
     public ArrayList<Transaction> Transaction;
     public ArrayList<UnfilledOrder> UnfilledOrders;
 

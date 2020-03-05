@@ -8,7 +8,7 @@ import java.util.Date;
 public class TradingEngine {
 
     //fields
-    ArrayList<MarketParticipantOrder> counterSideLimitOrderBook;
+    ArrayList<MarketParticipantOrder> bids;
     ArrayList<MarketParticipantOrder> asks;
     long previousTransactionID;
 
@@ -38,18 +38,18 @@ public class TradingEngine {
         boolean valid = true;
         ArrayList<Transaction> transactions = new ArrayList<>();
         ArrayList<UnfilledOrder> unfilledOrders = new ArrayList<>();
-        ArrayList<MarketParticipantOrder> counterSideLimitOrderBook = new ArrayList<>();
+        ArrayList<MarketParticipantOrder> counterPartyLimitOrderBook = new ArrayList<>();
 
         switch (order.direction) {
             case BUY:
-                counterSideLimitOrderBook = asks;
+                counterPartyLimitOrderBook = asks;
                 break;
             case SELL:
-                counterSideLimitOrderBook = this.counterSideLimitOrderBook;
+                counterPartyLimitOrderBook = bids;
         }
 
         while(valid) {
-            valid = FillOrder(order, counterSideLimitOrderBook, transactions, unfilledOrders);
+            valid = FillOrder(order, counterPartyLimitOrderBook, transactions, unfilledOrders);
         }
 
         return new TradingOutput(transactions, unfilledOrders);
@@ -59,31 +59,31 @@ public class TradingEngine {
         return new TradingOutput();
     }
 
-    private boolean FillOrder(MarketParticipantOrder order, ArrayList<MarketParticipantOrder> counterSideLimitOrderBook, ArrayList<Transaction> transactions, ArrayList<UnfilledOrder> unfilledOrders) {
+    private boolean FillOrder(MarketParticipantOrder order, ArrayList<MarketParticipantOrder> counterPartyLimitOrderBook, ArrayList<Transaction> transactions, ArrayList<UnfilledOrder> unfilledOrders) {
         boolean active = false;
 
-        if(this.counterSideLimitOrderBook == null  || !CheckTradeViability(order, counterSideLimitOrderBook.get(0))) {
+        if(counterPartyLimitOrderBook == null  || !CheckTradeViability(order, counterPartyLimitOrderBook.get(0))) {
             UnfilledOrder unfilled = new UnfilledOrder(order, "Could not match market order price");
             unfilledOrders.add(unfilled);
             return active;
         }
 
-        MarketParticipantOrder topCounterLimitOrder = this.counterSideLimitOrderBook.get(0);
-        boolean foundCounterParticipant = CheckTradeViability(order, counterSideLimitOrderBook.get(0));
+        MarketParticipantOrder topCounterLimitOrder = counterPartyLimitOrderBook.get(0);
+        boolean foundCounterParticipant = CheckTradeViability(order, counterPartyLimitOrderBook.get(0));
 
         if(foundCounterParticipant) {
             double transactionPrice = topCounterLimitOrder.price;
-            int transactionSize = 0;
+            int transactionSize;
 
             if(order.size == topCounterLimitOrder.size) {
                 transactionSize = order.size;
-                this.counterSideLimitOrderBook.remove(0);
+                counterPartyLimitOrderBook.remove(0);
             } else if (order.size < topCounterLimitOrder.size) {
                 transactionSize = order.size;
-            } else if (order.size > topCounterLimitOrder.size) {
+            } else {
                 transactionSize = topCounterLimitOrder.size;
                 order.size -= transactionSize;
-                this.counterSideLimitOrderBook.remove(0);
+                counterPartyLimitOrderBook.remove(0);
                 active = true;
             }
 
