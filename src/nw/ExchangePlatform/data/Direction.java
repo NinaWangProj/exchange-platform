@@ -1,6 +1,6 @@
 package nw.ExchangePlatform.data;
 
-public enum OrderDirection {
+public enum Direction {
     BUY,
     SELL
 }
