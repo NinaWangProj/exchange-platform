@@ -8,7 +8,7 @@ import java.util.Date;
 public class TradingEngine {
 
     //fields
-    ArrayList<MarketParticipantOrder> bids;
+    ArrayList<MarketParticipantOrder> counterSideLimitOrderBook;
     ArrayList<MarketParticipantOrder> asks;
     long previousTransactionID;
 
@@ -38,18 +38,20 @@ public class TradingEngine {
         boolean valid = true;
         ArrayList<Transaction> transactions = new ArrayList<>();
         ArrayList<UnfilledOrder> unfilledOrders = new ArrayList<>();
+        ArrayList<MarketParticipantOrder> counterSideLimitOrderBook = new ArrayList<>();
 
         switch (order.direction) {
             case BUY:
-                while(valid) {
-                    valid = FillBidOrder(order, transactions, unfilledOrders);
-                }
+                counterSideLimitOrderBook = asks;
                 break;
             case SELL:
-                while(valid) {
-                    valid = FillAskOrder(order, transactions, unfilledOrders);
-                }
+                counterSideLimitOrderBook = this.counterSideLimitOrderBook;
         }
+
+        while(valid) {
+            valid = FillOrder(order, counterSideLimitOrderBook, transactions, unfilledOrders);
+        }
+
         return new TradingOutput(transactions, unfilledOrders);
     }
 
@@ -57,79 +59,41 @@ public class TradingEngine {
         return new TradingOutput();
     }
 
-    private boolean FillBidOrder(MarketParticipantOrder order, ArrayList<Transaction> transactions, ArrayList<UnfilledOrder> unfilledOrders) {
+    private boolean FillOrder(MarketParticipantOrder order, ArrayList<MarketParticipantOrder> counterSideLimitOrderBook, ArrayList<Transaction> transactions, ArrayList<UnfilledOrder> unfilledOrders) {
         boolean active = false;
 
-        if(asks == null  || (order.price <= asks.get(0).price)) {
+        if(this.counterSideLimitOrderBook == null  || !CheckTradeViability(order, counterSideLimitOrderBook.get(0))) {
             UnfilledOrder unfilled = new UnfilledOrder(order, "Could not match market order price");
             unfilledOrders.add(unfilled);
             return active;
         }
 
-        MarketParticipantOrder topLimitSellOrder = asks.get(0);
+        MarketParticipantOrder topCounterLimitOrder = this.counterSideLimitOrderBook.get(0);
+        boolean foundCounterParticipant = CheckTradeViability(order, counterSideLimitOrderBook.get(0));
 
-        if(order.price >= topLimitSellOrder.price) {
-            double transactionPrice = topLimitSellOrder.price;
+        if(foundCounterParticipant) {
+            double transactionPrice = topCounterLimitOrder.price;
             int transactionSize = 0;
 
-            if(order.size == topLimitSellOrder.size) {
+            if(order.size == topCounterLimitOrder.size) {
                 transactionSize = order.size;
-                asks.remove(0);
-            } else if (order.size < topLimitSellOrder.size) {
+                this.counterSideLimitOrderBook.remove(0);
+            } else if (order.size < topCounterLimitOrder.size) {
                 transactionSize = order.size;
-            } else if (order.size > topLimitSellOrder.size) {
-                transactionSize = topLimitSellOrder.size;
+            } else if (order.size > topCounterLimitOrder.size) {
+                transactionSize = topCounterLimitOrder.size;
                 order.size -= transactionSize;
-                asks.remove(0);
+                this.counterSideLimitOrderBook.remove(0);
                 active = true;
             }
 
-            Transaction buyerTransaction = new Transaction(order.userID, order.name, previousTransactionID +1, order.orderID, new Date(),
-                    order.direction, order.tickerSymbol, transactionSize, transactionPrice);
-            Transaction sellerTransaction = new Transaction(topLimitSellOrder.userID, topLimitSellOrder.name, previousTransactionID +2, topLimitSellOrder.orderID, new Date(),
-                    topLimitSellOrder.direction, topLimitSellOrder.tickerSymbol, transactionSize, transactionPrice);
-
-            transactions.add(buyerTransaction);
-            transactions.add(sellerTransaction);
-            previousTransactionID += 2;
-        }
-        return active;
-    }
-
-    private boolean FillAskOrder(MarketParticipantOrder order, ArrayList<Transaction> transactions, ArrayList<UnfilledOrder> unfilledOrders) {
-        boolean active = false;
-
-        if(bids == null  || (order.price >= bids.get(0).price)) {
-            UnfilledOrder unfilled = new UnfilledOrder(order, "Could not match market order price");
-            unfilledOrders.add(unfilled);
-            return active;
-        }
-
-        MarketParticipantOrder topLimitBuyOrder = bids.get(0);
-
-        if(order.price <= topLimitBuyOrder.price) {
-            double transactionPrice = topLimitBuyOrder.price;
-            int transactionSize = 0;
-
-            if(order.size == topLimitBuyOrder.size) {
-                transactionSize = order.size;
-                bids.remove(0);
-            } else if (order.size < topLimitBuyOrder.size) {
-                transactionSize = order.size;
-            } else if (order.size > topLimitBuyOrder.size) {
-                transactionSize = topLimitBuyOrder.size;
-                order.size -= transactionSize;
-                bids.remove(0);
-                active = true;
-            }
-
-            Transaction buyerTransaction = new Transaction(topLimitBuyOrder.userID, topLimitBuyOrder.name, previousTransactionID +1, topLimitBuyOrder.orderID, new Date(),
-                    topLimitBuyOrder.direction, topLimitBuyOrder.tickerSymbol, transactionSize, transactionPrice);
-            Transaction sellerTransaction = new Transaction(order.userID, order.name, previousTransactionID +2, order.orderID, new Date(),
+            Transaction counterSideTransaction = new Transaction(topCounterLimitOrder.userID, topCounterLimitOrder.name, previousTransactionID +1, topCounterLimitOrder.orderID, new Date(),
+                    topCounterLimitOrder.direction, topCounterLimitOrder.tickerSymbol, transactionSize, transactionPrice);
+            Transaction currentOrderTransaction = new Transaction(order.userID, order.name, previousTransactionID +2, order.orderID, new Date(),
                     order.direction, order.tickerSymbol, transactionSize, transactionPrice);
 
-            transactions.add(buyerTransaction);
-            transactions.add(sellerTransaction);
+            transactions.add(currentOrderTransaction);
+            transactions.add(counterSideTransaction);
             previousTransactionID += 2;
         }
         return active;
@@ -149,6 +113,16 @@ public class TradingEngine {
 
     private void ReturnOrderToMarketParticipant() {
 
+    }
+
+    private boolean CheckTradeViability(MarketParticipantOrder order, MarketParticipantOrder counterLimitOrder) {
+        boolean viable = false;
+
+        if((order.direction == Direction.BUY && order.price >= counterLimitOrder.price)
+            || (order.direction == Direction.SELL && order.price <= counterLimitOrder.price)) {
+            viable = true;
+        }
+        return viable;
     }
 
 }
