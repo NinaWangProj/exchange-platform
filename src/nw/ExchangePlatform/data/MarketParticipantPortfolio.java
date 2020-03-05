@@ -5,10 +5,12 @@ import java.util.HashMap;
 public class MarketParticipantPortfolio {
 
     //<tickerSymbol, SecurityCertificate>
-    HashMap<String, SecurityCertificate> portfolio;
+    HashMap<String, SecurityCertificate> securities;
+    double cash;
+
 
     //HashMap<tickerSymbol, SecurityCertificate>
-    public MarketParticipantPortfolio(HashMap<String, SecurityCertificate> portfolio){
-        this.portfolio = portfolio;
+    public MarketParticipantPortfolio(HashMap<String, SecurityCertificate> securities){
+        this.securities = securities;
     }
 }
