@@ -17,24 +17,19 @@ public class TradingEngine {
         this.previousTransactionID = previousTransactionID;
     }
 
+    //public methods
     public TradingOutput Process(ArrayList<MarketParticipantOrder> orders) {
         TradingOutput finalTradingOutput = new TradingOutput();
 
         for (MarketParticipantOrder order : orders) {
-            TradingOutput output = new TradingOutput();
-            switch (order.orderType) {
-                case MARKETORDER:
-                    output = MatchMarketOrder(order);
-                    break;
-                case LIMITORDER:
-                    output = MatchLimitOrder(order);
-            }
+            TradingOutput output = MatchOrder(order);
             finalTradingOutput.Transaction.addAll(output.Transaction);
         }
         return finalTradingOutput;
     }
 
-    private TradingOutput MatchMarketOrder(MarketParticipantOrder order) {
+    //private methods
+    private TradingOutput MatchOrder(MarketParticipantOrder order) {
         boolean valid = true;
         ArrayList<Transaction> transactions = new ArrayList<>();
         ArrayList<UnfilledOrder> unfilledOrders = new ArrayList<>();
@@ -49,14 +44,15 @@ public class TradingEngine {
         }
 
         while(valid) {
-            valid = FillOrder(order, counterPartyLimitOrderBook, transactions, unfilledOrders);
+            switch (order.orderType) {
+                case MARKETORDER:
+                    valid = FillOrder(order, counterPartyLimitOrderBook, transactions, unfilledOrders);
+                    break;
+                case LIMITORDER:
+                    valid = FillLimitOrder(order, counterPartyLimitOrderBook, transactions, unfilledOrders);
+            }
         }
-
         return new TradingOutput(transactions, unfilledOrders);
-    }
-
-    private TradingOutput MatchLimitOrder(MarketParticipantOrder order) {
-        return new TradingOutput();
     }
 
     private boolean FillOrder(MarketParticipantOrder order, ArrayList<MarketParticipantOrder> counterPartyLimitOrderBook, ArrayList<Transaction> transactions, ArrayList<UnfilledOrder> unfilledOrders) {
@@ -99,20 +95,9 @@ public class TradingEngine {
         return active;
     }
 
-    private TransactionType CheckTransactionType(MarketParticipantOrder order, int originalOrderSize) {
-        TransactionType transactionType;
-        if(order.size < originalOrderSize)
-            transactionType = TransactionType.PARTIALFILLED;
-        else if(order.size == 0)
-            transactionType = TransactionType.ALLFILLED;
-        else
-            transactionType = TransactionType.NONEFILLED;
-
-        return transactionType;
-    }
-
-    private void ReturnOrderToMarketParticipant() {
-
+    private boolean FillLimitOrder(MarketParticipantOrder order, ArrayList<MarketParticipantOrder> counterPartyLimitOrderBook, ArrayList<Transaction> transactions, ArrayList<UnfilledOrder> unfilledOrders) {
+        //implement later;
+        return true;
     }
 
     private boolean CheckTradeViability(MarketParticipantOrder order, MarketParticipantOrder counterLimitOrder) {
