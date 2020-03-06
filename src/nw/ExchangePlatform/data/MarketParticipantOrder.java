@@ -1,8 +1,9 @@
 package nw.ExchangePlatform.data;
 
+import java.util.Comparator;
 import java.util.Date;
 
-public class MarketParticipantOrder {
+public class MarketParticipantOrder implements Comparable<MarketParticipantOrder> {
 
     //fields
     public final String userID;
@@ -32,4 +33,17 @@ public class MarketParticipantOrder {
         this.direction = direction;
         this.orderDuration = orderDuration;
     }
+
+    @Override
+    public int compareTo(MarketParticipantOrder order2) {
+        if(this.price > order2.price) {
+            return -1;
+        } else if (this.price < order2.price) {
+            return 1;
+        } else {
+            return this.time.compareTo(order2.time);
+        }
+    }
+
+
 }
