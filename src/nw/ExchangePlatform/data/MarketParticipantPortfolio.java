@@ -5,8 +5,8 @@ import java.util.HashMap;
 public class MarketParticipantPortfolio {
 
     //<tickerSymbol, SecurityCertificate>
-    HashMap<String, SecurityCertificate> securities;
-    double cash;
+    public HashMap<String, SecurityCertificate> securities;
+    public double cash;
 
 
     //HashMap<tickerSymbol, SecurityCertificate>

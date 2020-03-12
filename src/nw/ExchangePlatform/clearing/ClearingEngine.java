@@ -1,13 +1,12 @@
 package nw.ExchangePlatform.clearing;
 
-
-import nw.ExchangePlatform.data.DTCCWarehouse;
-import nw.ExchangePlatform.data.MarketParticipantPortfolio;
-import nw.ExchangePlatform.data.SecurityCertificate;
-import nw.ExchangePlatform.data.Transaction;
+import nw.ExchangePlatform.data.*;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
+
+import static nw.ExchangePlatform.data.Direction.SELL;
 
 public class ClearingEngine {
     //field
@@ -15,27 +14,62 @@ public class ClearingEngine {
     DTCCWarehouse dtccWarehouse;
 
     //constructors
-    public ClearingEngine(ArrayList<Transaction> Transactions,DTCCWarehouse dtccWarehouse) {
-        this.transactions = Transactions;
+    public ClearingEngine(ArrayList<Transaction> transactions,DTCCWarehouse dtccWarehouse) {
+        this.transactions = transactions;
         this.dtccWarehouse = dtccWarehouse;
     }
 
     //public methods
     public ClearingStatus ClearTrade(){
+        HashMap<String, HashMap<String,SecurityCertificate>> certificatesMap = dtccWarehouse.certificatesMap;
+
         for(Transaction transaction : transactions){
             switch (transaction.direction) {
                 case BUY:
+                    boolean foundTicker = certificatesMap.containsKey(transaction.tickerSymbol);
+                    if(foundTicker) {
+                        boolean foundUser = certificatesMap.get(transaction.tickerSymbol).containsKey(transaction.userID);
+                        if(foundUser) {
+                            certificatesMap.get(transaction.tickerSymbol).get(transaction.userID).quantity += transaction.size;
+                        } else {
+                            SecurityCertificate certificate = new SecurityCertificate(transaction.name, transaction.tickerSymbol, transaction.size, new Date());
+                            certificatesMap.get(transaction.tickerSymbol).put(transaction.userID,certificate);
+                        }
+                    } else {
+                        SecurityCertificate certificate = new SecurityCertificate(transaction.name, transaction.tickerSymbol, transaction.size, new Date());
+                        certificatesMap.put(transaction.tickerSymbol, new HashMap<>(){{put(transaction.userID,certificate);}});
+                    }
 
                 case SELL:
                     //locate previous certificate for the seller
-                    SecurityCertificate certificate =  dtccWarehouse.certificatesMap.get(transaction.tickerSymbol).get(transaction.userID);
+                    SecurityCertificate certificate =  certificatesMap.get(transaction.tickerSymbol).get(transaction.userID);
                     //modify certificate to reflect the new transaction
                     certificate.quantity -= transaction.size;
             }
+
+            UpdateMarketParticipantPortfolio(transaction);
         }
-
-
         return ClearingStatus.CLEARED;
+    }
+
+    private void UpdateMarketParticipantPortfolio(Transaction transaction) {
+        //userID, HashMap<tickerSymbol, SecurityCertificate>
+        HashMap<String, MarketParticipantPortfolio> portfoliosMap = dtccWarehouse.portfoliosMap;
+        MarketParticipantPortfolio portfolio = portfoliosMap.get(transaction.userID);
+        switch(transaction.direction) {
+            case BUY:
+                boolean foundTicker = portfoliosMap.get(transaction.userID).securities.containsKey(transaction.tickerSymbol);
+                if(foundTicker) {
+                    portfolio.securities.get(transaction.tickerSymbol).quantity += transaction.size;
+                } else {
+                    SecurityCertificate certificate = new SecurityCertificate(transaction.name, transaction.tickerSymbol, transaction.size, new Date());
+                    portfolio.securities.put(transaction.tickerSymbol, certificate);
+                }
+                portfolio.cash -= transaction.tradePrice;
+            case SELL:
+                portfolio.securities.get(transaction.tickerSymbol).quantity -= transaction.size;
+                portfolio.cash += transaction.tradePrice;
+        }
     }
 
 

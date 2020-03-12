@@ -1,21 +1,21 @@
 package nw.ExchangePlatform.data;
 
+import java.util.Date;
+
 public class SecurityCertificate {
 
     //fields
     public String shareHolderName;
     public String tickerSymbol;
     public int quantity;
-    public String typeOfStock;
-    public int certificateNum;
+    public Date issuedDate;
 
     //constructor
-    public SecurityCertificate(String shareHolderName, String tickerSymbol, int quantity, String typeOfStock, int certificateNum)
+    public SecurityCertificate(String shareHolderName, String tickerSymbol, int quantity, Date issuedDate)
     {
         this.shareHolderName = shareHolderName;
         this.tickerSymbol = tickerSymbol;
         this.quantity = quantity;
-        this.typeOfStock = typeOfStock;
-        this.certificateNum = certificateNum;
+        this.issuedDate = issuedDate;
     }
 }
