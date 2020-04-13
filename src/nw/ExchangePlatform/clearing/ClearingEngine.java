@@ -27,14 +27,13 @@ public class ClearingEngine {
             switch (transaction.direction) {
                 case BUY:
                     boolean foundTicker = certificatesMap.containsKey(transaction.tickerSymbol);
+                    boolean foundUser = foundTicker && certificatesMap.get(transaction.tickerSymbol).containsKey(transaction.userID);
                     if(foundTicker) {
-                        boolean foundUser = certificatesMap.get(transaction.tickerSymbol).containsKey(transaction.userID);
-                        if(foundUser) {
-                            certificatesMap.get(transaction.tickerSymbol).get(transaction.userID).quantity += transaction.size;
-                        } else {
-                            SecurityCertificate certificate = new SecurityCertificate(transaction.name, transaction.tickerSymbol, transaction.size, new Date());
+                        if(!foundUser) {
+                            SecurityCertificate certificate = new SecurityCertificate(transaction.name, transaction.tickerSymbol, 0, new Date());
                             certificatesMap.get(transaction.tickerSymbol).put(transaction.userID,certificate);
                         }
+                        certificatesMap.get(transaction.tickerSymbol).get(transaction.userID).quantity += transaction.size;
                     } else {
                         SecurityCertificate certificate = new SecurityCertificate(transaction.name, transaction.tickerSymbol, transaction.size, new Date());
                         certificatesMap.put(transaction.tickerSymbol, new HashMap<>(){{put(transaction.userID,certificate);}});
