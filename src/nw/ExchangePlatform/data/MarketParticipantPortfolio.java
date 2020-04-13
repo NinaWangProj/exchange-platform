@@ -8,7 +8,6 @@ public class MarketParticipantPortfolio {
     public HashMap<String, SecurityCertificate> securities;
     public double cash;
 
-
     //HashMap<tickerSymbol, SecurityCertificate>
     public MarketParticipantPortfolio(HashMap<String, SecurityCertificate> securities){
         this.securities = securities;

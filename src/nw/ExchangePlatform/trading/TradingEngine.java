@@ -1,15 +1,11 @@
 package nw.ExchangePlatform.trading;
 
 import nw.ExchangePlatform.data.*;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
 public class TradingEngine {
-
     //fields
     ArrayList<MarketParticipantOrder> bids;
     ArrayList<MarketParticipantOrder> asks;
