@@ -1,19 +1,21 @@
 package nw.ExchangePlatform.trading;
 
 import nw.ExchangePlatform.data.*;
+import nw.ExchangePlatform.wrapper.WrapperEngine;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 
 public class TradingEngine {
     //fields
+    public final String tickerSymbol;
     ArrayList<MarketParticipantOrder> bids;
     ArrayList<MarketParticipantOrder> asks;
-    long previousTransactionID;
 
     //constructor
-    public TradingEngine(long previousTransactionID) {
-        this.previousTransactionID = previousTransactionID;
+    public TradingEngine(String tickerSymbol) {
+        this.tickerSymbol = tickerSymbol;
     }
 
     //public methods
@@ -89,14 +91,14 @@ public class TradingEngine {
                 active = true;
             }
 
-            Transaction counterPartyTransaction = new Transaction(topCounterLimitOrder.userID, topCounterLimitOrder.name, previousTransactionID +1, topCounterLimitOrder.orderID, new Date(),
+            Transaction counterPartyTransaction = new Transaction(topCounterLimitOrder.userID, topCounterLimitOrder.name, WrapperEngine.previousTransactionID +1, topCounterLimitOrder.orderID, new Date(),
                     topCounterLimitOrder.direction, topCounterLimitOrder.tickerSymbol, transactionSize, transactionPrice);
-            Transaction currentOrderTransaction = new Transaction(order.userID, order.name, previousTransactionID +2, order.orderID, new Date(),
+            Transaction currentOrderTransaction = new Transaction(order.userID, order.name, WrapperEngine.previousTransactionID +2, order.orderID, new Date(),
                     order.direction, order.tickerSymbol, transactionSize, transactionPrice);
 
             transactions.add(currentOrderTransaction);
             transactions.add(counterPartyTransaction);
-            previousTransactionID += 2;
+            WrapperEngine.previousTransactionID += 2;
         }
         return active;
     }
@@ -135,14 +137,14 @@ public class TradingEngine {
                 active = true;
             }
 
-            Transaction counterSideTransaction = new Transaction(topCounterLimitOrder.userID, topCounterLimitOrder.name, previousTransactionID +1, topCounterLimitOrder.orderID, new Date(),
+            Transaction counterSideTransaction = new Transaction(topCounterLimitOrder.userID, topCounterLimitOrder.name, WrapperEngine.previousTransactionID +1, topCounterLimitOrder.orderID, new Date(),
                     topCounterLimitOrder.direction, topCounterLimitOrder.tickerSymbol, transactionSize, transactionPrice);
-            Transaction currentOrderTransaction = new Transaction(order.userID, order.name, previousTransactionID +2, order.orderID, new Date(),
+            Transaction currentOrderTransaction = new Transaction(order.userID, order.name, WrapperEngine.previousTransactionID +2, order.orderID, new Date(),
                     order.direction, order.tickerSymbol, transactionSize, transactionPrice);
 
             transactions.add(currentOrderTransaction);
             transactions.add(counterSideTransaction);
-            previousTransactionID += 2;
+            WrapperEngine.previousTransactionID += 2;
         }
         return active;
     }
