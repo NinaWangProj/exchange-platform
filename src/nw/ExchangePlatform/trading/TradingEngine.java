@@ -1,15 +1,11 @@
 package nw.ExchangePlatform.trading;
 
 import nw.ExchangePlatform.data.*;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 
 public class TradingEngine {
-
     //fields
     ArrayList<MarketParticipantOrder> bids;
     ArrayList<MarketParticipantOrder> asks;
@@ -26,7 +22,9 @@ public class TradingEngine {
 
         for (MarketParticipantOrder order : orders) {
             TradingOutput output = MatchOrder(order);
-            finalTradingOutput.Transaction.addAll(output.Transaction);
+            finalTradingOutput.Transactions.addAll(output.Transactions);
+            finalTradingOutput.UnfilledOrders.addAll(output.UnfilledOrders);
+            finalTradingOutput.PendingOrders.addAll(output.PendingOrders);
         }
         return finalTradingOutput;
     }
@@ -59,7 +57,7 @@ public class TradingEngine {
                     valid = FillLimitOrder(order, currentLimitOrderBook, counterPartyLimitOrderBook, transactions, unfilledOrders, pendingOrders);
             }
         }
-        return new TradingOutput(transactions, unfilledOrders);
+        return new TradingOutput(transactions, unfilledOrders,pendingOrders);
     }
 
     private boolean FillMarketOrder(MarketParticipantOrder order, ArrayList<MarketParticipantOrder> counterPartyLimitOrderBook, ArrayList<Transaction> transactions,

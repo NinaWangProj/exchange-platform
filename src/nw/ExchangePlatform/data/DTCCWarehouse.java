@@ -5,11 +5,13 @@ import java.util.HashMap;
 
 public class DTCCWarehouse {
 
-    //<userID, MarketParticipantPortfolio>
-    HashMap<String, MarketParticipantPortfolio> portfolio = new HashMap<>();
+    //<ticker,HashMap<userID,certificate>>
+    public HashMap<String, HashMap<String,SecurityCertificate>> certificatesMap = new HashMap<>();
 
-    public DTCCWarehouse(HashMap<String, MarketParticipantPortfolio> portfolio) {
-        this.portfolio = portfolio;
+    public HashMap<String, MarketParticipantPortfolio> portfoliosMap = new HashMap<>();
+
+    public DTCCWarehouse() {
+
     }
 
 

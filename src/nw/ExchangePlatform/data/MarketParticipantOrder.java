@@ -1,6 +1,5 @@
 package nw.ExchangePlatform.data;
 
-import java.util.Comparator;
 import java.util.Date;
 
 public class MarketParticipantOrder implements Comparable<MarketParticipantOrder> {
