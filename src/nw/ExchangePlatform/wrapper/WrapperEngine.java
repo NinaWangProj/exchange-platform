@@ -3,9 +3,13 @@ package nw.ExchangePlatform.wrapper;
 import nw.ExchangePlatform.clearing.ClearingWarehouse;
 import nw.ExchangePlatform.data.*;
 import nw.ExchangePlatform.trading.TradingEngine;
+import nw.ExchangePlatform.utility.MessageFactory;
+import nw.ExchangePlatform.utility.Messenger;
+import nw.ExchangePlatform.utility.MessengerType;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 
 public class WrapperEngine {
     public static long previousTransactionID;
@@ -26,14 +30,18 @@ public class WrapperEngine {
     }
 
     //methods
-    public void ProcessOrders(ArrayList<MarketParticipantOrder> Orders) {
+    public List<HashMap<String,HashMap<MessengerType,Messenger>>> ProcessOrders(ArrayList<MarketParticipantOrder> Orders) {
         //create new batch for each ticker that is being traded in this stream of orders
         ArrayList<OrderBatch> batches = GroupOrdersIntoBatches(Orders);
+        List<HashMap<String,HashMap<MessengerType,Messenger>>> finalMessageMap = null;
 
         for (OrderBatch batch : batches) {
-            ProcessOrderBatch(batch);
-
+            HashMap<String,HashMap<MessengerType,Messenger>> messageMap = new HashMap<>();
+            messageMap = ProcessOrderBatch(batch);
+            finalMessageMap.add(messageMap);
         }
+
+        return finalMessageMap;
     }
 
     private ArrayList<OrderBatch> GroupOrdersIntoBatches(ArrayList<MarketParticipantOrder> Orders){
@@ -55,7 +63,7 @@ public class WrapperEngine {
         return batches;
     }
 
-    public void ProcessOrderBatch(OrderBatch orderBatch) {
+    public HashMap<String,HashMap<MessengerType,Messenger>>  ProcessOrderBatch(OrderBatch orderBatch) {
         if (!tradingEngineMap.containsKey(orderBatch.tickerSymbol)) {
             TradingEngine tradingEngine = new TradingEngine(orderBatch.tickerSymbol);
             tradingEngineMap.put(orderBatch.tickerSymbol,tradingEngine);
@@ -63,11 +71,10 @@ public class WrapperEngine {
         TradingOutput output = tradingEngineMap.get(orderBatch.tickerSymbol).Process(orderBatch.batch);
         clearingWarehouse.ClearTransactions(output.Transactions,clearingWarehouse.dtccWarehouse);
 
-        //need to implement messenger engine to process unfilled and pending orders & create messages
-        //and trade details and send them back to each user;
-        //group messages per market participant
+        MessageFactory messageFactory = new MessageFactory(output);
+        return messageFactory.SummarizeTradingOutcomePerMarketParticipant();
+
+
     }
-
-
 
 }
