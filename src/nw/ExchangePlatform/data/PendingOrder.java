@@ -10,8 +10,8 @@ public class PendingOrder extends MarketParticipantOrder {
         this.pendingMessage = pendingMessage;
     }
 
-    public PendingOrder(String userID, String name, int orderID, Date time, Direction direction, String tickerSymbol, int size,
-                         double price, OrderType orderType, OrderDuration duration, String pendingMessage)
+    public PendingOrder(int userID, String name, int orderID, Date time, Direction direction, String tickerSymbol, int size,
+                        double price, OrderType orderType, OrderDuration duration, String pendingMessage)
     {
         super(userID,name,orderID,time,direction,tickerSymbol,size,price,orderType,duration);
         this.pendingMessage = pendingMessage;

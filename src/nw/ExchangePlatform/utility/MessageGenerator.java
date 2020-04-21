@@ -7,8 +7,8 @@ import java.util.HashMap;
 
 public class MessageGenerator {
 
-    public static HashMap<String, ArrayList<String>> GenerateMessages (TradingOutput output) {
-        HashMap<String,ArrayList<String>> userMessengerMap = new HashMap<>();
+    public static HashMap<Integer, ArrayList<String>> GenerateMessages (TradingOutput output) {
+        HashMap<Integer, ArrayList<String>> userMessengerMap = new HashMap<>();
         if (output.Transactions.size() > 0) {
             for (Transaction transaction : output.Transactions) {
                 //check if contains userID
@@ -49,7 +49,7 @@ public class MessageGenerator {
         return userMessengerMap;
     }
 
-    public static String GenerateMessage(MessageType messageType,String userName,int orderID,String tickerSymbol,
+    public static String GenerateMessage(MessageType messageType, int userName, int orderID, String tickerSymbol,
                                          int size, double tradePrice, String reason) {
         String message = "";
         switch (messageType) {

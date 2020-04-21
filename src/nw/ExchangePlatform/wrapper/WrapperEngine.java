@@ -28,13 +28,13 @@ public class WrapperEngine {
     }
 
     //methods
-    public List<HashMap<String,ArrayList<String>>> ProcessOrders(ArrayList<MarketParticipantOrder> Orders) {
+    public List<HashMap<Integer, ArrayList<String>>> ProcessOrders(ArrayList<MarketParticipantOrder> Orders) {
         //create new batch for each ticker that is being traded in this stream of orders
         ArrayList<OrderBatch> batches = GroupOrdersIntoBatches(Orders);
-        List<HashMap<String,ArrayList<String>>> finalMessageMap = null;
+        List<HashMap<Integer, ArrayList<String>>> finalMessageMap = null;
 
         for (OrderBatch batch : batches) {
-            HashMap<String,ArrayList<String>> messageMap = new HashMap<>();
+            HashMap<Integer, ArrayList<String>> messageMap = new HashMap<>();
             messageMap = ProcessOrderBatch(batch);
             finalMessageMap.add(messageMap);
         }
@@ -61,7 +61,7 @@ public class WrapperEngine {
         return batches;
     }
 
-    public HashMap<String,ArrayList<String>>  ProcessOrderBatch(OrderBatch orderBatch) {
+    public HashMap<Integer, ArrayList<String>> ProcessOrderBatch(OrderBatch orderBatch) {
         if (!tradingEngineMap.containsKey(orderBatch.tickerSymbol)) {
             TradingEngine tradingEngine = new TradingEngine(orderBatch.tickerSymbol);
             tradingEngineMap.put(orderBatch.tickerSymbol,tradingEngine);
@@ -69,7 +69,7 @@ public class WrapperEngine {
         TradingOutput output = tradingEngineMap.get(orderBatch.tickerSymbol).Process(orderBatch.batch);
         clearingWarehouse.ClearTransactions(output.Transactions,clearingWarehouse.dtccWarehouse);
 
-        HashMap<String,ArrayList<String>> userMessagesMap = MessageGenerator.GenerateMessages(output);
+        HashMap<Integer, ArrayList<String>> userMessagesMap = MessageGenerator.GenerateMessages(output);
         return userMessagesMap;
     }
 
