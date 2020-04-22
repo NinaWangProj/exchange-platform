@@ -4,54 +4,45 @@ import nw.ExchangePlatform.data.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 public class MessageGenerator {
 
-    public static HashMap<Integer, ArrayList<String>> GenerateMessages (TradingOutput output) {
+    public static HashMap<Integer, ArrayList<String>> GenerateMessages (TradingOutput tradingOutput) {
         HashMap<Integer, ArrayList<String>> userMessengerMap = new HashMap<>();
-        if (output.Transactions.size() > 0) {
-            for (Transaction transaction : output.Transactions) {
-                //check if contains userID
-                if (!userMessengerMap.containsKey(transaction.userID)) {
-                    userMessengerMap.put(transaction.userID, new ArrayList<String>());
-                }
-                String message = GenerateMessage(MessageType.TransactionMessage, transaction.userID, transaction.orderID, transaction.tickerSymbol, transaction.size,
-                        transaction.tradePrice,"");
-                userMessengerMap.get(transaction.userID).add(message);
-            }
+
+        if (tradingOutput.Transactions.size() >0 ) {
+            GenerateMessagesPerOutputType(userMessengerMap, MessageType.TransactionMessage, tradingOutput.Transactions);
+        }
+        if (tradingOutput.PendingOrders.size() > 0 ) {
+            GenerateMessagesPerOutputType(userMessengerMap, MessageType.PendingOrderMessage, tradingOutput.Transactions);
+        }
+        if(tradingOutput.UnfilledOrders.size() > 0 ) {
+            GenerateMessagesPerOutputType(userMessengerMap, MessageType.UnfilledOrderMessage, tradingOutput.Transactions);
         }
 
-        if (output.UnfilledOrders.size() >0) {
-            for (UnfilledOrder unfilledOrder : output.UnfilledOrders) {
-                //check if contains userID
-                if (!userMessengerMap.containsKey(unfilledOrder.userID)) {
-                    userMessengerMap.put(unfilledOrder.userID, new ArrayList<String>());
-                }
-                String message = GenerateMessage(MessageType.UnfilledOrderMessage, unfilledOrder.userID, unfilledOrder.orderID,
-                        unfilledOrder.tickerSymbol, unfilledOrder.size,
-                        unfilledOrder.price, unfilledOrder.reason);
-                userMessengerMap.get(unfilledOrder.userID).add(message);
-            }
-        }
-
-        if(output.PendingOrders.size() >0) {
-            for (PendingOrder pendingOrder : output.PendingOrders) {
-                //check if contains userID
-                if (!userMessengerMap.containsKey(pendingOrder.userID)) {
-                    userMessengerMap.put(pendingOrder.userID, new ArrayList<String>());
-                }
-                String message = GenerateMessage(MessageType.PendingOrderMessage,
-                        pendingOrder.userID, pendingOrder.orderID, pendingOrder.tickerSymbol, pendingOrder.size,
-                        pendingOrder.price, pendingOrder.pendingMessage);
-                userMessengerMap.get(pendingOrder.userID).add(message);
-            }
-        }
         return userMessengerMap;
     }
 
-    public static String GenerateMessage(MessageType messageType, int userName, int orderID, String tickerSymbol,
-                                         int size, double tradePrice, String reason) {
+    public static void GenerateMessagesPerOutputType (HashMap<Integer, ArrayList<String>> userMessengerMap, MessageType messageType, ArrayList<? extends Info> TradingOutputs) {
+        for (Info tradingOutput : TradingOutputs) {
+            int UserID = tradingOutput.getUserID();
+            if (!userMessengerMap.containsKey(UserID)) {
+                userMessengerMap.put(UserID, new ArrayList<String>());
+            }
+            String message = GenerateMessage(messageType,tradingOutput);
+            userMessengerMap.get(UserID).add(message);
+        }
+    }
+
+    public static String GenerateMessage(MessageType messageType, Info tradingOutputInfo) {
         String message = "";
+        String userName = tradingOutputInfo.getName();
+        String orderID = String.valueOf(tradingOutputInfo.getOrderID());
+        String size = String.valueOf(tradingOutputInfo.getSize());
+        String tradePrice = String.valueOf(tradingOutputInfo.getPrice());
+        String reason = tradingOutputInfo.getReason();
+
         switch (messageType) {
             case TransactionMessage:
                 message = "Congradulation!  " + userName + " Your order with orderID: " + orderID
@@ -67,4 +58,5 @@ public class MessageGenerator {
         }
         return message;
     }
+
 }

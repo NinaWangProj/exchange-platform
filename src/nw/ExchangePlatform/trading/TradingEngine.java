@@ -40,7 +40,7 @@ public class TradingEngine {
         ArrayList<MarketParticipantOrder> counterPartyLimitOrderBook = new ArrayList<>();
         ArrayList<MarketParticipantOrder> currentLimitOrderBook = new ArrayList<>();
 
-        switch (order.direction) {
+        switch (order.getDirection()) {
             case BUY:
                 currentLimitOrderBook = bids;
                 counterPartyLimitOrderBook = asks;
@@ -74,27 +74,27 @@ public class TradingEngine {
         } else {
             MarketParticipantOrder topCounterLimitOrder = counterPartyLimitOrderBook.get(0);
 
-            double transactionPrice = topCounterLimitOrder.price;
+            double transactionPrice = topCounterLimitOrder.getPrice();
             int transactionSize;
 
-            if(order.size == topCounterLimitOrder.size) {
-                transactionSize = order.size;
+            if(order.getSize() == topCounterLimitOrder.getSize()) {
+                transactionSize = order.getSize();
                 counterPartyLimitOrderBook.remove(0);
                 active = false;
-            } else if (order.size < topCounterLimitOrder.size) {
-                transactionSize = order.size;
+            } else if (order.getSize() < topCounterLimitOrder.getSize()) {
+                transactionSize = order.getSize();
                 active = false;
             } else {
-                transactionSize = topCounterLimitOrder.size;
-                order.size -= transactionSize;
+                transactionSize = topCounterLimitOrder.getSize();
+                order.size = order.getSize() - transactionSize;
                 counterPartyLimitOrderBook.remove(0);
                 active = true;
             }
 
-            Transaction counterPartyTransaction = new Transaction(topCounterLimitOrder.userID, topCounterLimitOrder.name, WrapperEngine.previousTransactionID +1, topCounterLimitOrder.orderID, new Date(),
-                    topCounterLimitOrder.direction, topCounterLimitOrder.tickerSymbol, transactionSize, transactionPrice);
-            Transaction currentOrderTransaction = new Transaction(order.userID, order.name, WrapperEngine.previousTransactionID +2, order.orderID, new Date(),
-                    order.direction, order.tickerSymbol, transactionSize, transactionPrice);
+            Transaction counterPartyTransaction = new Transaction(topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), WrapperEngine.previousTransactionID +1, topCounterLimitOrder.getOrderID(), new Date(),
+                    topCounterLimitOrder.getDirection(), topCounterLimitOrder.getTickerSymbol(), transactionSize, transactionPrice);
+            Transaction currentOrderTransaction = new Transaction(order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +2, order.getOrderID(), new Date(),
+                    order.getDirection(), order.getTickerSymbol(), transactionSize, transactionPrice);
 
             transactions.add(currentOrderTransaction);
             transactions.add(counterPartyTransaction);
@@ -120,27 +120,27 @@ public class TradingEngine {
         } else {
             //If there is a match, match order, put remaining in limit order book if possible
             MarketParticipantOrder topCounterLimitOrder = counterPartyLimitOrderBook.get(0);
-            double transactionPrice = topCounterLimitOrder.price;
+            double transactionPrice = topCounterLimitOrder.getPrice();
             int transactionSize;
 
-            if(order.size == topCounterLimitOrder.size) {
-                transactionSize = order.size;
+            if(order.getSize() == topCounterLimitOrder.getSize()) {
+                transactionSize = order.getSize();
                 counterPartyLimitOrderBook.remove(0);
                 active = false;
-            } else if (order.size < topCounterLimitOrder.size) {
-                transactionSize = order.size;
+            } else if (order.getSize() < topCounterLimitOrder.getSize()) {
+                transactionSize = order.getSize();
                 active = false;
             } else {
-                transactionSize = topCounterLimitOrder.size;
-                order.size -= transactionSize;
+                transactionSize = topCounterLimitOrder.getSize();
+                order.size = order.getSize() - transactionSize;
                 counterPartyLimitOrderBook.remove(0);
                 active = true;
             }
 
-            Transaction counterSideTransaction = new Transaction(topCounterLimitOrder.userID, topCounterLimitOrder.name, WrapperEngine.previousTransactionID +1, topCounterLimitOrder.orderID, new Date(),
-                    topCounterLimitOrder.direction, topCounterLimitOrder.tickerSymbol, transactionSize, transactionPrice);
-            Transaction currentOrderTransaction = new Transaction(order.userID, order.name, WrapperEngine.previousTransactionID +2, order.orderID, new Date(),
-                    order.direction, order.tickerSymbol, transactionSize, transactionPrice);
+            Transaction counterSideTransaction = new Transaction(topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), WrapperEngine.previousTransactionID +1, topCounterLimitOrder.getOrderID(), new Date(),
+                    topCounterLimitOrder.getDirection(), topCounterLimitOrder.getTickerSymbol(), transactionSize, transactionPrice);
+            Transaction currentOrderTransaction = new Transaction(order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +2, order.getOrderID(), new Date(),
+                    order.getDirection(), order.getTickerSymbol(), transactionSize, transactionPrice);
 
             transactions.add(currentOrderTransaction);
             transactions.add(counterSideTransaction);
@@ -152,8 +152,8 @@ public class TradingEngine {
     private boolean CheckTradeViability(MarketParticipantOrder order, MarketParticipantOrder counterLimitOrder) {
         boolean viable;
 
-        if((order.direction == Direction.BUY && order.price >= counterLimitOrder.price)
-            || (order.direction == Direction.SELL && order.price <= counterLimitOrder.price)) {
+        if((order.getDirection() == Direction.BUY && order.getPrice() >= counterLimitOrder.getPrice())
+            || (order.getDirection() == Direction.SELL && order.getPrice() <= counterLimitOrder.getPrice())) {
             viable = true;
         } else {
             viable = false;

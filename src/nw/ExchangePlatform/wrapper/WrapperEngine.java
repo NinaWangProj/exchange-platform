@@ -46,7 +46,7 @@ public class WrapperEngine {
         //current implementation: group by tickerSymbol; one ticker Symbol related orders per batch
         HashMap<String,OrderBatch> orderBatchMap = new HashMap<>();
         for (MarketParticipantOrder order : Orders) {
-            String tickerSymbol = order.tickerSymbol;
+            String tickerSymbol = order.getTickerSymbol();
             if (orderBatchMap.containsKey(tickerSymbol)) {
                 orderBatchMap.get(tickerSymbol).batch.add(order);
             } else {

@@ -2,17 +2,17 @@ package nw.ExchangePlatform.data;
 
 import java.util.Date;
 
-public class MarketParticipantOrder implements Comparable<MarketParticipantOrder> {
+public class MarketParticipantOrder implements Comparable<MarketParticipantOrder>, Info {
 
     //fields
-    public final int userID;
-    public final String name;
-    public final int orderID;
-    public final Date time;
-    public final Direction direction;
-    public final String tickerSymbol;
+    private final int userID;
+    private final String name;
+    private final int orderID;
+    private final Date time;
+    private final Direction direction;
+    private final String tickerSymbol;
     public int size;
-    public final double price;
+    private final double price;
     public final OrderType orderType;
     public final OrderDuration orderDuration;
 
@@ -35,14 +35,49 @@ public class MarketParticipantOrder implements Comparable<MarketParticipantOrder
 
     @Override
     public int compareTo(MarketParticipantOrder order2) {
-        if(this.price > order2.price) {
+        if(this.getPrice() > order2.getPrice()) {
             return -1;
-        } else if (this.price < order2.price) {
+        } else if (this.getPrice() < order2.getPrice()) {
             return 1;
         } else {
-            return this.time.compareTo(order2.time);
+            return this.getTime().compareTo(order2.getTime());
         }
     }
 
 
+    public int getUserID() {
+        return userID;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getOrderID() {
+        return orderID;
+    }
+
+    public Date getTime() {
+        return time;
+    }
+
+    public String getTickerSymbol() {
+        return tickerSymbol;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public String getReason() {
+        return "";
+    }
 }

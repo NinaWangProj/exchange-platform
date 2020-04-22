@@ -18,7 +18,7 @@ public class ClearingEngine {
 
     //public methods
     public ClearingStatus ClearTrade(){
-        HashMap<String, HashMap<String,SecurityCertificate>> certificatesMap = dtccWarehouse.certificatesMap;
+        HashMap<String, HashMap<Integer,SecurityCertificate>> certificatesMap = dtccWarehouse.certificatesMap;
 
         for(Transaction transaction : transactions){
             ClearTransactionWithDTCCWarehouse(transaction, certificatesMap);
@@ -30,45 +30,45 @@ public class ClearingEngine {
 
     private void UpdateMarketParticipantPortfolio(Transaction transaction) {
         //userID, HashMap<tickerSymbol, SecurityCertificate>
-        HashMap<String, MarketParticipantPortfolio> portfoliosMap = dtccWarehouse.portfoliosMap;
-        MarketParticipantPortfolio portfolio = portfoliosMap.get(transaction.userID);
-        switch(transaction.direction) {
+        HashMap<Integer, MarketParticipantPortfolio> portfoliosMap = dtccWarehouse.portfoliosMap;
+        MarketParticipantPortfolio portfolio = portfoliosMap.get(transaction.getUserID());
+        switch(transaction.getDirection()) {
             case BUY:
-                boolean foundTicker = portfoliosMap.get(transaction.userID).securities.containsKey(transaction.tickerSymbol);
+                boolean foundTicker = portfoliosMap.get(transaction.getUserID()).securities.containsKey(transaction.getTickerSymbol());
                 if(foundTicker) {
-                    portfolio.securities.get(transaction.tickerSymbol).quantity += transaction.size;
+                    portfolio.securities.get(transaction.getTickerSymbol()).quantity += transaction.getSize();
                 } else {
-                    SecurityCertificate certificate = new SecurityCertificate(transaction.name, transaction.tickerSymbol, transaction.size, new Date());
-                    portfolio.securities.put(transaction.tickerSymbol, certificate);
+                    SecurityCertificate certificate = new SecurityCertificate(transaction.getName(), transaction.getTickerSymbol(), transaction.getSize(), new Date());
+                    portfolio.securities.put(transaction.getTickerSymbol(), certificate);
                 }
-                portfolio.cash -= transaction.tradePrice;
+                portfolio.cash -= transaction.getPrice();
             case SELL:
-                portfolio.securities.get(transaction.tickerSymbol).quantity -= transaction.size;
-                portfolio.cash += transaction.tradePrice;
+                portfolio.securities.get(transaction.getTickerSymbol()).quantity -= transaction.getSize();
+                portfolio.cash += transaction.getPrice();
         }
     }
 
-    private void ClearTransactionWithDTCCWarehouse(Transaction transaction,HashMap<String, HashMap<String,SecurityCertificate>> certificatesMap){
-        switch (transaction.direction) {
+    private void ClearTransactionWithDTCCWarehouse(Transaction transaction,HashMap<String, HashMap<Integer,SecurityCertificate>> certificatesMap){
+        switch (transaction.getDirection()) {
             case BUY:
-                boolean foundTicker = certificatesMap.containsKey(transaction.tickerSymbol);
-                boolean foundUser = foundTicker && certificatesMap.get(transaction.tickerSymbol).containsKey(transaction.userID);
+                boolean foundTicker = certificatesMap.containsKey(transaction.getTickerSymbol());
+                boolean foundUser = foundTicker && certificatesMap.get(transaction.getTickerSymbol()).containsKey(transaction.getUserID());
                 if(foundTicker) {
                     if(!foundUser) {
-                        SecurityCertificate certificate = new SecurityCertificate(transaction.name, transaction.tickerSymbol, 0, new Date());
-                        certificatesMap.get(transaction.tickerSymbol).put(transaction.userID,certificate);
+                        SecurityCertificate certificate = new SecurityCertificate(transaction.getName(), transaction.getTickerSymbol(), 0, new Date());
+                        certificatesMap.get(transaction.getTickerSymbol()).put(transaction.getUserID(),certificate);
                     }
-                    certificatesMap.get(transaction.tickerSymbol).get(transaction.userID).quantity += transaction.size;
+                    certificatesMap.get(transaction.getTickerSymbol()).get(transaction.getUserID()).quantity += transaction.getSize();
                 } else {
-                    SecurityCertificate certificate = new SecurityCertificate(transaction.name, transaction.tickerSymbol, transaction.size, new Date());
-                    certificatesMap.put(transaction.tickerSymbol, new HashMap<>(){{put(transaction.userID,certificate);}});
+                    SecurityCertificate certificate = new SecurityCertificate(transaction.getName(), transaction.getTickerSymbol(), transaction.getSize(), new Date());
+                    certificatesMap.put(transaction.getTickerSymbol(), new HashMap<>(){{put(transaction.getUserID(),certificate);}});
                 }
 
             case SELL:
                 //locate previous certificate for the seller
-                SecurityCertificate certificate =  certificatesMap.get(transaction.tickerSymbol).get(transaction.userID);
+                SecurityCertificate certificate =  certificatesMap.get(transaction.getTickerSymbol()).get(transaction.getUserID());
                 //modify certificate to reflect the new transaction
-                certificate.quantity -= transaction.size;
+                certificate.quantity -= transaction.getSize();
         }
     }
 
