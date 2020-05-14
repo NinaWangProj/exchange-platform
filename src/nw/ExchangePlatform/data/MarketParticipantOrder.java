@@ -2,23 +2,23 @@ package nw.ExchangePlatform.data;
 
 import java.util.Date;
 
-public class MarketParticipantOrder implements Comparable<MarketParticipantOrder> {
+public class MarketParticipantOrder implements Comparable<MarketParticipantOrder>, Info {
 
     //fields
-    public final String userID;
-    public final String name;
-    public final int orderID;
-    public final Date time;
-    public final Direction direction;
-    public final String tickerSymbol;
-    public int size;
-    public final double price;
+    private final int userID;
+    private final String name;
+    private final int orderID;
+    private final Date time;
+    private final Direction direction;
+    private final String tickerSymbol;
+    private int size;
+    private final double price;
     public final OrderType orderType;
     public final OrderDuration orderDuration;
 
 
     //constructor
-    public MarketParticipantOrder(String userID, String name, int orderID, Date time, Direction direction, String tickerSymbol, int size,
+    public MarketParticipantOrder(int userID, String name, int orderID, Date time, Direction direction, String tickerSymbol, int size,
                                   double price, OrderType orderType, OrderDuration orderDuration)
     {
         this.userID = userID;
@@ -35,14 +35,53 @@ public class MarketParticipantOrder implements Comparable<MarketParticipantOrder
 
     @Override
     public int compareTo(MarketParticipantOrder order2) {
-        if(this.price > order2.price) {
+        if(this.getPrice() > order2.getPrice()) {
             return -1;
-        } else if (this.price < order2.price) {
+        } else if (this.getPrice() < order2.getPrice()) {
             return 1;
         } else {
-            return this.time.compareTo(order2.time);
+            return this.getTime().compareTo(order2.getTime());
         }
     }
 
 
+    public int getUserID() {
+        return userID;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public int getOrderID() {
+        return orderID;
+    }
+
+    public Date getTime() {
+        return time;
+    }
+
+    public String getTickerSymbol() {
+        return tickerSymbol;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    public String getReason() {
+        return "";
+    }
 }
