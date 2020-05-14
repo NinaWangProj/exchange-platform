@@ -11,7 +11,7 @@ public class MarketParticipantOrder implements Comparable<MarketParticipantOrder
     private final Date time;
     private final Direction direction;
     private final String tickerSymbol;
-    public int size;
+    private int size;
     private final double price;
     public final OrderType orderType;
     public final OrderDuration orderDuration;
@@ -75,6 +75,10 @@ public class MarketParticipantOrder implements Comparable<MarketParticipantOrder
 
     public int getSize() {
         return size;
+    }
+
+    public void setSize(int size) {
+        this.size = size;
     }
 
     public String getReason() {

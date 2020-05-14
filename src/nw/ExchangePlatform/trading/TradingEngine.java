@@ -86,7 +86,7 @@ public class TradingEngine {
                 active = false;
             } else {
                 transactionSize = topCounterLimitOrder.getSize();
-                order.size = order.getSize() - transactionSize;
+                order.setSize(order.getSize() - transactionSize);
                 counterPartyLimitOrderBook.remove(0);
                 active = true;
             }
@@ -132,7 +132,7 @@ public class TradingEngine {
                 active = false;
             } else {
                 transactionSize = topCounterLimitOrder.getSize();
-                order.size = order.getSize() - transactionSize;
+                order.setSize(order.getSize() - transactionSize);
                 counterPartyLimitOrderBook.remove(0);
                 active = true;
             }
