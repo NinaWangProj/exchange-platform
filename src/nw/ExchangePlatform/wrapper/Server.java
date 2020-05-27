@@ -15,14 +15,14 @@ public class Server {
     private Socket clientSocket;
     private int serverPortID;
 
-    public void ConnectWithClient() throws IOException{
+    public void StartListening() throws IOException{
         serverSocket = new ServerSocket(serverPortID);
         //start listening for client; once heard client, hand shake with client to establish connection
         clientSocket = serverSocket.accept();
     }
 
-    public Server(int serverPortID) {
-        this.serverPortID = serverPortID;
+    public Server() {
+        serverPortID = 58673;
     }
 
     public void StartWorking() throws IOException{
