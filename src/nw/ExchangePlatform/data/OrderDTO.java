@@ -28,45 +28,6 @@ public class OrderDTO {
         this.orderType = orderType;
     }
 
-    public OrderDTO(byte[] DTOByteArray) {
-        this.orderDTOByteArray = DTOByteArray;
-        int position = 0;
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
-
-        byte[] buffer = new byte[1];
-        inputStream.read(buffer, position, 1);
-        direction = Direction.lookupEnumType(ByteBuffer.wrap(buffer).getInt());
-        position += 1;
-
-        inputStream.read(buffer,position,1);
-        orderType = OrderType.valueOf(ByteBuffer.wrap(buffer).getInt());
-        position += 1;
-
-        inputStream.read(buffer, position, 1);
-        int numOfTickerChar = ByteBuffer.wrap(buffer).getInt();
-        byte[] tickerSymbolBuffer = new byte[numOfTickerChar];
-        inputStream.read(tickerSymbolBuffer, position, numOfTickerChar);
-        position += numOfTickerChar;
-        tickerSymbol = tickerSymbolBuffer.toString();
-
-        byte[] sizeBuffer = new byte[4];
-        inputStream.read(sizeBuffer,position,4);
-        size = ByteBuffer.wrap(buffer).getInt();
-        position += 4;
-
-        if(orderType.equals(OrderType.LIMITORDER)) {
-            byte[] priceBuffer = new byte[8];
-            inputStream.read(priceBuffer, position, 8);
-            price = ByteBuffer.wrap(priceBuffer).getDouble();
-            position += 8;
-        } else {
-            price = -1;
-        }
-
-        inputStream.read(buffer, position, 1);
-        orderDuration = OrderDuration.valueOf(ByteBuffer.wrap(buffer).getInt());
-    }
-
     public byte[] Serialize()
     {
         try {
@@ -76,8 +37,8 @@ public class OrderDTO {
                 outputStream.write(orderType.getByteValue());
 
                 byte[] tickerSymbolByte = tickerSymbol.getBytes();
-                byte[] paddedTickckerSymbol = new byte[8];
-                System.arraycopy(tickerSymbolByte,0,paddedTickckerSymbol,0,tickerSymbolByte.length);
+                byte tickerSize = (byte)tickerSymbolByte.length;
+                outputStream.write(tickerSize);
                 outputStream.write(tickerSymbolByte);
 
                 byte[] sizeByte = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder()).putInt(size).array();
@@ -106,8 +67,9 @@ public class OrderDTO {
 
         OrderType orderTypeT = OrderType.valueOf(inputStream.read());
 
-        byte[] tickerSymbolBuffer = new byte[8];
-        inputStream.read(tickerSymbolBuffer, 0, 8);
+        int tickerSymbolLength = inputStream.read();
+        byte[] tickerSymbolBuffer = new byte[tickerSymbolLength];
+        inputStream.read(tickerSymbolBuffer, 0, tickerSymbolLength);
         String tickerSymbolT = tickerSymbolBuffer.toString();
 
         byte[] sizeBuffer = new byte[4];

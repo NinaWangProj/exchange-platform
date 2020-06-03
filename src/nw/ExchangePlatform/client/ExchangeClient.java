@@ -14,8 +14,8 @@ public class ExchangeClient {
     private String serverIP;
     private int serverPort;
 
-    public void ExchangeClient() {
-        serverIP = "192.168.0.22";
+    public ExchangeClient() {
+        serverIP = "192.168.0.20";
         serverPort = 58673;
     }
 
