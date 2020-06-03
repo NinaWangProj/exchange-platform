@@ -41,13 +41,13 @@ public class OrderDTO {
                 outputStream.write(tickerSize);
                 outputStream.write(tickerSymbolByte);
 
-                byte[] sizeByte = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder()).putInt(size).array();
+                byte[] sizeByte = ByteBuffer.allocate(4).putInt(size).array();
                 outputStream.write(sizeByte);
 
-                if(orderType.equals(OrderType.LIMITORDER)) {
-                    byte[] priceByte = ByteBuffer.allocate(8).order(ByteOrder.nativeOrder()).putDouble(price).array();
-                    outputStream.write(priceByte);
-                }
+
+                byte[] priceByte = ByteBuffer.allocate(8).order(ByteOrder.nativeOrder()).putDouble(price).array();
+                outputStream.write(priceByte);
+
 
                 outputStream.write(orderDuration.getByteValue());
 
@@ -70,7 +70,7 @@ public class OrderDTO {
         int tickerSymbolLength = inputStream.read();
         byte[] tickerSymbolBuffer = new byte[tickerSymbolLength];
         inputStream.read(tickerSymbolBuffer, 0, tickerSymbolLength);
-        String tickerSymbolT = tickerSymbolBuffer.toString();
+        String tickerSymbolT = new String(tickerSymbolBuffer);
 
         byte[] sizeBuffer = new byte[4];
         inputStream.read(sizeBuffer,0,4);
