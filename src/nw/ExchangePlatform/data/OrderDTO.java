@@ -28,17 +28,6 @@ public class OrderDTO {
         this.orderType = orderType;
     }
 
-    //this constructor is used for market order data transfer object
-    public OrderDTO(Direction direction, OrderType orderType, String tickerSymbol, int size, OrderDuration orderDuration)
-    {
-        this.tickerSymbol = tickerSymbol;
-        this.size = size;
-        this.direction = direction;
-        this.orderDuration = orderDuration;
-        this.orderType = orderType;
-        this.price = -1;
-    }
-
     public OrderDTO(byte[] DTOByteArray) {
         this.orderDTOByteArray = DTOByteArray;
         int position = 0;
@@ -46,7 +35,7 @@ public class OrderDTO {
 
         byte[] buffer = new byte[1];
         inputStream.read(buffer, position, 1);
-        direction = Direction.valueOf(ByteBuffer.wrap(buffer).getInt());
+        direction = Direction.lookupEnumType(ByteBuffer.wrap(buffer).getInt());
         position += 1;
 
         inputStream.read(buffer,position,1);
@@ -87,8 +76,8 @@ public class OrderDTO {
                 outputStream.write(orderType.getByteValue());
 
                 byte[] tickerSymbolByte = tickerSymbol.getBytes();
-                int tickerSymbolByteSize = tickerSymbolByte.length;
-                outputStream.write((byte) tickerSymbolByteSize);
+                byte[] paddedTickckerSymbol = new byte[8];
+                System.arraycopy(tickerSymbolByte,0,paddedTickckerSymbol,0,tickerSymbolByte.length);
                 outputStream.write(tickerSymbolByte);
 
                 byte[] sizeByte = ByteBuffer.allocate(4).order(ByteOrder.nativeOrder()).putInt(size).array();
@@ -108,5 +97,31 @@ public class OrderDTO {
             }
 
         return orderDTOByteArray;
+    }
+
+    public static OrderDTO Deserialize(byte[] DTOByteArray) {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
+
+        Direction directionT = Direction.lookupEnumType(inputStream.read());
+
+        OrderType orderTypeT = OrderType.valueOf(inputStream.read());
+
+        byte[] tickerSymbolBuffer = new byte[8];
+        inputStream.read(tickerSymbolBuffer, 0, 8);
+        String tickerSymbolT = tickerSymbolBuffer.toString();
+
+        byte[] sizeBuffer = new byte[4];
+        inputStream.read(sizeBuffer,0,4);
+        int sizeT = ByteBuffer.wrap(sizeBuffer).getInt();
+
+        byte[] priceBuffer = new byte[8];
+        inputStream.read(priceBuffer, 0, 8);
+        double priceT = ByteBuffer.wrap(priceBuffer).getDouble();
+
+        OrderDuration orderDurationT = OrderDuration.valueOf(inputStream.read());
+
+        OrderDTO orderDTO = new OrderDTO(directionT, orderTypeT, tickerSymbolT, sizeT, priceT, orderDurationT);
+
+        return orderDTO;
     }
 }

@@ -2,28 +2,28 @@ package nw.ExchangePlatform.data;
 
 import java.util.HashMap;
 
-public enum Direction {
-    BUY(1),
-    SELL(2);
+public enum DTOType {
+    ORDER(1),
+    CONFIG(2);
 
     private final int value;
     private final byte byteValue;
-    private static final HashMap<Integer,Direction> map = new HashMap<Integer,Direction>();
+    private static final HashMap<Integer,DTOType> map = new HashMap<Integer,DTOType>();
 
-    private Direction(int value) {
+    private DTOType(int value) {
         this.value = value;
         this.byteValue = (byte)value;
     }
 
     //static initialisation block; only run this method once when the class is first loaded;
     static {
-        for (Direction direction : Direction.values()) {
-            map.put(direction.value, direction);
+        for (DTOType type : DTOType.values()) {
+            map.put(type.value, type);
         }
     }
 
-    public static Direction lookupEnumType(int directionInteger) {
-        return map.get(directionInteger);
+    public static DTOType valueOf(int typeInteger) {
+        return map.get(typeInteger);
     }
 
     public int getValue() {
