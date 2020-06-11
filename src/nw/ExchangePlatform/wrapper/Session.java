@@ -56,6 +56,7 @@ public class Session implements Runnable {
                     OrderDTO orderDTO = OrderDTO.Deserialize(orderDTOByteArray);
 
                     //convert OrderDTO to MarketParticipantOrder
+                    //Execute the order
 
                 case CONFIG:
                     //need to implement later
