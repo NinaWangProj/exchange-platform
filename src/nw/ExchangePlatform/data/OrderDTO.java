@@ -41,12 +41,13 @@ public class OrderDTO {
                 outputStream.write(tickerSize);
                 outputStream.write(tickerSymbolByte);
 
-
                 byte[] sizeByte = ByteBuffer.allocate(4).putInt(size).array();
                 outputStream.write(sizeByte);
 
-                byte[] priceByte = ByteBuffer.allocate(8).putDouble(price).array();
+
+                byte[] priceByte = ByteBuffer.allocate(8).order(ByteOrder.nativeOrder()).putDouble(price).array();
                 outputStream.write(priceByte);
+
 
                 outputStream.write(orderDuration.getByteValue());
 
