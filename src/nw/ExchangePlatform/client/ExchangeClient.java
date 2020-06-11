@@ -4,9 +4,6 @@ import nw.ExchangePlatform.data.*;
 
 import java.io.*;
 import java.net.*;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.Date;
 
 public class ExchangeClient {
 
@@ -53,6 +50,10 @@ public class ExchangeClient {
             outputStream.write(orderDTOByteArray);
         } catch(IOException E) {
         }
+    }
+
+    public void SubmitSessionConfig() {
+
     }
 
 }

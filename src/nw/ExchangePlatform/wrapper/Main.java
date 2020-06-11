@@ -7,10 +7,11 @@ import java.net.*;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException {
-
+    public static void main(String[] args) throws Exception {
         Server server = new Server();
-        server.StartListening();
+        //create a separate thread for listening to client connection requests
+        Thread thread = new Thread(server);
+        //Once server client connection has been established, server will start reading from inputstream to execute requests
         server.StartWorking();
     }
 }

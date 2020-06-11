@@ -1,47 +1,53 @@
 package nw.ExchangePlatform.wrapper;
 
-import nw.ExchangePlatform.data.*;
-
 import java.io.*;
 import java.net.*;
-import java.nio.ByteBuffer;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.ListIterator;
 
-public class Server {
+public class Server implements Runnable{
     private ServerSocket serverSocket;
-    private Socket clientSocket;
     private int serverPortID;
-
-    public void StartListening() throws IOException{
-        serverSocket = new ServerSocket(serverPortID);
-        //start listening for client; once heard client, hand shake with client to establish connection
-        clientSocket = serverSocket.accept();
-    }
+    private static int nextAvailableSessionID;
+    private ArrayList<Session> sessionUniverse;
 
     public Server() {
         serverPortID = 58673;
+        sessionUniverse = new ArrayList<>();
     }
 
-    public void StartWorking() throws IOException{
-        InputStream inputStream = clientSocket.getInputStream();
-        int nextByte= inputStream.read();
+    private void StartListening() throws IOException{
+        serverSocket = new ServerSocket(serverPortID);
+        //start listening for client; once heard client, hand shake with client to establish connection
+        while(true) {
+            Socket clientSocket = serverSocket.accept();
+            Session session = new Session(clientSocket,nextAvailableSessionID);
+            sessionUniverse.add(session);
+            nextAvailableSessionID += 1;
+        }
+    }
 
-        while (nextByte != -1) {
-            DTOType dtoType = DTOType.valueOf(nextByte);
-
-            switch (dtoType) {
-                case ORDER:
-                    int byteSizeOfDTO = inputStream.read();
-                    byte[] orderDTOByteArray = new byte[byteSizeOfDTO];
-                    inputStream.read(orderDTOByteArray,0,byteSizeOfDTO);
-                    OrderDTO orderDTO = OrderDTO.Deserialize(orderDTOByteArray);
-
-                    //convert OrderDTO to MarketParticipantOrder
-
-                case CONFIG:
-                    //need to implement later
-
+    public void StartWorking() throws Exception {
+        ListIterator<Session> sessions = sessionUniverse.listIterator();
+        while(true) {
+            if(sessions.hasNext()) {
+                Session session = sessions.next();
+                //create a new thread for this session
+                Thread sessionThread = new Thread(session);
+                sessionThread.start();
             }
         }
     }
+
+    public void run() {
+        try {
+            StartListening();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
+
+
+
+
