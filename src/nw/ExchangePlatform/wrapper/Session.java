@@ -1,6 +1,7 @@
 package nw.ExchangePlatform.wrapper;
 
 import nw.ExchangePlatform.data.DTOType;
+import nw.ExchangePlatform.data.MarketParticipantOrder;
 import nw.ExchangePlatform.data.OrderDTO;
 
 import javax.print.attribute.standard.ReferenceUriSchemesSupported;
@@ -12,10 +13,12 @@ public class Session implements Runnable {
     private final Socket clientSocket;
     private int clientUserID;
     private String clientUserName;
+    private OrderQueue orderQueue;
 
-    public Session(Socket clientSocket,int sessionID) {
+    public Session(Socket clientSocket,int sessionID,OrderQueue orderQueue) {
         this.clientSocket = clientSocket;
         this.sessionID = sessionID;
+        this.orderQueue = orderQueue;
     }
     public int getSessionID() {
         return sessionID;
@@ -42,28 +45,14 @@ public class Session implements Runnable {
     }
 
     private void RunCurrentSession() throws Exception{
-        InputStream inputStream = clientSocket.getInputStream();
-        int nextByte= inputStream.read();
+        ClientReader reader = new ClientReader(clientSocket.getInputStream(),orderQueue);
+        ClientWriter writer = new ClientWriter(clientSocket.getOutputStream());
 
-        while (nextByte != -1) {
-            DTOType dtoType = DTOType.valueOf(nextByte);
+        Thread readerThread = new Thread(reader);
+        readerThread.start();
 
-            switch (dtoType) {
-                case ORDER:
-                    int byteSizeOfDTO = inputStream.read();
-                    byte[] orderDTOByteArray = new byte[byteSizeOfDTO];
-                    inputStream.read(orderDTOByteArray,0,byteSizeOfDTO);
-                    OrderDTO orderDTO = OrderDTO.Deserialize(orderDTOByteArray);
-
-                    //convert OrderDTO to MarketParticipantOrder
-                    //Execute the order
-
-                case CONFIG:
-                    //need to implement later
-
-            }
-            nextByte = inputStream.read();
-        }
+        Thread writerThread = new Thread(writer);
+        writerThread.start();
     }
 
     public void run() {
