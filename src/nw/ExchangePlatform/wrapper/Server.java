@@ -1,39 +1,44 @@
 package nw.ExchangePlatform.wrapper;
 
 import nw.ExchangePlatform.data.DTCCWarehouse;
+import nw.ExchangePlatform.data.MarketParticipantOrder;
+import nw.ExchangePlatform.data.OrderDTO;
+import nw.ExchangePlatform.data.TradingOutput;
+import nw.ExchangePlatform.trading.TradingEngine;
 
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class Server{
     private ServerSocket serverSocket;
-    private int serverPortID;
-    private static int nextAvailableSessionID;
-    private ArrayList<Session> sessionUniverse;
+    private ServerConfig config;
 
-    public Server() {
-        serverPortID = 58673;
-        sessionUniverse = new ArrayList<>();
+    public Server(ServerConfig config) {
+        this.config = config;
     }
 
-    public void Start() throws IOException{
-        serverSocket = new ServerSocket(serverPortID);
-        OrderQueue orderQueue = new OrderQueue();
+    public void Start() throws Exception{
+        serverSocket = new ServerSocket(config.getServerPortID());
+        Queue systemQueue = new Queue(config.getNumOfOrderQueues(),config.getNumOfEngineResultQueues(),
+                config.getNumOfClearingEngineResultQueues());
+
+        //create session for each client and deserialize client requests
+        SessionManager sessionManager = new SessionManager(serverSocket, systemQueue, config.getBaseOrderID());
+        Thread sessions = new Thread(sessionManager);
+        sessions.start();
+
+        TradingEngineManager tradingEngineManager = new TradingEngineManager(systemQueue);
+        tradingEngineManager.Start();
+
+        DTCCWarehouse DTCC = new DTCCWarehouse();
+        ClearingEngineManager clearingEngineManager = new ClearingEngineManager(systemQueue,DTCC);
+        clearingEngineManager.Start();
 
 
-        WrapperEngine engine = new WrapperEngine(10,0,new DTCCWarehouse());
-
-        while(true) {
-            Socket clientSocket = serverSocket.accept();
-            Session session = new Session(clientSocket,nextAvailableSessionID,orderQueue);
-            sessionUniverse.add(session);
-            nextAvailableSessionID += 1;
-            Thread sessionThread = new Thread(session);
-            sessionThread.start();
 
 
-        }
     }
 }
 

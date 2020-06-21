@@ -9,19 +9,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class WrapperEngine implements Runnable {
+public class WrapperEngine {
     public static long previousTransactionID;
     private int batchSize;
     private HashMap<String,TradingEngine> tradingEngineMap;
     private ClearingWarehouse clearingWarehouse;
-    private OrderQueue orderQueue;
 
     //constructor
-    public WrapperEngine(int batchSize, long previousTransactionID,DTCCWarehouse dtccWarehouse,OrderQueue orderQueue) {
+    public WrapperEngine(int batchSize, long previousTransactionID,DTCCWarehouse dtccWarehouse) {
         this.batchSize = batchSize;
         this.previousTransactionID = previousTransactionID;
         this.clearingWarehouse = Initialize(dtccWarehouse);
-        this.orderQueue = orderQueue;
     }
 
     private ClearingWarehouse Initialize(DTCCWarehouse dtccWarehouse) {
@@ -68,31 +66,10 @@ public class WrapperEngine implements Runnable {
             TradingEngine tradingEngine = new TradingEngine(orderBatch.tickerSymbol);
             tradingEngineMap.put(orderBatch.tickerSymbol,tradingEngine);
         }
-        TradingOutput output = tradingEngineMap.get(orderBatch.tickerSymbol).Process(orderBatch.batch);
+        TradingOutput output = tradingEngineMap.get(orderBatch.tickerSymbol).ProcessBatch(orderBatch.batch);
         clearingWarehouse.ClearTransactions(output.Transactions,clearingWarehouse.dtccWarehouse);
 
         HashMap<Integer, ArrayList<String>> userMessagesMap = MessageGenerator.GenerateMessages(output);
         return userMessagesMap;
     }
-
-    public void run() {
-        try {
-            //pull order queue every 30 seconds
-            //process orders if there are any orders available
-            while(true) {
-                Thread.sleep(30*1000);
-                ArrayList<MarketParticipantOrder> orders = orderQueue.GetQueue();
-                if(orders.size()>0) {
-
-                    ProcessOrders(orders);
-                }
-
-
-
-            }
-        } catch (Exception e) {
-
-        }
-    }
-
 }

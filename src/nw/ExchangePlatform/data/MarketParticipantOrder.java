@@ -5,6 +5,7 @@ import java.util.Date;
 public class MarketParticipantOrder implements Comparable<MarketParticipantOrder>, Info {
 
     //fields
+    private final int sessionID;
     private final int userID;
     private final String name;
     private final int orderID;
@@ -18,9 +19,10 @@ public class MarketParticipantOrder implements Comparable<MarketParticipantOrder
 
 
     //constructor
-    public MarketParticipantOrder(int userID, String name, int orderID, Date time, Direction direction, String tickerSymbol, int size,
+    public MarketParticipantOrder(int sessionID, int userID, String name, int orderID, Date time, Direction direction, String tickerSymbol, int size,
                                   double price, OrderType orderType, OrderDuration orderDuration)
     {
+        this.sessionID = sessionID;
         this.userID = userID;
         this.name = name;
         this.orderID = orderID;
@@ -83,5 +85,9 @@ public class MarketParticipantOrder implements Comparable<MarketParticipantOrder
 
     public String getReason() {
         return "";
+    }
+
+    public int getSessionID() {
+        return sessionID;
     }
 }

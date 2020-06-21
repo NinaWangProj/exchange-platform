@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class OrderDTO {
+public class OrderDTO implements Transferable{
 
     private final Direction direction;
     private final String tickerSymbol;
@@ -32,24 +32,24 @@ public class OrderDTO {
     {
         try {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                outputStream.write(direction.getByteValue());
+                outputStream.write(getDirection().getByteValue());
 
-                outputStream.write(orderType.getByteValue());
+                outputStream.write(getOrderType().getByteValue());
 
-                byte[] tickerSymbolByte = tickerSymbol.getBytes();
+                byte[] tickerSymbolByte = getTickerSymbol().getBytes();
                 byte tickerSize = (byte)tickerSymbolByte.length;
                 outputStream.write(tickerSize);
                 outputStream.write(tickerSymbolByte);
 
-                byte[] sizeByte = ByteBuffer.allocate(4).putInt(size).array();
+                byte[] sizeByte = ByteBuffer.allocate(4).putInt(getSize()).array();
                 outputStream.write(sizeByte);
 
 
-                byte[] priceByte = ByteBuffer.allocate(8).order(ByteOrder.nativeOrder()).putDouble(price).array();
+                byte[] priceByte = ByteBuffer.allocate(8).order(ByteOrder.nativeOrder()).putDouble(getPrice()).array();
                 outputStream.write(priceByte);
 
 
-                outputStream.write(orderDuration.getByteValue());
+                outputStream.write(getOrderDuration().getByteValue());
 
                 orderDTOByteArray = outputStream.toByteArray();
 
@@ -85,5 +85,29 @@ public class OrderDTO {
         OrderDTO orderDTO = new OrderDTO(directionT, orderTypeT, tickerSymbolT, sizeT, priceT, orderDurationT);
 
         return orderDTO;
+    }
+
+    public String getTickerSymbol() {
+        return tickerSymbol;
+    }
+
+    public Direction getDirection() {
+        return direction;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public OrderDuration getOrderDuration() {
+        return orderDuration;
+    }
+
+    public OrderType getOrderType() {
+        return orderType;
     }
 }

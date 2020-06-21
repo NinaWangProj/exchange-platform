@@ -7,17 +7,15 @@ import java.util.HashMap;
 
 public class ClearingEngine {
     //field
-    ArrayList<Transaction> transactions;
     DTCCWarehouse dtccWarehouse;
 
     //constructors
-    public ClearingEngine(ArrayList<Transaction> transactions,DTCCWarehouse dtccWarehouse) {
-        this.transactions = transactions;
+    public ClearingEngine(DTCCWarehouse dtccWarehouse) {
         this.dtccWarehouse = dtccWarehouse;
     }
 
     //public methods
-    public ClearingStatus ClearTrade(){
+    public ClearingStatus ClearTrade(ArrayList<Transaction> transactions){
         HashMap<String, HashMap<Integer,SecurityCertificate>> certificatesMap = dtccWarehouse.certificatesMap;
 
         for(Transaction transaction : transactions){

@@ -4,6 +4,7 @@ import java.util.Date;
 
 public class Transaction implements Info {
     //fields
+    private final int sessionID;
     private final int userID;
     private final String name;
     public final long transactionID;
@@ -16,9 +17,10 @@ public class Transaction implements Info {
 
 
     //constructor
-    public Transaction(int userID, String name, long transactionID, int orderID, Date time, Direction direction, String tickerSymbol, int size,
+    public Transaction(int sessionID, int userID, String name, long transactionID, int orderID, Date time, Direction direction, String tickerSymbol, int size,
                        double price)
     {
+        this.sessionID = sessionID;
         this.userID = userID;
         this.name = name;
         this.transactionID = transactionID;
@@ -64,5 +66,9 @@ public class Transaction implements Info {
 
     public String getReason() {
         return "";
+    }
+
+    public int getSessionID() {
+        return sessionID;
     }
 }

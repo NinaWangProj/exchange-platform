@@ -3,49 +3,37 @@ package nw.ExchangePlatform.wrapper;
 import nw.ExchangePlatform.data.DTOType;
 import nw.ExchangePlatform.data.MarketParticipantOrder;
 import nw.ExchangePlatform.data.OrderDTO;
+import nw.ExchangePlatform.data.Transferable;
 
 import java.io.InputStream;
 
-public class ClientReader implements Runnable{
+public class ClientReader {
     private InputStream inputStream;
-    private OrderQueue orderQueue;
 
-    public ClientReader(InputStream inputStream,OrderQueue orderQueue) {
+    public ClientReader(InputStream inputStream) {
         this.inputStream = inputStream;
-        this.orderQueue = orderQueue;
     }
 
-    public void ReadRequestFromClient() throws Exception{
-        int nextByte= inputStream.read();
+    public Transferable ReadRequestFromClient() throws Exception {
+        int nextByte = inputStream.read();
+        Transferable DTO = null;
 
-        while (nextByte != -1) {
+        if(nextByte != -1) {
             DTOType dtoType = DTOType.valueOf(nextByte);
 
             switch (dtoType) {
                 case ORDER:
                     int byteSizeOfDTO = inputStream.read();
                     byte[] orderDTOByteArray = new byte[byteSizeOfDTO];
-                    inputStream.read(orderDTOByteArray,0,byteSizeOfDTO);
+                    inputStream.read(orderDTOByteArray, 0, byteSizeOfDTO);
                     OrderDTO orderDTO = OrderDTO.Deserialize(orderDTOByteArray);
+                    DTO = orderDTO;
 
-                    //convert OrderDTO to MarketParticipantOrder
-                    //MarketParticipantOrder mporder = new MarketParticipantOrder();
-                    //place order in Queue
-                    //orderQueue.AddOrderToQueue(mporder);
-
-                case CONFIG:
+                    //case CONFIG:
                     //need to implement later
-
             }
-            nextByte = inputStream.read();
         }
-    }
 
-    public void run() {
-        try {
-            ReadRequestFromClient();
-        } catch (Exception e) {
-
-        }
+        return DTO;
     }
 }
