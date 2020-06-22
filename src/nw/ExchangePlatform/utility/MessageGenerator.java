@@ -26,12 +26,12 @@ public class MessageGenerator {
 
     public static void GenerateMessagesPerOutputType (HashMap<Integer, ArrayList<String>> userMessengerMap, MessageType messageType, ArrayList<? extends Info> TradingOutputs) {
         for (Info tradingOutput : TradingOutputs) {
-            int UserID = tradingOutput.getUserID();
-            if (!userMessengerMap.containsKey(UserID)) {
-                userMessengerMap.put(UserID, new ArrayList<String>());
+            int sessionID = tradingOutput.getSessionID();
+            if (!userMessengerMap.containsKey(sessionID)) {
+                userMessengerMap.put(sessionID, new ArrayList<String>());
             }
             String message = GenerateMessage(messageType,tradingOutput);
-            userMessengerMap.get(UserID).add(message);
+            userMessengerMap.get(sessionID).add(message);
         }
     }
 

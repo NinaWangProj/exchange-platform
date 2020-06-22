@@ -4,7 +4,8 @@ import java.util.HashMap;
 
 public enum DTOType {
     ORDER(1),
-    CONFIG(2);
+    CONFIG(2),
+    MessageToClient(3);
 
     private final int value;
     private final byte byteValue;

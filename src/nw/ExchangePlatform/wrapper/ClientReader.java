@@ -1,14 +1,14 @@
 package nw.ExchangePlatform.wrapper;
 
 import nw.ExchangePlatform.data.DTOType;
-import nw.ExchangePlatform.data.MarketParticipantOrder;
 import nw.ExchangePlatform.data.OrderDTO;
 import nw.ExchangePlatform.data.Transferable;
 
 import java.io.InputStream;
 
-public class ClientReader {
+public class ClientReader implements Runnable{
     private InputStream inputStream;
+    private Session observer;
 
     public ClientReader(InputStream inputStream) {
         this.inputStream = inputStream;
@@ -35,5 +35,32 @@ public class ClientReader {
         }
 
         return DTO;
+    }
+
+    private void Start() throws Exception {
+        boolean readerFlag = true;
+
+        while (readerFlag) {
+            Transferable DTO = ReadRequestFromClient();
+            NotifyAllObservers(DTO);
+
+            if(DTO.equals(null))
+                readerFlag = false;
+        }
+    }
+
+    private void NotifyAllObservers(Transferable DTO) throws Exception{
+        observer.PutDTOToQueue(DTO);
+    }
+
+    public void Attach(Session session) {
+        observer = session;
+    }
+
+    public void run() {
+        try {
+            Start();
+        } catch (Exception e) {
+        }
     }
 }

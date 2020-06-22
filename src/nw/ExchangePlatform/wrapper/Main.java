@@ -9,7 +9,7 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
         ServerConfig config = new ServerConfig(5,5,
-                5,58673,0);
+                58673,0);
         Server server = new Server(config);
         server.Start();
     }

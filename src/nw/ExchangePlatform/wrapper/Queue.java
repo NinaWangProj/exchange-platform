@@ -3,27 +3,27 @@ package nw.ExchangePlatform.wrapper;
 import javafx.util.Pair;
 import nw.ExchangePlatform.data.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class Queue {
     private final int numberOfOrderQueues;
     private final int numOfEngineResultQueues;
-    private final int numOfClearingEngineResultQueues;
 
     private LinkedBlockingQueue<MarketParticipantOrder>[] orders;
     private LinkedBlockingQueue<TradingOutput>[] tradingEngineResults;
-    private LinkedBlockingQueue<MarketParticipantOrder>[] clearingEngineResults;
+    private ConcurrentHashMap<Integer,LinkedBlockingQueue<ArrayList<String>>> sessionMessagesMap;
 
-    public Queue(int numberOfOrderQueues, int numOfEngineResultQueues, int numOfClearingEngineResultQueues) {
+    public Queue(int numberOfOrderQueues, int numOfEngineResultQueues) {
         //each queue will contain ticker symbols with initial char from a subset of 26 alphabetical letters
         this.numberOfOrderQueues = numberOfOrderQueues;
         this.numOfEngineResultQueues = numOfEngineResultQueues;
-        this.numOfClearingEngineResultQueues = numOfClearingEngineResultQueues;
         orders = new LinkedBlockingQueue[numberOfOrderQueues];
         tradingEngineResults = new LinkedBlockingQueue[numOfEngineResultQueues];
-        clearingEngineResults = new LinkedBlockingQueue[numOfClearingEngineResultQueues];
+        sessionMessagesMap = new ConcurrentHashMap<Integer,LinkedBlockingQueue<ArrayList<String>>>();
     }
 
     public void PutOrder(MarketParticipantOrder order) throws Exception {
@@ -129,10 +129,6 @@ public class Queue {
         return numOfEngineResultQueues;
     }
 
-    public int getNumOfClearingEngineResultQueues() {
-        return numOfClearingEngineResultQueues;
-    }
-
     public LinkedBlockingQueue<TradingOutput>[] getTradingEngineResults() {
         return tradingEngineResults;
     }
@@ -140,5 +136,18 @@ public class Queue {
     public TradingOutput TakeTradingOutput (int clearingEngineGroupID) throws Exception {
         TradingOutput output = tradingEngineResults[clearingEngineGroupID].take();
         return output;
+    }
+
+    public void RegisterSessionWithQueue(int sessionID) {
+        sessionMessagesMap.put(sessionID, new LinkedBlockingQueue<ArrayList<String>>());
+    }
+
+    public void PutMessage (int sessionID, ArrayList<String> message) throws Exception{
+        sessionMessagesMap.get(sessionID).put(message);
+    }
+
+    public ArrayList<String> TakeMessage(int sessionID) throws Exception{
+        ArrayList<String> messages = sessionMessagesMap.get(sessionID).take();
+        return messages;
     }
 }

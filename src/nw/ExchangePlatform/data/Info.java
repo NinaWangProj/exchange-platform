@@ -4,6 +4,7 @@ import java.util.Date;
 
 public interface Info {
 
+    int getSessionID();
     int getUserID();
     String getName();
     int getOrderID();

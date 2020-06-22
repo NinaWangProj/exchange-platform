@@ -7,6 +7,7 @@ import nw.ExchangePlatform.wrapper.Queue;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class ClearingEngineWrapper implements Runnable {
     private Queue systemQueue;
@@ -26,6 +27,10 @@ public class ClearingEngineWrapper implements Runnable {
         clearingEngine.ClearTrade(output.Transactions);
 
         HashMap<Integer, ArrayList<String>> userMessagesMap = MessageGenerator.GenerateMessages(output);
+
+        for(Map.Entry<Integer, ArrayList<String>> pair: userMessagesMap.entrySet()) {
+            systemQueue.PutMessage(pair.getKey(),pair.getValue());
+        }
     }
 
     public void run() {
