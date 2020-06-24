@@ -1,9 +1,13 @@
 package nw.ExchangePlatform.trading;
 
+import javafx.util.Pair;
+import nw.ExchangePlatform.data.MareketDataRequestDTO;
+import nw.ExchangePlatform.data.MarketDataWareHouse;
 import nw.ExchangePlatform.data.MarketParticipantOrder;
 import nw.ExchangePlatform.data.TradingOutput;
 import nw.ExchangePlatform.wrapper.Queue;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TradingEngineGroup implements Runnable{
@@ -11,10 +15,12 @@ public class TradingEngineGroup implements Runnable{
     //tradingEngineGroupID is used as an index to look up the correct order queue in the queue array;
     private final int tradingEngineGroupID;
     private HashMap<String,TradingEngine> tradingEngineMap;
+    private MarketDataWareHouse dataWareHouse;
 
-    public TradingEngineGroup (Queue systemQueue, int tradingEngineGroupID) {
+    public TradingEngineGroup (Queue systemQueue, int tradingEngineGroupID, MarketDataWareHouse dataWareHouse) {
         this.systemQueue = systemQueue;
         this.tradingEngineGroupID = tradingEngineGroupID;
+        this.dataWareHouse = dataWareHouse;
     }
 
     public void Start() throws Exception{
@@ -23,7 +29,10 @@ public class TradingEngineGroup implements Runnable{
             String tickerSymbol = order.getTickerSymbol();
 
             if (!tradingEngineMap.containsKey(tickerSymbol)) {
-                TradingEngine tradingEngine = new TradingEngine(tickerSymbol);
+                dataWareHouse.AddNewLimitOrderBook(tickerSymbol);
+                Pair<ArrayList<MarketParticipantOrder>,ArrayList<MarketParticipantOrder>> limitOrderBook
+                        = dataWareHouse.GetLimitOrderBok(tickerSymbol);
+                TradingEngine tradingEngine = new TradingEngine(tickerSymbol,limitOrderBook);
                 tradingEngineMap.put(tickerSymbol,tradingEngine);
             }
             TradingOutput output = tradingEngineMap.get(tickerSymbol).Process(order);

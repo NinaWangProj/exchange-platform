@@ -1,5 +1,6 @@
 package nw.ExchangePlatform.trading;
 
+import javafx.util.Pair;
 import nw.ExchangePlatform.data.*;
 import nw.ExchangePlatform.wrapper.WrapperEngine;
 
@@ -14,8 +15,10 @@ public class TradingEngine{
     ArrayList<MarketParticipantOrder> asks;
 
     //constructor
-    public TradingEngine(String tickerSymbol) {
+    public TradingEngine(String tickerSymbol, Pair<ArrayList<MarketParticipantOrder>,ArrayList<MarketParticipantOrder>> limitOrderBook) {
         this.tickerSymbol = tickerSymbol;
+        this.bids = limitOrderBook.getKey();
+        this.asks = limitOrderBook.getValue();
     }
 
     //public methods

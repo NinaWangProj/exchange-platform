@@ -16,6 +16,7 @@ public class Queue {
     private LinkedBlockingQueue<MarketParticipantOrder>[] orders;
     private LinkedBlockingQueue<TradingOutput>[] tradingEngineResults;
     private ConcurrentHashMap<Integer,LinkedBlockingQueue<ArrayList<String>>> sessionMessagesMap;
+    private ConcurrentHashMap<Integer,LinkedBlockingQueue<Transferable>> sessionResponseDTOMap;
 
     public Queue(int numberOfOrderQueues, int numOfEngineResultQueues) {
         //each queue will contain ticker symbols with initial char from a subset of 26 alphabetical letters
@@ -24,6 +25,7 @@ public class Queue {
         orders = new LinkedBlockingQueue[numberOfOrderQueues];
         tradingEngineResults = new LinkedBlockingQueue[numOfEngineResultQueues];
         sessionMessagesMap = new ConcurrentHashMap<Integer,LinkedBlockingQueue<ArrayList<String>>>();
+        sessionResponseDTOMap = new ConcurrentHashMap<Integer,LinkedBlockingQueue<Transferable>>();
     }
 
     public void PutOrder(MarketParticipantOrder order) throws Exception {
@@ -140,6 +142,7 @@ public class Queue {
 
     public void RegisterSessionWithQueue(int sessionID) {
         sessionMessagesMap.put(sessionID, new LinkedBlockingQueue<ArrayList<String>>());
+        sessionResponseDTOMap.put(sessionID, new LinkedBlockingQueue<Transferable>());
     }
 
     public void PutMessage (int sessionID, ArrayList<String> message) throws Exception{
@@ -149,5 +152,14 @@ public class Queue {
     public ArrayList<String> TakeMessage(int sessionID) throws Exception{
         ArrayList<String> messages = sessionMessagesMap.get(sessionID).take();
         return messages;
+    }
+
+    public void PutResponseDTO(int sessionID, Transferable DTO) throws Exception{
+        sessionResponseDTOMap.get(sessionID).put(DTO);
+    }
+
+    public Transferable TakeResponseDTO(int sessionID) throws Exception{
+        Transferable DTO = sessionResponseDTOMap.get(sessionID).take();
+        return DTO;
     }
 }

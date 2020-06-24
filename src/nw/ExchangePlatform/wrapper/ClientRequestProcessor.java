@@ -1,16 +1,17 @@
 package nw.ExchangePlatform.wrapper;
 
 import nw.ExchangePlatform.data.DTOType;
+import nw.ExchangePlatform.data.LoginDTO;
 import nw.ExchangePlatform.data.OrderDTO;
 import nw.ExchangePlatform.data.Transferable;
 
 import java.io.InputStream;
 
-public class ClientReader implements Runnable{
+public class ClientRequestProcessor implements Runnable{
     private InputStream inputStream;
     private Session observer;
 
-    public ClientReader(InputStream inputStream) {
+    public ClientRequestProcessor(InputStream inputStream) {
         this.inputStream = inputStream;
     }
 
@@ -20,17 +21,18 @@ public class ClientReader implements Runnable{
 
         if(nextByte != -1) {
             DTOType dtoType = DTOType.valueOf(nextByte);
+            int byteSizeOfDTO = inputStream.read();
 
             switch (dtoType) {
                 case ORDER:
-                    int byteSizeOfDTO = inputStream.read();
                     byte[] orderDTOByteArray = new byte[byteSizeOfDTO];
                     inputStream.read(orderDTOByteArray, 0, byteSizeOfDTO);
                     OrderDTO orderDTO = OrderDTO.Deserialize(orderDTOByteArray);
                     DTO = orderDTO;
-
-                    //case CONFIG:
-                    //need to implement later
+                case LoginRequest:
+                    byte[] LoginDTOByteArray = new byte[byteSizeOfDTO];
+                    inputStream.read(LoginDTOByteArray, 0, byteSizeOfDTO);
+                    DTO = LoginDTO.Deserialize(LoginDTOByteArray);
             }
         }
 
@@ -50,7 +52,7 @@ public class ClientReader implements Runnable{
     }
 
     private void NotifyAllObservers(Transferable DTO) throws Exception{
-        observer.PutDTOToQueue(DTO);
+        observer.On_ReceivingDTO(DTO);
     }
 
     public void Attach(Session session) {

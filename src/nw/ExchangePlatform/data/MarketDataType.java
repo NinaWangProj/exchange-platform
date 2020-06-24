@@ -2,30 +2,27 @@ package nw.ExchangePlatform.data;
 
 import java.util.HashMap;
 
-public enum DTOType {
-    ORDER(1),
-    CONFIG(2),
-    MESSAGE(3),
-    OpenAcctRequest(4),
-    LoginRequest(5);
+public enum MarketDataType {
+    Level1(1),
+    Level2(2);
 
     private final int value;
     private final byte byteValue;
-    private static final HashMap<Integer,DTOType> map = new HashMap<Integer,DTOType>();
+    private static final HashMap<Integer,MarketDataType> map = new HashMap<Integer,MarketDataType>();
 
-    private DTOType(int value) {
+    private MarketDataType(int value) {
         this.value = value;
         this.byteValue = (byte)value;
     }
 
     //static initialisation block; only run this method once when the class is first loaded;
     static {
-        for (DTOType type : DTOType.values()) {
+        for (MarketDataType type : MarketDataType.values()) {
             map.put(type.value, type);
         }
     }
 
-    public static DTOType valueOf(int typeInteger) {
+    public static MarketDataType valueOf(int typeInteger) {
         return map.get(typeInteger);
     }
 
@@ -33,7 +30,7 @@ public enum DTOType {
         return value;
     }
 
-    public int getByteValue() {
+    public byte getByteValue() {
         return byteValue;
     }
 }
