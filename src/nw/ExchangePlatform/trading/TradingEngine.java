@@ -5,17 +5,16 @@ import nw.ExchangePlatform.data.*;
 import nw.ExchangePlatform.wrapper.WrapperEngine;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 
 public class TradingEngine{
     //fields
     public final String tickerSymbol;
-    ArrayList<MarketParticipantOrder> bids;
-    ArrayList<MarketParticipantOrder> asks;
+    sortedOrderList bids;
+    sortedOrderList asks;
 
     //constructor
-    public TradingEngine(String tickerSymbol, Pair<ArrayList<MarketParticipantOrder>,ArrayList<MarketParticipantOrder>> limitOrderBook) {
+    public TradingEngine(String tickerSymbol, Pair<sortedOrderList,sortedOrderList> limitOrderBook) {
         this.tickerSymbol = tickerSymbol;
         this.bids = limitOrderBook.getKey();
         this.asks = limitOrderBook.getValue();
@@ -51,8 +50,8 @@ public class TradingEngine{
         ArrayList<Transaction> transactions = new ArrayList<>();
         ArrayList<UnfilledOrder> unfilledOrders = new ArrayList<>();
         ArrayList<PendingOrder> pendingOrders = new ArrayList<>();
-        ArrayList<MarketParticipantOrder> counterPartyLimitOrderBook = new ArrayList<>();
-        ArrayList<MarketParticipantOrder> currentLimitOrderBook = new ArrayList<>();
+        sortedOrderList counterPartyLimitOrderBook = new sortedOrderList();
+        sortedOrderList currentLimitOrderBook = new sortedOrderList();
 
         switch (order.getDirection()) {
             case BUY:
@@ -76,7 +75,7 @@ public class TradingEngine{
         return new TradingOutput(transactions, unfilledOrders,pendingOrders);
     }
 
-    private boolean FillMarketOrder(MarketParticipantOrder order, ArrayList<MarketParticipantOrder> counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
+    private boolean FillMarketOrder(MarketParticipantOrder order, sortedOrderList counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
                                     ArrayList<UnfilledOrder> unfilledOrders) {
         boolean active;
 
@@ -117,7 +116,7 @@ public class TradingEngine{
         return active;
     }
 
-    private boolean FillLimitOrder(MarketParticipantOrder order, ArrayList<MarketParticipantOrder> currentLimitOrderBook, ArrayList<MarketParticipantOrder> counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
+    private boolean FillLimitOrder(MarketParticipantOrder order, sortedOrderList currentLimitOrderBook, sortedOrderList counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
                                    ArrayList<UnfilledOrder> unfilledOrders, ArrayList<PendingOrder> pendingOrders) {
         boolean active;
 
@@ -125,7 +124,7 @@ public class TradingEngine{
         if(counterPartyLimitOrderBook == null  || !CheckTradeViability(order, counterPartyLimitOrderBook.get(0))) {
             //add limit order to limit order book:
             currentLimitOrderBook.add(order);
-            Collections.sort(currentLimitOrderBook);
+            //Collections.sort(currentLimitOrderBook);
 
             PendingOrder pendingOrder = new PendingOrder(order, "Your order has been processed. Will notify you when we find a match");
             pendingOrders.add(pendingOrder);

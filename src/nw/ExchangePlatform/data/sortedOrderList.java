@@ -2,19 +2,19 @@ package nw.ExchangePlatform.data;
 
 import java.util.ArrayList;
 
-public class OrderDataWareHouse {
+public class sortedOrderList {
     public ArrayList<MarketParticipantOrder> sortedList;
     public ChangeTracker tracker;
 
-    public OrderDataWareHouse() {
-
+    public sortedOrderList() {
+        sortedList = new ArrayList<MarketParticipantOrder>();
     }
 
-    public void get(int ithElement) {
-
+    public MarketParticipantOrder get(int ithElement) {
+        return sortedList.get(ithElement);
     }
 
-    public void remove() {
+    public void remove(int ithElement) {
 
     }
 

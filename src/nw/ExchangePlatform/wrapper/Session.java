@@ -93,7 +93,7 @@ public class Session implements Runnable {
             MarketDataType type = marketDataRequestDTO.getDataType();
             boolean found = dataWareHouse.ValidateRequest(tickerSymbol);
             if(found) {
-                Pair<ArrayList<MarketParticipantOrder>,ArrayList<MarketParticipantOrder>> marketData =
+                Pair<sortedOrderList,sortedOrderList> marketData =
                         dataWareHouse.GetMarketData(tickerSymbol,type);
                 //Create market data dto and put into queue
 

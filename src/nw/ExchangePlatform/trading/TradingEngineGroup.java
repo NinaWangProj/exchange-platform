@@ -1,13 +1,12 @@
 package nw.ExchangePlatform.trading;
 
 import javafx.util.Pair;
-import nw.ExchangePlatform.data.MareketDataRequestDTO;
 import nw.ExchangePlatform.data.MarketDataWareHouse;
 import nw.ExchangePlatform.data.MarketParticipantOrder;
 import nw.ExchangePlatform.data.TradingOutput;
+import nw.ExchangePlatform.data.sortedOrderList;
 import nw.ExchangePlatform.wrapper.Queue;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 public class TradingEngineGroup implements Runnable{
@@ -30,8 +29,8 @@ public class TradingEngineGroup implements Runnable{
 
             if (!tradingEngineMap.containsKey(tickerSymbol)) {
                 dataWareHouse.AddNewLimitOrderBook(tickerSymbol);
-                Pair<ArrayList<MarketParticipantOrder>,ArrayList<MarketParticipantOrder>> limitOrderBook
-                        = dataWareHouse.GetLimitOrderBok(tickerSymbol);
+                Pair<sortedOrderList,sortedOrderList> limitOrderBook
+                        = dataWareHouse.GetLimitOrderBook(tickerSymbol);
                 TradingEngine tradingEngine = new TradingEngine(tickerSymbol,limitOrderBook);
                 tradingEngineMap.put(tickerSymbol,tradingEngine);
             }

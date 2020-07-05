@@ -33,10 +33,6 @@ public class Server{
         DTCCWarehouse DTCC = new DTCCWarehouse();
         ClearingEngineManager clearingEngineManager = new ClearingEngineManager(systemQueue,DTCC);
         clearingEngineManager.Start();
-
-
-
-
     }
 }
 

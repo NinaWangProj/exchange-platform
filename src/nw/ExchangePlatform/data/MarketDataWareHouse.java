@@ -2,15 +2,14 @@ package nw.ExchangePlatform.data;
 
 import javafx.util.Pair;
 
-import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MarketDataWareHouse {
     //<tickerSymbol,<bids,asks>>
-    private ConcurrentHashMap<String, Pair<OrderDataWareHouse, OrderDataWareHouse>> limitOrderBooks;
+    private ConcurrentHashMap<String, Pair<sortedOrderList, sortedOrderList>> limitOrderBooks;
 
     public MarketDataWareHouse() {
-        limitOrderBooks = new ConcurrentHashMap<String, Pair<OrderDataWareHouse, OrderDataWareHouse>>();
+        limitOrderBooks = new ConcurrentHashMap<String, Pair<sortedOrderList, sortedOrderList>>();
     }
 
     public boolean ValidateRequest(String tickerSymbol) {
@@ -21,19 +20,18 @@ public class MarketDataWareHouse {
         return found;
     }
 
-    public Pair<OrderDataWareHouse, OrderDataWareHouse> GetLimitOrderBook(String tickerSymbol) {
+    public Pair<sortedOrderList, sortedOrderList> GetLimitOrderBook(String tickerSymbol) {
         return limitOrderBooks.get(tickerSymbol);
     }
 
     public void AddNewLimitOrderBook(String tickerSymbol) {
-        limitOrderBooks.put(tickerSymbol, new Pair(new ArrayList<MarketParticipantOrder>(),
-                new ArrayList<MarketParticipantOrder>()));
+        limitOrderBooks.put(tickerSymbol, new Pair<>(new sortedOrderList(),new sortedOrderList()));
     }
 
-    public Pair<OrderDataWareHouse, OrderDataWareHouse> GetMarketData
+    public Pair<sortedOrderList, sortedOrderList> GetMarketData
             (String tickerSymbol, MarketDataType type) {
-        Pair<OrderDataWareHouse, OrderDataWareHouse> marketData =
-                new Pair<>(new OrderDataWareHouse(),new OrderDataWareHouse());
+        Pair<sortedOrderList, sortedOrderList> marketData =
+                new Pair<>(new sortedOrderList(),new sortedOrderList());
         switch (type) {
             case Level1:
                 marketData.getKey().add(limitOrderBooks.get(tickerSymbol).getKey().get(0));
