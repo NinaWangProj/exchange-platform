@@ -1,5 +1,7 @@
 package nw.ExchangePlatform.data;
 
+import javafx.util.Pair;
+
 import java.util.ArrayList;
 
 public class sortedOrderList {
@@ -8,14 +10,18 @@ public class sortedOrderList {
 
     public sortedOrderList() {
         sortedList = new ArrayList<MarketParticipantOrder>();
+        tracker = new ChangeTracker();
     }
 
     public MarketParticipantOrder get(int ithElement) {
-        return sortedList.get(ithElement);
+        MarketParticipantOrder order = sortedList.get(ithElement);
+        tracker.SaveChanges(BookOperation.GET,ithElement);
+        return order;
     }
 
     public void remove(int ithElement) {
-
+        sortedList.remove(ithElement);
+        tracker.SaveChanges(BookOperation.REMOVE,ithElement);
     }
 
     public void add(MarketParticipantOrder order) {
@@ -23,15 +29,7 @@ public class sortedOrderList {
 
     }
 
-    public void PersistChangeRecord() {
-
-    }
-
-    public void GetChanges() {
-
-    }
-
-    public void GetBookSnapShot() {
-
+    public ArrayList<Pair<BookOperation, Object>> GetChanges() {
+        return tracker.getBookChanges();
     }
 }
