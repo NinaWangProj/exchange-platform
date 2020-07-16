@@ -1,30 +1,30 @@
 package nw.ExchangePlatform.trading;
 
 import javafx.util.Pair;
-import nw.ExchangePlatform.data.MarketDataWareHouse;
-import nw.ExchangePlatform.data.MarketParticipantOrder;
-import nw.ExchangePlatform.data.TradingOutput;
-import nw.ExchangePlatform.data.sortedOrderList;
-import nw.ExchangePlatform.wrapper.Queue;
+import nw.ExchangePlatform.commonData.limitOrderBook.LimitOrderBookWareHouse;
+import nw.ExchangePlatform.trading.data.MarketParticipantOrder;
+import nw.ExchangePlatform.trading.data.TradingOutput;
+import nw.ExchangePlatform.commonData.limitOrderBook.sortedOrderList;
+import nw.ExchangePlatform.commonData.ServerQueue;
 
 import java.util.HashMap;
 
 public class TradingEngineGroup implements Runnable{
-    private Queue systemQueue;
+    private ServerQueue systemServerQueue;
     //tradingEngineGroupID is used as an index to look up the correct order queue in the queue array;
     private final int tradingEngineGroupID;
     private HashMap<String,TradingEngine> tradingEngineMap;
-    private MarketDataWareHouse dataWareHouse;
+    private LimitOrderBookWareHouse dataWareHouse;
 
-    public TradingEngineGroup (Queue systemQueue, int tradingEngineGroupID, MarketDataWareHouse dataWareHouse) {
-        this.systemQueue = systemQueue;
+    public TradingEngineGroup (ServerQueue systemServerQueue, int tradingEngineGroupID, LimitOrderBookWareHouse dataWareHouse) {
+        this.systemServerQueue = systemServerQueue;
         this.tradingEngineGroupID = tradingEngineGroupID;
         this.dataWareHouse = dataWareHouse;
     }
 
     public void Start() throws Exception{
         while(true) {
-            MarketParticipantOrder order = systemQueue.TakeOrder(tradingEngineGroupID);
+            MarketParticipantOrder order = systemServerQueue.TakeOrder(tradingEngineGroupID);
             String tickerSymbol = order.getTickerSymbol();
 
             if (!tradingEngineMap.containsKey(tickerSymbol)) {
@@ -35,7 +35,7 @@ public class TradingEngineGroup implements Runnable{
                 tradingEngineMap.put(tickerSymbol,tradingEngine);
             }
             TradingOutput output = tradingEngineMap.get(tickerSymbol).Process(order);
-            systemQueue.PutTradingResult(output);
+            systemServerQueue.PutTradingResult(output);
         }
     }
 

@@ -1,13 +1,13 @@
 package nw.ExchangePlatform.client;
 
-import nw.ExchangePlatform.data.Direction;
-import nw.ExchangePlatform.data.OrderDuration;
+import nw.ExchangePlatform.trading.data.Direction;
+import nw.ExchangePlatform.trading.data.OrderDuration;
 import org.junit.jupiter.api.Test;
 
 public class ExchangeClientTest {
 
     @Test
-    public void ClientTest(){
+    public void ClientSubmitOrderTest(){
         ExchangeClient client = new ExchangeClient();
         boolean connected = client.ConnectWithServer();
 

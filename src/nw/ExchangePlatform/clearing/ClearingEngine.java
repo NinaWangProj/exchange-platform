@@ -1,6 +1,10 @@
 package nw.ExchangePlatform.clearing;
 
-import nw.ExchangePlatform.data.*;
+import nw.ExchangePlatform.clearing.data.DTCCWarehouse;
+import nw.ExchangePlatform.clearing.data.MarketParticipantPortfolio;
+import nw.ExchangePlatform.clearing.data.SecurityCertificate;
+import nw.ExchangePlatform.trading.data.Transaction;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -16,7 +20,7 @@ public class ClearingEngine {
 
     //public methods
     public ClearingStatus ClearTrade(ArrayList<Transaction> transactions){
-        HashMap<String, HashMap<Integer,SecurityCertificate>> certificatesMap = dtccWarehouse.certificatesMap;
+        HashMap<String, HashMap<Integer, SecurityCertificate>> certificatesMap = dtccWarehouse.certificatesMap;
 
         for(Transaction transaction : transactions){
             ClearTransactionWithDTCCWarehouse(transaction, certificatesMap);

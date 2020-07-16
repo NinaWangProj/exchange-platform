@@ -1,10 +1,10 @@
 package nw.ExchangePlatform.utility;
 
-import nw.ExchangePlatform.data.*;
+import nw.ExchangePlatform.commonData.*;
+import nw.ExchangePlatform.trading.data.TradingOutput;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 public class MessageGenerator {
 

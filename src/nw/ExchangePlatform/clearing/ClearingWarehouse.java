@@ -1,7 +1,7 @@
 package nw.ExchangePlatform.clearing;
 
-import nw.ExchangePlatform.data.DTCCWarehouse;
-import nw.ExchangePlatform.data.Transaction;
+import nw.ExchangePlatform.clearing.data.DTCCWarehouse;
+import nw.ExchangePlatform.trading.data.Transaction;
 
 import java.util.ArrayList;
 

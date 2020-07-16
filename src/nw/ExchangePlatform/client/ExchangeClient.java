@@ -1,6 +1,10 @@
 package nw.ExchangePlatform.client;
 
-import nw.ExchangePlatform.data.*;
+import nw.ExchangePlatform.commonData.DTO.DTOType;
+import nw.ExchangePlatform.commonData.DTO.OrderDTO;
+import nw.ExchangePlatform.trading.data.Direction;
+import nw.ExchangePlatform.trading.data.OrderDuration;
+import nw.ExchangePlatform.trading.data.OrderType;
 
 import java.io.*;
 import java.net.*;
@@ -29,7 +33,7 @@ public class ExchangeClient {
     }
 
     public void SubmitMarketOrder(Direction direction, String tickerSymbol, int size, OrderDuration orderDuration) {
-        OrderDTO marketOrder = new OrderDTO(direction,OrderType.MARKETORDER,tickerSymbol,size,-1,orderDuration);
+        OrderDTO marketOrder = new OrderDTO(direction, OrderType.MARKETORDER,tickerSymbol,size,-1,orderDuration);
 
         TransmitOrderDTO(marketOrder);
     }
@@ -44,7 +48,7 @@ public class ExchangeClient {
         try {
             OutputStream outputStream = clientSocket.getOutputStream();
             //write header for the DTO: DTO type(1 byte); DTO size (1 byte);
-            DTOType type = DTOType.ORDER;
+            DTOType type = DTOType.Order;
             outputStream.write(type.getByteValue());
             outputStream.write((byte)orderDTOByteArray.length);
             outputStream.write(orderDTOByteArray);
@@ -52,7 +56,7 @@ public class ExchangeClient {
         }
     }
 
-    public void SubmitSessionConfig() {
+    public void SubmitMarketDataRequest() {
 
     }
 
