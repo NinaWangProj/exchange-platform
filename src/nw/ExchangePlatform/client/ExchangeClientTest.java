@@ -1,7 +1,7 @@
 package nw.ExchangePlatform.client;
 
-import nw.ExchangePlatform.trading.data.Direction;
-import nw.ExchangePlatform.trading.data.OrderDuration;
+import nw.ExchangePlatform.commonData.Order.Direction;
+import nw.ExchangePlatform.commonData.Order.OrderDuration;
 import org.junit.jupiter.api.Test;
 
 public class ExchangeClientTest {

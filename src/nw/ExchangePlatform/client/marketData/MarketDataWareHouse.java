@@ -1,6 +1,4 @@
-package nw.ExchangePlatform.commonData.marketData;
-
-import javafx.util.Pair;
+package nw.ExchangePlatform.client.marketData;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -1,7 +1,6 @@
 package nw.ExchangePlatform.client;
 
 import nw.ExchangePlatform.commonData.DTO.*;
-import nw.ExchangePlatform.server.session.Session;
 
 import java.io.InputStream;
 

@@ -1,5 +1,9 @@
 package nw.ExchangePlatform.trading.data;
 
+import nw.ExchangePlatform.commonData.Order.Direction;
+import nw.ExchangePlatform.commonData.Order.OrderDuration;
+import nw.ExchangePlatform.commonData.Order.OrderType;
+
 import java.util.Date;
 
 public class UnfilledOrder extends MarketParticipantOrder {

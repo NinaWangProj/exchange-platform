@@ -2,7 +2,7 @@ package nw.ExchangePlatform.server.session;
 
 import nw.ExchangePlatform.clearing.data.CredentialWareHouse;
 import nw.ExchangePlatform.commonData.ServerQueue;
-import nw.ExchangePlatform.commonData.limitOrderBook.LimitOrderBookWareHouse;
+import nw.ExchangePlatform.trading.limitOrderBook.LimitOrderBookWareHouse;
 
 import java.net.ServerSocket;
 import java.net.Socket;

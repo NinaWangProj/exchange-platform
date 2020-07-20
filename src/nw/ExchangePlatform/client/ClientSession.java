@@ -1,15 +1,9 @@
 package nw.ExchangePlatform.client;
 
-import javafx.util.Pair;
-import nw.ExchangePlatform.commonData.DTO.MareketDataRequestDTO;
 import nw.ExchangePlatform.commonData.DTO.MarketDataDTO;
 import nw.ExchangePlatform.commonData.DTO.MessageDTO;
 import nw.ExchangePlatform.commonData.DTO.Transferable;
-import nw.ExchangePlatform.commonData.limitOrderBook.sortedOrderList;
-import nw.ExchangePlatform.commonData.marketData.MarketData;
-import nw.ExchangePlatform.commonData.marketData.MarketDataType;
-import nw.ExchangePlatform.commonData.marketData.MarketDataWareHouse;
-import nw.ExchangePlatform.server.session.ClientRequestProcessor;
+import nw.ExchangePlatform.client.marketData.MarketDataWareHouse;
 
 import java.net.Socket;
 

@@ -1,8 +1,6 @@
-package nw.ExchangePlatform.commonData.limitOrderBook;
+package nw.ExchangePlatform.trading.limitOrderBook;
 
 import javafx.util.Pair;
-import nw.ExchangePlatform.commonData.limitOrderBook.BookOperation;
-import nw.ExchangePlatform.commonData.limitOrderBook.OrderComparator;
 import nw.ExchangePlatform.trading.data.MarketParticipantOrder;
 
 import java.util.ArrayList;

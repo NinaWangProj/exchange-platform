@@ -1,11 +1,4 @@
-package nw.ExchangePlatform.commonData.marketData;
-
-import nw.ExchangePlatform.trading.data.Direction;
-import nw.ExchangePlatform.trading.data.OrderDuration;
-import nw.ExchangePlatform.trading.data.OrderType;
-
-import java.util.ArrayList;
-import java.util.Date;
+package nw.ExchangePlatform.client.marketData;
 
 public class MarketDataItem {
     private final String tickerSymbol;

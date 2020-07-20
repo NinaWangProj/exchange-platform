@@ -1,7 +1,7 @@
-package nw.ExchangePlatform.commonData.limitOrderBook;
+package nw.ExchangePlatform.trading.limitOrderBook;
 
 import javafx.util.Pair;
-import nw.ExchangePlatform.commonData.marketData.*;
+import nw.ExchangePlatform.commonData.MarketDataType;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,7 +35,7 @@ public class LimitOrderBookWareHouse {
         limitOrderBooks.put(tickerSymbol, new Pair<>(new sortedOrderList(bidComparator),new sortedOrderList(askComparator)));
     }
 
-    public Pair<sortedOrderList, sortedOrderList> GetMarketData
+    public Pair<sortedOrderList, sortedOrderList> GetLimitOrderBook
             (String tickerSymbol, MarketDataType type) {
         Pair<sortedOrderList, sortedOrderList> marketData =
                 new Pair<>(new sortedOrderList(),new sortedOrderList());

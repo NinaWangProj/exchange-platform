@@ -1,7 +1,7 @@
 package nw.ExchangePlatform.server;
 
 import nw.ExchangePlatform.commonData.ServerQueue;
-import nw.ExchangePlatform.commonData.limitOrderBook.LimitOrderBookWareHouse;
+import nw.ExchangePlatform.trading.limitOrderBook.LimitOrderBookWareHouse;
 import nw.ExchangePlatform.trading.TradingEngineGroup;
 
 public class TradingEngineManager{

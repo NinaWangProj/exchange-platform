@@ -4,9 +4,9 @@ import javafx.util.Pair;
 import nw.ExchangePlatform.clearing.data.CredentialWareHouse;
 import nw.ExchangePlatform.commonData.DTO.*;
 import nw.ExchangePlatform.commonData.ServerQueue;
-import nw.ExchangePlatform.commonData.marketData.MarketDataType;
-import nw.ExchangePlatform.commonData.limitOrderBook.LimitOrderBookWareHouse;
-import nw.ExchangePlatform.commonData.limitOrderBook.sortedOrderList;
+import nw.ExchangePlatform.commonData.MarketDataType;
+import nw.ExchangePlatform.trading.limitOrderBook.LimitOrderBookWareHouse;
+import nw.ExchangePlatform.trading.limitOrderBook.sortedOrderList;
 import nw.ExchangePlatform.trading.data.MarketParticipantOrder;
 
 import java.net.Socket;
@@ -21,19 +21,19 @@ public class Session implements Runnable {
     private String clientUserName;
     private ServerQueue serverQueue;
     private CredentialWareHouse credentialWareHouse;
-    private LimitOrderBookWareHouse dataWareHouse;
+    private LimitOrderBookWareHouse limitOrderBookWareHouse;
     public static AtomicInteger currentAvailableOrderID;
 
     static {
         currentAvailableOrderID = null;
     }
     public Session(Socket clientSocket, int sessionID, ServerQueue serverQueue, int baseOrderID,
-                   CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse dataWareHouse) {
+                   CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse limitOrderBookWareHouse) {
         this.clientSocket = clientSocket;
         this.sessionID = sessionID;
         this.serverQueue = serverQueue;
         this.credentialWareHouse = credentialWareHouse;
-        this.dataWareHouse = dataWareHouse;
+        this.limitOrderBookWareHouse = limitOrderBookWareHouse;
         if(currentAvailableOrderID == null) {
             currentAvailableOrderID = new AtomicInteger(baseOrderID);
         }
@@ -94,13 +94,13 @@ public class Session implements Runnable {
         }
 
         if(Class.forName("MareketDataRequestDTO").isInstance(DTO)) {
-            MareketDataRequestDTO marketDataRequestDTO = (MareketDataRequestDTO)DTO;
+            MarketDataRequestDTO marketDataRequestDTO = (MarketDataRequestDTO)DTO;
             String tickerSymbol = marketDataRequestDTO.getTickerSymbol();
             MarketDataType type = marketDataRequestDTO.getDataType();
-            boolean found = dataWareHouse.ValidateRequest(tickerSymbol);
+            boolean found = limitOrderBookWareHouse.ValidateRequest(tickerSymbol);
             if(found) {
                 Pair<sortedOrderList,sortedOrderList> marketData =
-                        dataWareHouse.GetMarketData(tickerSymbol,type);
+                        limitOrderBookWareHouse.GetLimitOrderBook(tickerSymbol,type);
                 //Create market data dto and put into queue
                 MarketDataDTO marketDataDTO = new MarketDataDTO(tickerSymbol, marketData);
                 serverQueue.PutResponseDTO(sessionID,marketDataDTO);

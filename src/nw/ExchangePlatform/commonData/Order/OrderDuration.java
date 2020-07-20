@@ -1,4 +1,4 @@
-package nw.ExchangePlatform.trading.data;
+package nw.ExchangePlatform.commonData.Order;
 
 import java.util.HashMap;
 

@@ -1,6 +1,6 @@
 package nw.ExchangePlatform.server;
 
-import nw.ExchangePlatform.commonData.limitOrderBook.OrderComparatorType;
+import nw.ExchangePlatform.trading.limitOrderBook.OrderComparatorType;
 
 public class ServerConfig {
     private final int numOfOrderQueues;

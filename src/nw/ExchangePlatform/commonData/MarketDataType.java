@@ -1,28 +1,28 @@
-package nw.ExchangePlatform.trading.data;
+package nw.ExchangePlatform.commonData;
 
 import java.util.HashMap;
 
-public enum OrderType {
-    MARKETORDER(1),
-    LIMITORDER(2);
+public enum MarketDataType {
+    Level1(1),
+    Level2(2);
 
     private final int value;
     private final byte byteValue;
-    private static final HashMap<Integer,OrderType> map = new HashMap<Integer,OrderType>();
+    private static final HashMap<Integer,MarketDataType> map = new HashMap<Integer,MarketDataType>();
 
-    private OrderType(int value) {
+    private MarketDataType(int value) {
         this.value = value;
         this.byteValue = (byte)value;
     }
 
     //static initialisation block; only run this method once when the class is first loaded;
     static {
-        for (OrderType type : OrderType.values()) {
+        for (MarketDataType type : MarketDataType.values()) {
             map.put(type.value, type);
         }
     }
 
-    public static OrderType valueOf(int typeInteger) {
+    public static MarketDataType valueOf(int typeInteger) {
         return map.get(typeInteger);
     }
 
@@ -30,7 +30,7 @@ public enum OrderType {
         return value;
     }
 
-    public int getByteValue() {
+    public byte getByteValue() {
         return byteValue;
     }
 }

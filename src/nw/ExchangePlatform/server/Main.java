@@ -1,8 +1,6 @@
 package nw.ExchangePlatform.server;
 
-import nw.ExchangePlatform.commonData.limitOrderBook.BidPriceTimeComparator;
-import nw.ExchangePlatform.commonData.limitOrderBook.OrderComparator;
-import nw.ExchangePlatform.commonData.limitOrderBook.OrderComparatorType;
+import nw.ExchangePlatform.trading.limitOrderBook.OrderComparatorType;
 
 public class Main {
 

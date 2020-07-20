@@ -1,16 +1,16 @@
 package nw.ExchangePlatform.commonData.DTO;
 
-import nw.ExchangePlatform.commonData.marketData.MarketDataType;
+import nw.ExchangePlatform.commonData.MarketDataType;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
-public class MareketDataRequestDTO implements Transferable {
+public class MarketDataRequestDTO implements Transferable {
     private final DTOType dtoType;
     private final String tickerSymbol;
     private final MarketDataType dataType;
 
-    public MareketDataRequestDTO(String tickerSymbol,MarketDataType dataType) {
+    public MarketDataRequestDTO(String tickerSymbol, MarketDataType dataType) {
         this.tickerSymbol = tickerSymbol;
         this.dataType = dataType;
         dtoType = DTOType.MareketDataRequest;
@@ -41,7 +41,7 @@ public class MareketDataRequestDTO implements Transferable {
         int typeInteger = inputStream.read();
         MarketDataType typeT = MarketDataType.valueOf(typeInteger);
 
-        MareketDataRequestDTO DTO = new MareketDataRequestDTO(tickerSymbolT,typeT);
+        MarketDataRequestDTO DTO = new MarketDataRequestDTO(tickerSymbolT,typeT);
         return DTO;
     }
 

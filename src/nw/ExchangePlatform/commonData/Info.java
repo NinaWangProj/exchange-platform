@@ -1,6 +1,6 @@
 package nw.ExchangePlatform.commonData;
 
-import nw.ExchangePlatform.trading.data.Direction;
+import nw.ExchangePlatform.commonData.Order.Direction;
 
 import java.util.Date;
 

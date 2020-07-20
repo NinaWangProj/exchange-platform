@@ -1,9 +1,8 @@
 package nw.ExchangePlatform.commonData.DTO;
 
 import javafx.util.Pair;
-import nw.ExchangePlatform.commonData.limitOrderBook.sortedOrderList;
-import nw.ExchangePlatform.commonData.marketData.MarketData;
-import nw.ExchangePlatform.commonData.marketData.MarketDataItem;
+import nw.ExchangePlatform.trading.limitOrderBook.sortedOrderList;
+import nw.ExchangePlatform.client.marketData.MarketDataItem;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

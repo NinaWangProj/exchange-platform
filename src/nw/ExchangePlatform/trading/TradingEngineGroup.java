@@ -1,10 +1,10 @@
 package nw.ExchangePlatform.trading;
 
 import javafx.util.Pair;
-import nw.ExchangePlatform.commonData.limitOrderBook.LimitOrderBookWareHouse;
+import nw.ExchangePlatform.trading.limitOrderBook.LimitOrderBookWareHouse;
 import nw.ExchangePlatform.trading.data.MarketParticipantOrder;
 import nw.ExchangePlatform.trading.data.TradingOutput;
-import nw.ExchangePlatform.commonData.limitOrderBook.sortedOrderList;
+import nw.ExchangePlatform.trading.limitOrderBook.sortedOrderList;
 import nw.ExchangePlatform.commonData.ServerQueue;
 
 import java.util.HashMap;

@@ -1,7 +1,5 @@
 package nw.ExchangePlatform.client;
 
-import nw.ExchangePlatform.commonData.marketData.MarketData;
-
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class ClientQueue {

@@ -1,4 +1,4 @@
-package nw.ExchangePlatform.commonData.marketData;
+package nw.ExchangePlatform.client.marketData;
 
 import java.util.ArrayList;
 

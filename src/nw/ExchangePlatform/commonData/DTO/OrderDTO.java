@@ -1,9 +1,9 @@
 package nw.ExchangePlatform.commonData.DTO;
 
 
-import nw.ExchangePlatform.trading.data.Direction;
-import nw.ExchangePlatform.trading.data.OrderDuration;
-import nw.ExchangePlatform.trading.data.OrderType;
+import nw.ExchangePlatform.commonData.Order.Direction;
+import nw.ExchangePlatform.commonData.Order.OrderDuration;
+import nw.ExchangePlatform.commonData.Order.OrderType;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

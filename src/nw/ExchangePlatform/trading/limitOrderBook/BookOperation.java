@@ -1,4 +1,4 @@
-package nw.ExchangePlatform.commonData.limitOrderBook;
+package nw.ExchangePlatform.trading.limitOrderBook;
 
 import java.util.HashMap;
 

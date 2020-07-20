@@ -1,7 +1,8 @@
 package nw.ExchangePlatform.trading;
 
 import javafx.util.Pair;
-import nw.ExchangePlatform.commonData.limitOrderBook.sortedOrderList;
+import nw.ExchangePlatform.commonData.Order.Direction;
+import nw.ExchangePlatform.trading.limitOrderBook.sortedOrderList;
 import nw.ExchangePlatform.trading.data.*;
 import nw.ExchangePlatform.server.WrapperEngine;
 
