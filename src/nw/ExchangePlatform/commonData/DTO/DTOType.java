@@ -9,7 +9,9 @@ public enum DTOType {
     OpenAcctRequest(4),
     LoginRequest(5),
     MareketDataRequest(6),
-    MarketData(7);
+    MarketData(7),
+    BookChangesDTO(8),
+    MarketDataItem(9);
 
     private final int value;
     private final byte byteValue;

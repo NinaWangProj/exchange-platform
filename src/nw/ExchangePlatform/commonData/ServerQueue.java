@@ -2,6 +2,7 @@ package nw.ExchangePlatform.commonData;
 
 import nw.ExchangePlatform.commonData.DTO.Transferable;
 import nw.ExchangePlatform.trading.data.*;
+import nw.ExchangePlatform.utility.BinSelector;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,9 +31,8 @@ public class ServerQueue {
 
     public void PutOrder(MarketParticipantOrder order) throws Exception {
         String tickerSymbol = order.getTickerSymbol();
-        char tickerSymbolInitialChar = Character.toUpperCase(tickerSymbol.charAt(0));
+        int orderQueueIndex = BinSelector.ChooseAlphabeticalBin(tickerSymbol,getNumberOfOrderQueues());
 
-        int orderQueueIndex = (tickerSymbolInitialChar - 'A') % getNumberOfOrderQueues();
         orders[orderQueueIndex].put(order);
     }
 

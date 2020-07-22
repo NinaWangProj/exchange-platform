@@ -19,8 +19,8 @@ public class MarketParticipantOrder implements Info {
     private final String tickerSymbol;
     private int size;
     private final double price;
-    public final OrderType orderType;
-    public final OrderDuration orderDuration;
+    private final OrderType orderType;
+    private final OrderDuration orderDuration;
 
 
     //constructor
@@ -82,5 +82,13 @@ public class MarketParticipantOrder implements Info {
 
     public int getSessionID() {
         return sessionID;
+    }
+
+    public OrderType getOrderType() {
+        return orderType;
+    }
+
+    public OrderDuration getOrderDuration() {
+        return orderDuration;
     }
 }

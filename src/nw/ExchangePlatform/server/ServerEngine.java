@@ -8,6 +8,8 @@ import nw.ExchangePlatform.server.session.SessionManager;
 
 
 import java.net.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class ServerEngine {
     private ServerSocket serverSocket;
@@ -24,19 +26,30 @@ public class ServerEngine {
         serverSocket = new ServerSocket(config.getServerPortID());
         ServerQueue systemServerQueue = new ServerQueue(config.getNumOfOrderQueues(),config.getNumOfEngineResultQueues());
         LimitOrderBookWareHouse limitOrderBookWareHouse = new LimitOrderBookWareHouse(config.getComparatorType());
+        ReadWriteLock[] locks = GenerateSynchronizationLocks(config.getNumOfOrderQueues());
 
         //create session for each client and deserialize client requests
         SessionManager sessionManager = new SessionManager(serverSocket, systemServerQueue, config.getBaseOrderID(),
-                credentialWareHouse, limitOrderBookWareHouse);
+                credentialWareHouse, limitOrderBookWareHouse, locks);
         Thread sessions = new Thread(sessionManager);
         sessions.start();
 
-        TradingEngineManager tradingEngineManager = new TradingEngineManager(systemServerQueue, limitOrderBookWareHouse);
+        TradingEngineManager tradingEngineManager = new TradingEngineManager(systemServerQueue,
+                limitOrderBookWareHouse,locks);
         tradingEngineManager.Start();
 
         DTCCWarehouse DTCC = new DTCCWarehouse();
         ClearingEngineManager clearingEngineManager = new ClearingEngineManager(systemServerQueue,DTCC);
         clearingEngineManager.Start();
+    }
+
+    private ReadWriteLock[] GenerateSynchronizationLocks(int numOfTradingEngineGroups) {
+        ReadWriteLock[] locks = new ReadWriteLock[numOfTradingEngineGroups];
+        for(int i = 0; i< numOfTradingEngineGroups; i++) {
+            ReadWriteLock lock = new ReentrantReadWriteLock();
+            locks[i] = lock;
+        }
+        return locks;
     }
 }
 

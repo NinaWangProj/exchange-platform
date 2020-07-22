@@ -10,7 +10,7 @@ public class PendingOrder extends MarketParticipantOrder {
     public String pendingMessage;
 
     public PendingOrder(MarketParticipantOrder order, String pendingMessage) {
-        super(order.getSessionID(),order.getUserID(), order.getName(), order.getOrderID(), order.getTime(), order.getDirection(), order.getTickerSymbol(), order.getSize(), order.getPrice(),order.orderType,order.orderDuration);
+        super(order.getSessionID(),order.getUserID(), order.getName(), order.getOrderID(), order.getTime(), order.getDirection(), order.getTickerSymbol(), order.getSize(), order.getPrice(), order.getOrderType(), order.getOrderDuration());
         this.pendingMessage = pendingMessage;
     }
 

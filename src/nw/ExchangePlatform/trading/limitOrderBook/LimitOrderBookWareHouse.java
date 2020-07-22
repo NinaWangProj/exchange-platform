@@ -2,8 +2,10 @@ package nw.ExchangePlatform.trading.limitOrderBook;
 
 import javafx.util.Pair;
 import nw.ExchangePlatform.commonData.MarketDataType;
+import nw.ExchangePlatform.server.session.Session;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReadWriteLock;
 
 public class LimitOrderBookWareHouse {
     //<tickerSymbol,<bids,asks>>
@@ -31,21 +33,27 @@ public class LimitOrderBookWareHouse {
         return limitOrderBooks.get(tickerSymbol);
     }
 
-    public void AddNewLimitOrderBook(String tickerSymbol) {
-        limitOrderBooks.put(tickerSymbol, new Pair<>(new sortedOrderList(bidComparator),new sortedOrderList(askComparator)));
+    public void AddNewLimitOrderBook(String tickerSymbol, ReadWriteLock lock) {
+        limitOrderBooks.put(tickerSymbol, new Pair<>(new sortedOrderList(bidComparator,lock,tickerSymbol),new sortedOrderList(askComparator,lock,tickerSymbol)));
     }
 
     public Pair<sortedOrderList, sortedOrderList> GetLimitOrderBook
-            (String tickerSymbol, MarketDataType type) {
+            (String tickerSymbol, MarketDataType type, Session session) throws Exception{
         Pair<sortedOrderList, sortedOrderList> marketData =
-                new Pair<>(new sortedOrderList(),new sortedOrderList());
+                new Pair<>(new sortedOrderList(bidComparator),new sortedOrderList(askComparator));
         switch (type) {
             case Level1:
                 marketData.getKey().add(limitOrderBooks.get(tickerSymbol).getKey().get(0));
                 marketData.getValue().add(limitOrderBooks.get(tickerSymbol).getValue().get(0));
 
-            case Level2:
+            case Level3:
                 marketData = limitOrderBooks.get(tickerSymbol);
+
+            case ContinuousLevel3:
+                //register session with bid book and ask book to have continuous level 3 data
+                marketData = limitOrderBooks.get(tickerSymbol);
+                limitOrderBooks.get(tickerSymbol).getKey().RegisterSessionForContinuousData(session);
+                limitOrderBooks.get(tickerSymbol).getValue().RegisterSessionForContinuousData(session);
         }
         return marketData;
     }

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 
 public class MarketDataDTO implements Transferable{
     private DTOType dtoType;
-    private Pair<sortedOrderList,sortedOrderList> limitOrderBook;
+    private Pair<sortedOrderList, sortedOrderList> limitOrderBook;
     private String tickerSymbol;
     private byte[] marketDataDTOByteArray;
     private ArrayList<MarketDataItem> bids;
@@ -20,7 +20,7 @@ public class MarketDataDTO implements Transferable{
 
 
 
-    public MarketDataDTO(String tickerSymbol, Pair<sortedOrderList,sortedOrderList> limitOrderBook) {
+    public MarketDataDTO(String tickerSymbol, Pair<sortedOrderList, sortedOrderList> limitOrderBook) {
         this.limitOrderBook = limitOrderBook;
         dtoType = DTOType.MarketData;
         this.tickerSymbol = tickerSymbol;
@@ -95,13 +95,17 @@ public class MarketDataDTO implements Transferable{
         int askSizeT = ByteBuffer.wrap(numOfAsksBuffer).getInt();
 
         if(bidSizeT != 0) {
-            MarketDataItem dataItem = DeserializeDataItem(inputStream, tickerSymbolT);
-            bids.add(dataItem);
+            for(int i = 0; i < bidSizeT; i++) {
+                MarketDataItem dataItem = DeserializeDataItem(inputStream, tickerSymbolT);
+                bids.add(dataItem);
+            }
         }
 
         if(askSizeT != 0) {
-            MarketDataItem dataItem = DeserializeDataItem(inputStream, tickerSymbolT);
-            asks.add(dataItem);
+            for(int j = 0; j < askSizeT; j++) {
+                MarketDataItem dataItem = DeserializeDataItem(inputStream, tickerSymbolT);
+                asks.add(dataItem);
+            }
         }
 
         MarketDataDTO DTO = new MarketDataDTO(bids,asks);

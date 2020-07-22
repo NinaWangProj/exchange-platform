@@ -5,14 +5,18 @@ import nw.ExchangePlatform.clearing.data.CredentialWareHouse;
 import nw.ExchangePlatform.commonData.DTO.*;
 import nw.ExchangePlatform.commonData.ServerQueue;
 import nw.ExchangePlatform.commonData.MarketDataType;
+import nw.ExchangePlatform.trading.limitOrderBook.BookOperation;
 import nw.ExchangePlatform.trading.limitOrderBook.LimitOrderBookWareHouse;
 import nw.ExchangePlatform.trading.limitOrderBook.sortedOrderList;
 import nw.ExchangePlatform.trading.data.MarketParticipantOrder;
+import nw.ExchangePlatform.utility.BinSelector;
 
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReadWriteLock;
 
 public class Session implements Runnable {
     private final int sessionID;
@@ -22,18 +26,20 @@ public class Session implements Runnable {
     private ServerQueue serverQueue;
     private CredentialWareHouse credentialWareHouse;
     private LimitOrderBookWareHouse limitOrderBookWareHouse;
+    private ReadWriteLock[] locks;
     public static AtomicInteger currentAvailableOrderID;
 
     static {
         currentAvailableOrderID = null;
     }
     public Session(Socket clientSocket, int sessionID, ServerQueue serverQueue, int baseOrderID,
-                   CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse limitOrderBookWareHouse) {
+                   CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse limitOrderBookWareHouse,ReadWriteLock[] locks) {
         this.clientSocket = clientSocket;
         this.sessionID = sessionID;
         this.serverQueue = serverQueue;
         this.credentialWareHouse = credentialWareHouse;
         this.limitOrderBookWareHouse = limitOrderBookWareHouse;
+        this.locks = locks;
         if(currentAvailableOrderID == null) {
             currentAvailableOrderID = new AtomicInteger(baseOrderID);
         }
@@ -99,16 +105,32 @@ public class Session implements Runnable {
             MarketDataType type = marketDataRequestDTO.getDataType();
             boolean found = limitOrderBookWareHouse.ValidateRequest(tickerSymbol);
             if(found) {
-                Pair<sortedOrderList,sortedOrderList> marketData =
-                        limitOrderBookWareHouse.GetLimitOrderBook(tickerSymbol,type);
-                //Create market data dto and put into queue
-                MarketDataDTO marketDataDTO = new MarketDataDTO(tickerSymbol, marketData);
-                serverQueue.PutResponseDTO(sessionID,marketDataDTO);
+                Pair<sortedOrderList, sortedOrderList> marketData;
+                int binIndex = BinSelector.ChooseAlphabeticalBin(tickerSymbol, serverQueue.getNumberOfOrderQueues());
 
+                ReadWriteLock lock = locks[binIndex];
+                lock.readLock().lock();
+                try{
+                    marketData = limitOrderBookWareHouse.GetLimitOrderBook(tickerSymbol,type,this);
+                } finally {
+                    lock.readLock().unlock();
+                }
+
+                if(marketData.getKey().size() > 0 || marketData.getValue().size() > 0) {
+                    //Create market data dto and put into queue
+                    MarketDataDTO marketDataDTO = new MarketDataDTO(tickerSymbol, marketData);
+                    serverQueue.PutResponseDTO(sessionID,marketDataDTO);
+                }
             } else {
                 //send message back to client, no market data for the request ticker symbol is found
             }
         }
+    }
+
+    public void On_ReceivingLevel3DataChanges(String tickerSymbol, List<Pair<BookOperation, Object[]>> bookchanges) throws Exception {
+        //Create change DTO and put into queue
+        BookChangesDTO DTO = new BookChangesDTO(tickerSymbol,bookchanges);
+        serverQueue.PutResponseDTO(sessionID, DTO);
     }
 
     public MessageDTO CreateMessageDTOForWriter(String messages) {

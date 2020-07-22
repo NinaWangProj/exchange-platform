@@ -4,7 +4,8 @@ import java.util.HashMap;
 
 public enum MarketDataType {
     Level1(1),
-    Level2(2);
+    Level3(2),
+    ContinuousLevel3(3);
 
     private final int value;
     private final byte byteValue;

@@ -1,24 +1,34 @@
 package nw.ExchangePlatform.trading.limitOrderBook;
 
 import javafx.util.Pair;
+import nw.ExchangePlatform.server.session.ClientResponseProcessor;
+import nw.ExchangePlatform.server.session.Session;
 import nw.ExchangePlatform.trading.data.MarketParticipantOrder;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
 
 public class sortedOrderList {
     public ArrayList<MarketParticipantOrder> sortedList;
-    public ArrayList<Pair<BookOperation, Object[]>> bookChanges;
+    private ChangeTracker tracker;
     private OrderComparator comparator;
+    private ReadWriteLock lock;
+    private String tickerSymbol;
+
+    public sortedOrderList(OrderComparator comparator, ReadWriteLock lock, String tickerSymbol) {
+        sortedList = new ArrayList<MarketParticipantOrder>();
+        this.comparator = comparator;
+        tracker = new ChangeTracker();
+        this.lock = lock;
+        this.tickerSymbol = tickerSymbol;
+    }
 
     public sortedOrderList(OrderComparator comparator) {
         sortedList = new ArrayList<MarketParticipantOrder>();
-        bookChanges = new ArrayList<Pair<BookOperation, Object[]>>();
         this.comparator = comparator;
-    }
-
-    public sortedOrderList() {
-        sortedList = new ArrayList<MarketParticipantOrder>();
-        bookChanges = new ArrayList<Pair<BookOperation, Object[]>>();
+        tracker = new ChangeTracker();
     }
 
     public MarketParticipantOrder get(int ithElement) {
@@ -26,12 +36,17 @@ public class sortedOrderList {
         return order;
     }
 
-    public void remove(int ithElement) {
-        sortedList.remove(ithElement);
-        bookChanges.add(new Pair<BookOperation, Object[]>(BookOperation.REMOVE,new Object[]{ithElement}));
+    public void remove(int ithElement) throws Exception {
+        lock.writeLock().lock();
+        try {
+            sortedList.remove(ithElement);
+            tracker.Add(new Pair<BookOperation, Object[]>(BookOperation.REMOVE, new Object[]{ithElement}));
+        } finally {
+            lock.writeLock().unlock();
+        }
     }
 
-    public void add(MarketParticipantOrder order) {
+    public void add(MarketParticipantOrder order) throws Exception{
         //using bisection to determine where to insert the order
         Boolean iterate = true;
         int listStartIndex = 0;
@@ -42,8 +57,13 @@ public class sortedOrderList {
             int partition = listStartIndex + (listEndIndex - listStartIndex) / 2;
 
             if(listSize == 0) {
-                sortedList.add(0,order);
-                bookChanges.add(new Pair<BookOperation, Object[]>(BookOperation.INSERT,new Object[]{0,order}));
+                lock.writeLock().lock();
+                try {
+                    sortedList.add(0, order);
+                    tracker.Add(new Pair<BookOperation, Object[]>(BookOperation.INSERT, new Object[]{0, order}));
+                } finally {
+                    lock.writeLock().unlock();
+                }
                 break;
             }
 
@@ -55,8 +75,13 @@ public class sortedOrderList {
                 } else {
                     index = partition + 1;
                 }
-                sortedList.add(index, order);
-                bookChanges.add(new Pair<BookOperation, Object[]>(BookOperation.INSERT,new Object[]{index,order}));
+                lock.writeLock().lock();
+                try {
+                    sortedList.add(index, order);
+                    tracker.Add(new Pair<BookOperation, Object[]>(BookOperation.INSERT, new Object[]{index, order}));
+                } finally {
+                    lock.writeLock().unlock();
+                }
                 break;
             }
 
@@ -69,15 +94,43 @@ public class sortedOrderList {
         }
     }
 
-    public ArrayList<Pair<BookOperation, Object[]>> GetChanges() {
-        return bookChanges;
-    }
-
-    public void ClearTrackedChanges() {
-        bookChanges.clear();
-    }
-
     public int size() {
         return sortedList.size();
+    }
+
+    public void RegisterSessionForContinuousData(Session session) {
+        tracker.AttachObserver(session);
+    }
+
+    //subclass
+    private class ChangeTracker {
+        private List<Pair<BookOperation, Object[]>> bookChanges;
+        private List<Session> observers;
+        private String tickerSymbol;
+
+        private ChangeTracker() {
+            observers = Collections.synchronizedList(new ArrayList<Session>());
+            bookChanges = Collections.synchronizedList(new ArrayList<Pair<BookOperation, Object[]>>());
+        }
+
+        private void Add(Pair<BookOperation, Object[]> change) throws Exception {
+            bookChanges.add(change);
+            NotifyObservers(bookChanges);
+            ClearChanges();
+        }
+
+        private void ClearChanges() {
+            bookChanges.clear();
+        }
+
+        private void AttachObserver(Session session) {
+            observers.add(session);
+        }
+
+        private void NotifyObservers(List<Pair<BookOperation, Object[]>> bookChanges) throws Exception{
+            for(Session session : observers) {
+                session.On_ReceivingLevel3DataChanges(tickerSymbol, bookChanges);
+            }
+        }
     }
 }

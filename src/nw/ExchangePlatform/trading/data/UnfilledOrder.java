@@ -12,7 +12,7 @@ public class UnfilledOrder extends MarketParticipantOrder {
 
     //constructor
     public UnfilledOrder(MarketParticipantOrder order, String reason) {
-        super(order.getSessionID(),order.getUserID(), order.getName(), order.getOrderID(), order.getTime(), order.getDirection(), order.getTickerSymbol(), order.getSize(), order.getPrice(),order.orderType,order.orderDuration);
+        super(order.getSessionID(),order.getUserID(), order.getName(), order.getOrderID(), order.getTime(), order.getDirection(), order.getTickerSymbol(), order.getSize(), order.getPrice(), order.getOrderType(), order.getOrderDuration());
         this.reason = reason;
     }
 
