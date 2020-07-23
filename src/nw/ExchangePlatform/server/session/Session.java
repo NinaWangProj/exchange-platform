@@ -15,6 +15,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 
@@ -26,14 +27,14 @@ public class Session implements Runnable {
     private ServerQueue serverQueue;
     private CredentialWareHouse credentialWareHouse;
     private LimitOrderBookWareHouse limitOrderBookWareHouse;
-    private ReadWriteLock[] locks;
+    private ConcurrentHashMap<String,ReadWriteLock> locks;
     public static AtomicInteger currentAvailableOrderID;
 
     static {
         currentAvailableOrderID = null;
     }
     public Session(Socket clientSocket, int sessionID, ServerQueue serverQueue, int baseOrderID,
-                   CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse limitOrderBookWareHouse,ReadWriteLock[] locks) {
+                   CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse limitOrderBookWareHouse,ConcurrentHashMap<String,ReadWriteLock> locks) {
         this.clientSocket = clientSocket;
         this.sessionID = sessionID;
         this.serverQueue = serverQueue;
@@ -106,9 +107,8 @@ public class Session implements Runnable {
             boolean found = limitOrderBookWareHouse.ValidateRequest(tickerSymbol);
             if(found) {
                 Pair<sortedOrderList, sortedOrderList> marketData;
-                int binIndex = BinSelector.ChooseAlphabeticalBin(tickerSymbol, serverQueue.getNumberOfOrderQueues());
 
-                ReadWriteLock lock = locks[binIndex];
+                ReadWriteLock lock = locks.get(tickerSymbol);
                 lock.readLock().lock();
                 try{
                     marketData = limitOrderBookWareHouse.GetLimitOrderBook(tickerSymbol,type,this);

@@ -8,7 +8,9 @@ import nw.ExchangePlatform.trading.limitOrderBook.sortedOrderList;
 import nw.ExchangePlatform.commonData.ServerQueue;
 
 import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class TradingEngineGroup implements Runnable{
     private ServerQueue systemServerQueue;
@@ -16,14 +18,14 @@ public class TradingEngineGroup implements Runnable{
     private final int tradingEngineGroupID;
     private HashMap<String,TradingEngine> tradingEngineMap;
     private LimitOrderBookWareHouse dataWareHouse;
-    private ReadWriteLock lock;
+    private ConcurrentHashMap<String,ReadWriteLock> locks;
 
     public TradingEngineGroup (ServerQueue systemServerQueue, int tradingEngineGroupID,
-                               LimitOrderBookWareHouse dataWareHouse, ReadWriteLock lock) {
+                               LimitOrderBookWareHouse dataWareHouse, ConcurrentHashMap<String,ReadWriteLock> locks) {
         this.systemServerQueue = systemServerQueue;
         this.tradingEngineGroupID = tradingEngineGroupID;
         this.dataWareHouse = dataWareHouse;
-        this.lock = lock;
+        this.locks = locks;
     }
 
     public void Start() throws Exception{
@@ -32,6 +34,8 @@ public class TradingEngineGroup implements Runnable{
             String tickerSymbol = order.getTickerSymbol();
 
             if (!tradingEngineMap.containsKey(tickerSymbol)) {
+                ReadWriteLock lock = new ReentrantReadWriteLock();
+                locks.put(tickerSymbol,lock);
                 dataWareHouse.AddNewLimitOrderBook(tickerSymbol,lock);
                 Pair<sortedOrderList, sortedOrderList> limitOrderBook
                         = dataWareHouse.GetLimitOrderBook(tickerSymbol);

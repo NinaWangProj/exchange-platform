@@ -8,6 +8,7 @@ import nw.ExchangePlatform.server.session.SessionManager;
 
 
 import java.net.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -15,27 +16,28 @@ public class ServerEngine {
     private ServerSocket serverSocket;
     private ServerConfig config;
     private CredentialWareHouse credentialWareHouse;
+    private ConcurrentHashMap<String,ReadWriteLock> OrderBooklocks;
 
     public ServerEngine(ServerConfig config) {
         this.config = config;
         //need to persist the credential; will work on it later. for now, hardcode baseuserid to 0;
         credentialWareHouse = new CredentialWareHouse(0);
+        OrderBooklocks = new ConcurrentHashMap<>();
     }
 
     public void Start() throws Exception{
         serverSocket = new ServerSocket(config.getServerPortID());
         ServerQueue systemServerQueue = new ServerQueue(config.getNumOfOrderQueues(),config.getNumOfEngineResultQueues());
         LimitOrderBookWareHouse limitOrderBookWareHouse = new LimitOrderBookWareHouse(config.getComparatorType());
-        ReadWriteLock[] locks = GenerateSynchronizationLocks(config.getNumOfOrderQueues());
 
         //create session for each client and deserialize client requests
         SessionManager sessionManager = new SessionManager(serverSocket, systemServerQueue, config.getBaseOrderID(),
-                credentialWareHouse, limitOrderBookWareHouse, locks);
+                credentialWareHouse, limitOrderBookWareHouse, OrderBooklocks);
         Thread sessions = new Thread(sessionManager);
         sessions.start();
 
         TradingEngineManager tradingEngineManager = new TradingEngineManager(systemServerQueue,
-                limitOrderBookWareHouse,locks);
+                limitOrderBookWareHouse, OrderBooklocks);
         tradingEngineManager.Start();
 
         DTCCWarehouse DTCC = new DTCCWarehouse();

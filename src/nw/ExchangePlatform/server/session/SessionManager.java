@@ -7,6 +7,7 @@ import nw.ExchangePlatform.trading.limitOrderBook.LimitOrderBookWareHouse;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 
 public class SessionManager implements Runnable{
@@ -17,10 +18,10 @@ public class SessionManager implements Runnable{
     private int baseOrderID;
     private CredentialWareHouse credentialWareHouse;
     private LimitOrderBookWareHouse dataWareHouse;
-    private ReadWriteLock[] locks;
+    private ConcurrentHashMap<String,ReadWriteLock> locks;
 
     public SessionManager(ServerSocket serverSocket, ServerQueue systemServerQueue, int baseOrderID,
-                          CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse dataWareHouse, ReadWriteLock[] locks) {
+                          CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse dataWareHouse, ConcurrentHashMap<String,ReadWriteLock> locks) {
         this.sessionUniverse = new ArrayList<Session>();
         this.serverSocket = serverSocket;
         this.systemServerQueue = systemServerQueue;
