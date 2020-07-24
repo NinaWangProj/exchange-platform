@@ -11,7 +11,10 @@ public enum DTOType {
     MareketDataRequest(6),
     MarketData(7),
     BookChangesDTO(8),
-    MarketDataItem(9);
+    MarketDataItem(9),
+    DepositRequest(10),
+    PortfolioRequest(11),
+    Portfolio(12);
 
     private final int value;
     private final byte byteValue;

@@ -12,4 +12,9 @@ public class MarketParticipantPortfolio {
     public MarketParticipantPortfolio(HashMap<String, SecurityCertificate> securities){
         this.securities = securities;
     }
+
+    public MarketParticipantPortfolio(){
+        securities = new HashMap<>();
+        cash = 0.0;
+    }
 }

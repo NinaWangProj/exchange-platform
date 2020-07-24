@@ -2,6 +2,7 @@ package nw.ExchangePlatform.server.session;
 
 import javafx.util.Pair;
 import nw.ExchangePlatform.clearing.data.CredentialWareHouse;
+import nw.ExchangePlatform.clearing.data.MarketParticipantPortfolio;
 import nw.ExchangePlatform.commonData.DTO.*;
 import nw.ExchangePlatform.commonData.ServerQueue;
 import nw.ExchangePlatform.commonData.MarketDataType;
@@ -14,6 +15,7 @@ import nw.ExchangePlatform.utility.BinSelector;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -27,20 +29,26 @@ public class Session implements Runnable {
     private ServerQueue serverQueue;
     private CredentialWareHouse credentialWareHouse;
     private LimitOrderBookWareHouse limitOrderBookWareHouse;
+    private HashMap<Integer, MarketParticipantPortfolio> portfolioHashMap;
+    private MarketParticipantPortfolio clientPortfolio;
     private ConcurrentHashMap<String,ReadWriteLock> locks;
+
     public static AtomicInteger currentAvailableOrderID;
 
     static {
         currentAvailableOrderID = null;
     }
+
     public Session(Socket clientSocket, int sessionID, ServerQueue serverQueue, int baseOrderID,
-                   CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse limitOrderBookWareHouse,ConcurrentHashMap<String,ReadWriteLock> locks) {
+                   CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse limitOrderBookWareHouse,
+                   ConcurrentHashMap<String,ReadWriteLock> locks, HashMap<Integer, MarketParticipantPortfolio> portfolioHashMap) {
         this.clientSocket = clientSocket;
         this.sessionID = sessionID;
         this.serverQueue = serverQueue;
         this.credentialWareHouse = credentialWareHouse;
         this.limitOrderBookWareHouse = limitOrderBookWareHouse;
         this.locks = locks;
+        this.portfolioHashMap = portfolioHashMap;
         if(currentAvailableOrderID == null) {
             currentAvailableOrderID = new AtomicInteger(baseOrderID);
         }
@@ -81,6 +89,11 @@ public class Session implements Runnable {
             if(pass) {
                 clientUserName = userName;
                 clientUserID = credentialWareHouse.GetUserID(userName);
+
+                //set up portfolio for client when they open an account
+                MarketParticipantPortfolio portfolio = new MarketParticipantPortfolio();
+                portfolioHashMap.put(clientUserID,portfolio);
+                clientPortfolio = portfolio;
             } else {
                 //send message back to client
             }
@@ -98,6 +111,20 @@ public class Session implements Runnable {
                 //session needs to send client a message "wrong credential, please try again"
                 //implement later
             }
+        }
+
+        if(Class.forName("DepositDTO").isInstance(DTO)) {
+            DepositDTO depositDTO = (DepositDTO)DTO;
+            double cashAmt = depositDTO.getCashAmount();
+            clientPortfolio.cash += cashAmt;
+            String message = cashAmt + " dollars have been successfully deposited into your account";
+            MessageDTO messageDTO = new MessageDTO(message);
+            serverQueue.PutResponseDTO(sessionID,messageDTO);
+        }
+
+        if(Class.forName("PortfolioRequestDTO").isInstance(DTO)) {
+            PortfolioDTO portfolioDTO = new PortfolioDTO(clientPortfolio.securities,clientPortfolio.cash);
+            serverQueue.PutResponseDTO(sessionID,portfolioDTO);
         }
 
         if(Class.forName("MareketDataRequestDTO").isInstance(DTO)) {

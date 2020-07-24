@@ -1,6 +1,7 @@
 package nw.ExchangePlatform.server.session;
 
 import nw.ExchangePlatform.clearing.data.CredentialWareHouse;
+import nw.ExchangePlatform.clearing.data.DTCCWarehouse;
 import nw.ExchangePlatform.commonData.ServerQueue;
 import nw.ExchangePlatform.trading.limitOrderBook.LimitOrderBookWareHouse;
 
@@ -19,9 +20,11 @@ public class SessionManager implements Runnable{
     private CredentialWareHouse credentialWareHouse;
     private LimitOrderBookWareHouse dataWareHouse;
     private ConcurrentHashMap<String,ReadWriteLock> locks;
+    private DTCCWarehouse dtcc;
 
     public SessionManager(ServerSocket serverSocket, ServerQueue systemServerQueue, int baseOrderID,
-                          CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse dataWareHouse, ConcurrentHashMap<String,ReadWriteLock> locks) {
+                          CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse dataWareHouse,
+                          ConcurrentHashMap<String,ReadWriteLock> locks, DTCCWarehouse dtcc) {
         this.sessionUniverse = new ArrayList<Session>();
         this.serverSocket = serverSocket;
         this.systemServerQueue = systemServerQueue;
@@ -36,7 +39,7 @@ public class SessionManager implements Runnable{
         while (true) {
             Socket clientSocket = serverSocket.accept();
             Session session = new Session(clientSocket, nextAvailableSessionID, systemServerQueue, baseOrderID,
-                    credentialWareHouse,dataWareHouse,locks);
+                    credentialWareHouse,dataWareHouse,locks,dtcc.portfoliosMap);
             sessionUniverse.add(session);
             nextAvailableSessionID += 1;
             Thread sessionThread = new Thread(session);
