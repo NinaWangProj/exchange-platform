@@ -1,25 +1,41 @@
 package nw.ExchangePlatform.trading;
 
-import nw.ExchangePlatform.data.*;
-import nw.ExchangePlatform.wrapper.WrapperEngine;
+import javafx.util.Pair;
+import nw.ExchangePlatform.commonData.Order.Direction;
+import nw.ExchangePlatform.trading.limitOrderBook.sortedOrderList;
+import nw.ExchangePlatform.trading.data.*;
+import nw.ExchangePlatform.server.WrapperEngine;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 
-public class TradingEngine {
+public class TradingEngine{
     //fields
     public final String tickerSymbol;
-    ArrayList<MarketParticipantOrder> bids;
-    ArrayList<MarketParticipantOrder> asks;
+    private sortedOrderList bids;
+    private sortedOrderList asks;
+
 
     //constructor
-    public TradingEngine(String tickerSymbol) {
+    public TradingEngine(String tickerSymbol, Pair<sortedOrderList, sortedOrderList> limitOrderBook) {
         this.tickerSymbol = tickerSymbol;
+        this.bids = limitOrderBook.getKey();
+        this.asks = limitOrderBook.getValue();
     }
 
     //public methods
-    public TradingOutput Process(ArrayList<MarketParticipantOrder> orders) {
+    public TradingOutput Process(MarketParticipantOrder order) throws Exception {
+        TradingOutput finalTradingOutput = new TradingOutput();
+
+        TradingOutput output = MatchOrder(order);
+        finalTradingOutput.Transactions.addAll(output.Transactions);
+        finalTradingOutput.UnfilledOrders.addAll(output.UnfilledOrders);
+        finalTradingOutput.PendingOrders.addAll(output.PendingOrders);
+
+        return finalTradingOutput;
+    }
+
+    public TradingOutput ProcessBatch(ArrayList<MarketParticipantOrder> orders) throws Exception{
         TradingOutput finalTradingOutput = new TradingOutput();
 
         for (MarketParticipantOrder order : orders) {
@@ -32,13 +48,13 @@ public class TradingEngine {
     }
 
     //private methods
-    private TradingOutput MatchOrder(MarketParticipantOrder order) {
+    private TradingOutput MatchOrder(MarketParticipantOrder order) throws Exception {
         boolean valid = true;
         ArrayList<Transaction> transactions = new ArrayList<>();
         ArrayList<UnfilledOrder> unfilledOrders = new ArrayList<>();
         ArrayList<PendingOrder> pendingOrders = new ArrayList<>();
-        ArrayList<MarketParticipantOrder> counterPartyLimitOrderBook = new ArrayList<>();
-        ArrayList<MarketParticipantOrder> currentLimitOrderBook = new ArrayList<>();
+        sortedOrderList counterPartyLimitOrderBook;
+        sortedOrderList currentLimitOrderBook ;
 
         switch (order.getDirection()) {
             case BUY:
@@ -48,10 +64,13 @@ public class TradingEngine {
             case SELL:
                 currentLimitOrderBook = asks;
                 counterPartyLimitOrderBook = bids;
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + order.getDirection());
         }
 
         while(valid) {
-            switch (order.orderType) {
+            switch (order.getOrderType()) {
                 case MARKETORDER:
                     valid = FillMarketOrder(order, counterPartyLimitOrderBook, transactions, unfilledOrders);
                     break;
@@ -62,8 +81,8 @@ public class TradingEngine {
         return new TradingOutput(transactions, unfilledOrders,pendingOrders);
     }
 
-    private boolean FillMarketOrder(MarketParticipantOrder order, ArrayList<MarketParticipantOrder> counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
-                                    ArrayList<UnfilledOrder> unfilledOrders) {
+    private boolean FillMarketOrder(MarketParticipantOrder order, sortedOrderList counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
+                                    ArrayList<UnfilledOrder> unfilledOrders) throws Exception {
         boolean active;
 
         if(counterPartyLimitOrderBook == null  || !CheckTradeViability(order, counterPartyLimitOrderBook.get(0))) {
@@ -91,9 +110,9 @@ public class TradingEngine {
                 active = true;
             }
 
-            Transaction counterPartyTransaction = new Transaction(topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), WrapperEngine.previousTransactionID +1, topCounterLimitOrder.getOrderID(), new Date(),
+            Transaction counterPartyTransaction = new Transaction(topCounterLimitOrder.getSessionID(),topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), WrapperEngine.previousTransactionID +1, topCounterLimitOrder.getOrderID(), new Date(),
                     topCounterLimitOrder.getDirection(), topCounterLimitOrder.getTickerSymbol(), transactionSize, transactionPrice);
-            Transaction currentOrderTransaction = new Transaction(order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +2, order.getOrderID(), new Date(),
+            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +2, order.getOrderID(), new Date(),
                     order.getDirection(), order.getTickerSymbol(), transactionSize, transactionPrice);
 
             transactions.add(currentOrderTransaction);
@@ -103,15 +122,15 @@ public class TradingEngine {
         return active;
     }
 
-    private boolean FillLimitOrder(MarketParticipantOrder order, ArrayList<MarketParticipantOrder> currentLimitOrderBook, ArrayList<MarketParticipantOrder> counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
-                                   ArrayList<UnfilledOrder> unfilledOrders, ArrayList<PendingOrder> pendingOrders) {
+    private boolean FillLimitOrder(MarketParticipantOrder order, sortedOrderList currentLimitOrderBook, sortedOrderList counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
+                                   ArrayList<UnfilledOrder> unfilledOrders, ArrayList<PendingOrder> pendingOrders) throws Exception{
         boolean active;
 
         //If no match is found, add order to limit order book, return pending message to participant
         if(counterPartyLimitOrderBook == null  || !CheckTradeViability(order, counterPartyLimitOrderBook.get(0))) {
             //add limit order to limit order book:
             currentLimitOrderBook.add(order);
-            Collections.sort(currentLimitOrderBook);
+            //Collections.sort(currentLimitOrderBook);
 
             PendingOrder pendingOrder = new PendingOrder(order, "Your order has been processed. Will notify you when we find a match");
             pendingOrders.add(pendingOrder);
@@ -137,9 +156,9 @@ public class TradingEngine {
                 active = true;
             }
 
-            Transaction counterSideTransaction = new Transaction(topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), WrapperEngine.previousTransactionID +1, topCounterLimitOrder.getOrderID(), new Date(),
+            Transaction counterSideTransaction = new Transaction(topCounterLimitOrder.getSessionID(),topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), WrapperEngine.previousTransactionID +1, topCounterLimitOrder.getOrderID(), new Date(),
                     topCounterLimitOrder.getDirection(), topCounterLimitOrder.getTickerSymbol(), transactionSize, transactionPrice);
-            Transaction currentOrderTransaction = new Transaction(order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +2, order.getOrderID(), new Date(),
+            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +2, order.getOrderID(), new Date(),
                     order.getDirection(), order.getTickerSymbol(), transactionSize, transactionPrice);
 
             transactions.add(currentOrderTransaction);

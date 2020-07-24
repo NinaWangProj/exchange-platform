@@ -1,24 +1,26 @@
 package nw.ExchangePlatform.clearing;
 
-import nw.ExchangePlatform.data.*;
+import nw.ExchangePlatform.clearing.data.DTCCWarehouse;
+import nw.ExchangePlatform.clearing.data.MarketParticipantPortfolio;
+import nw.ExchangePlatform.clearing.data.SecurityCertificate;
+import nw.ExchangePlatform.trading.data.Transaction;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
 public class ClearingEngine {
     //field
-    ArrayList<Transaction> transactions;
     DTCCWarehouse dtccWarehouse;
 
     //constructors
-    public ClearingEngine(ArrayList<Transaction> transactions,DTCCWarehouse dtccWarehouse) {
-        this.transactions = transactions;
+    public ClearingEngine(DTCCWarehouse dtccWarehouse) {
         this.dtccWarehouse = dtccWarehouse;
     }
 
     //public methods
-    public ClearingStatus ClearTrade(){
-        HashMap<String, HashMap<Integer,SecurityCertificate>> certificatesMap = dtccWarehouse.certificatesMap;
+    public ClearingStatus ClearTrade(ArrayList<Transaction> transactions){
+        HashMap<String, HashMap<Integer, SecurityCertificate>> certificatesMap = dtccWarehouse.certificatesMap;
 
         for(Transaction transaction : transactions){
             ClearTransactionWithDTCCWarehouse(transaction, certificatesMap);

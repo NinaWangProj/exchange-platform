@@ -1,7 +1,7 @@
 package nw.ExchangePlatform.clearing;
 
-import nw.ExchangePlatform.data.DTCCWarehouse;
-import nw.ExchangePlatform.data.Transaction;
+import nw.ExchangePlatform.clearing.data.DTCCWarehouse;
+import nw.ExchangePlatform.trading.data.Transaction;
 
 import java.util.ArrayList;
 
@@ -15,10 +15,10 @@ public class ClearingWarehouse {
 
     //need to persist DTCCWarehouse info & market participant portfolio later
     public void ClearTransactions(ArrayList<Transaction> transactions, DTCCWarehouse dtccWarehouse) {
-        ClearingEngine clearingEngine = new ClearingEngine(transactions, dtccWarehouse);
+        ClearingEngine clearingEngine = new ClearingEngine(dtccWarehouse);
 
         //update DTCCWarehouse certificates & MarketParticipantPortfolio (securities & cash)
-        clearingEngine.ClearTrade();
+        clearingEngine.ClearTrade(transactions);
     }
 
 }
