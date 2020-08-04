@@ -1,6 +1,8 @@
 package nw.ExchangePlatform.utility;
 
 import nw.ExchangePlatform.commonData.*;
+import nw.ExchangePlatform.commonData.DataType.OrderStatusType;
+import nw.ExchangePlatform.trading.data.OrderStatus;
 import nw.ExchangePlatform.trading.data.TradingOutput;
 
 import java.util.ArrayList;
@@ -8,30 +10,40 @@ import java.util.HashMap;
 
 public class MessageGenerator {
 
-    public static HashMap<Integer, ArrayList<String>> GenerateMessages (TradingOutput tradingOutput) {
-        HashMap<Integer, ArrayList<String>> userMessengerMap = new HashMap<>();
+    public static HashMap<Integer, OrderStatus> GenerateMessages (TradingOutput tradingOutput) {
+        HashMap<Integer, OrderStatus> userOrderStatusMap = new HashMap<>();
 
         if (tradingOutput.Transactions.size() >0 ) {
-            GenerateMessagesPerOutputType(userMessengerMap, MessageType.TransactionMessage, tradingOutput.Transactions);
+            GenerateMessagesPerOutputType(userOrderStatusMap, MessageType.TransactionMessage, tradingOutput.Transactions);
         }
         if (tradingOutput.PendingOrders.size() > 0 ) {
-            GenerateMessagesPerOutputType(userMessengerMap, MessageType.PendingOrderMessage, tradingOutput.Transactions);
+            GenerateMessagesPerOutputType(userOrderStatusMap, MessageType.PendingOrderMessage, tradingOutput.Transactions);
         }
         if(tradingOutput.UnfilledOrders.size() > 0 ) {
-            GenerateMessagesPerOutputType(userMessengerMap, MessageType.UnfilledOrderMessage, tradingOutput.Transactions);
+            GenerateMessagesPerOutputType(userOrderStatusMap, MessageType.UnfilledOrderMessage, tradingOutput.Transactions);
         }
 
-        return userMessengerMap;
+        return userOrderStatusMap;
     }
 
-    public static void GenerateMessagesPerOutputType (HashMap<Integer, ArrayList<String>> userMessengerMap, MessageType messageType, ArrayList<? extends Info> TradingOutputs) {
+    public static void GenerateMessagesPerOutputType (HashMap<Integer, OrderStatus> userOrderStatusMap, MessageType messageType, ArrayList<? extends Info> TradingOutputs) {
+        OrderStatusType orderStatusType = null;
+        switch (messageType) {
+            case TransactionMessage:
+                orderStatusType = OrderStatusType.PartiallyFilled;
+            case PendingOrderMessage:
+                orderStatusType = OrderStatusType.Pending;
+            case UnfilledOrderMessage:
+                orderStatusType = OrderStatusType.Unfilled;
+        }
+
         for (Info tradingOutput : TradingOutputs) {
             int sessionID = tradingOutput.getSessionID();
-            if (!userMessengerMap.containsKey(sessionID)) {
-                userMessengerMap.put(sessionID, new ArrayList<String>());
+            if (!userOrderStatusMap.containsKey(sessionID)) {
+                userOrderStatusMap.put(sessionID, new OrderStatus(tradingOutput.getOrderID(), orderStatusType,new ArrayList<String>()));
             }
-            String message = GenerateMessage(messageType,tradingOutput);
-            userMessengerMap.get(sessionID).add(message);
+            String statusMessage = GenerateMessage(messageType,tradingOutput);
+            userOrderStatusMap.get(sessionID).getStatusMessages().add(statusMessage);
         }
     }
 
@@ -45,8 +57,8 @@ public class MessageGenerator {
 
         switch (messageType) {
             case TransactionMessage:
-                message = "Congradulation!  " + userName + " Your order with orderID: " + orderID
-                        + " has been filled with " + size + " shares, @$" + tradePrice + " per share.";
+                message = "Congradulation!  " + userName + ", Your order with orderID: " + orderID
+                        + " has been filled with: " + size + ", shares, @$" + tradePrice + " per share.";
                 break;
             case UnfilledOrderMessage:
                 message = "Sorry " + userName + " .Unfortunately your order with orderID: " + orderID

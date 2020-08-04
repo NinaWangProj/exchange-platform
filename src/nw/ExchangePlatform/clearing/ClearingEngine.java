@@ -36,17 +36,17 @@ public class ClearingEngine {
         MarketParticipantPortfolio portfolio = portfoliosMap.get(transaction.getUserID());
         switch(transaction.getDirection()) {
             case BUY:
-                boolean foundTicker = portfoliosMap.get(transaction.getUserID()).securities.containsKey(transaction.getTickerSymbol());
+                boolean foundTicker = portfoliosMap.get(transaction.getUserID()).getSecurities().containsKey(transaction.getTickerSymbol());
                 if(foundTicker) {
-                    portfolio.securities.get(transaction.getTickerSymbol()).quantity += transaction.getSize();
+                    portfolio.getSecurities().get(transaction.getTickerSymbol()).quantity += transaction.getSize();
                 } else {
                     SecurityCertificate certificate = new SecurityCertificate(transaction.getName(), transaction.getTickerSymbol(), transaction.getSize(), new Date());
-                    portfolio.securities.put(transaction.getTickerSymbol(), certificate);
+                    portfolio.getSecurities().put(transaction.getTickerSymbol(), certificate);
                 }
-                portfolio.cash -= transaction.getPrice();
+                portfolio.DepositCash(-transaction.getPrice());
             case SELL:
-                portfolio.securities.get(transaction.getTickerSymbol()).quantity -= transaction.getSize();
-                portfolio.cash += transaction.getPrice();
+                portfolio.getSecurities().get(transaction.getTickerSymbol()).quantity -= transaction.getSize();
+                portfolio.DepositCash(transaction.getPrice());
         }
     }
 

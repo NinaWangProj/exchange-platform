@@ -14,14 +14,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PortfolioDTO implements Transferable{
+    private final Long clientRequestID;
     private final DTOType dtoType;
     private final HashMap<String, SecurityCertificate> securities;
     private final double cash;
 
-    public PortfolioDTO(HashMap<String, SecurityCertificate> securities, double cash) {
+    public PortfolioDTO(Long clientRequestID, HashMap<String, SecurityCertificate> securities, double cash) {
         this.securities = securities;
         this.cash = cash;
         this.dtoType = DTOType.Portfolio;
+        this.clientRequestID = clientRequestID;
     }
 
     public byte[] Serialize() throws Exception {
@@ -68,6 +70,10 @@ public class PortfolioDTO implements Transferable{
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
 
+        byte[] requestIDBuffer = new byte[8];
+        inputStream.read(requestIDBuffer, 0, 8);
+        Long requestIDT = ByteBuffer.wrap(requestIDBuffer).getLong();
+
         byte[] cashAmtBuffer = new byte[8];
         inputStream.read(cashAmtBuffer, 0, 8);
         double cashAmtT = ByteBuffer.wrap(cashAmtBuffer).getDouble();
@@ -104,11 +110,23 @@ public class PortfolioDTO implements Transferable{
 
             securities.put(tickerSymbolT, new SecurityCertificate(shareHolderNameT,tickerSymbolT,quantityT,issuedDate));
         }
-        PortfolioDTO portfolioDTO = new PortfolioDTO(securities,cashAmtT);
+        PortfolioDTO portfolioDTO = new PortfolioDTO(requestIDT,securities,cashAmtT);
         return portfolioDTO;
     }
 
     public DTOType getDtoType() {
         return dtoType;
+    }
+
+    public HashMap<String, SecurityCertificate> getSecurities() {
+        return securities;
+    }
+
+    public double getCash() {
+        return cash;
+    }
+
+    public Long getClientRequestID() {
+        return clientRequestID;
     }
 }

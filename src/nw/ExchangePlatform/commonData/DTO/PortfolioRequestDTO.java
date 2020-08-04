@@ -2,9 +2,11 @@ package nw.ExchangePlatform.commonData.DTO;
 
 public class PortfolioRequestDTO {
     private final DTOType dtoType;
+    private final Long clientRequestID;
 
-    public PortfolioRequestDTO() {
+    public PortfolioRequestDTO(Long clientRequestID) {
         dtoType = DTOType.DepositRequest;
+        this.clientRequestID = clientRequestID;
     }
 
     public byte[] Serialize() throws Exception{
@@ -15,4 +17,7 @@ public class PortfolioRequestDTO {
         return dtoType;
     }
 
+    public Long getClientRequestID() {
+        return clientRequestID;
+    }
 }

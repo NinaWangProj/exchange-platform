@@ -10,7 +10,7 @@ public enum DTOType {
     LoginRequest(5),
     MareketDataRequest(6),
     MarketData(7),
-    BookChangesDTO(8),
+    BookChanges(8),
     MarketDataItem(9),
     DepositRequest(10),
     PortfolioRequest(11),

@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 public class ExchangeClientTest {
 
     @Test
-    public void ClientSubmitOrderTest(){
+    public void ClientSubmitOrderTest() throws Exception {
         ExchangeClient client = new ExchangeClient();
         boolean connected = client.ConnectWithServer();
 

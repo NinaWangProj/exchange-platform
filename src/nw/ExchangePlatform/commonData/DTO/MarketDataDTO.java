@@ -17,13 +17,14 @@ public class MarketDataDTO implements Transferable{
     private byte[] marketDataDTOByteArray;
     private ArrayList<MarketDataItem> bids;
     private ArrayList<MarketDataItem> asks;
+    private Long clientRequestID;
 
 
-
-    public MarketDataDTO(String tickerSymbol, Pair<sortedOrderList, sortedOrderList> limitOrderBook) {
+    public MarketDataDTO(Long clientRequestID, String tickerSymbol, Pair<sortedOrderList, sortedOrderList> limitOrderBook) {
         this.limitOrderBook = limitOrderBook;
         dtoType = DTOType.MarketData;
         this.tickerSymbol = tickerSymbol;
+        this.clientRequestID = clientRequestID;
     }
 
     public MarketDataDTO(ArrayList<MarketDataItem> bids, ArrayList<MarketDataItem> asks) {
@@ -140,5 +141,9 @@ public class MarketDataDTO implements Transferable{
 
     public String getTickerSymbol() {
         return tickerSymbol;
+    }
+
+    public Long getClientRequestID() {
+        return clientRequestID;
     }
 }

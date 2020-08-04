@@ -4,15 +4,15 @@ import nw.ExchangePlatform.commonData.DTO.*;
 
 import java.io.InputStream;
 
-public class ServerMessageProcessor implements Runnable{
+public class ServerResponseProcessor implements Runnable{
     private InputStream inputStream;
     private ClientSession observer;
 
-    public ServerMessageProcessor(InputStream inputStream) {
+    public ServerResponseProcessor(InputStream inputStream) {
         this.inputStream = inputStream;
     }
 
-    public Transferable ReadMessageFromClient() throws Exception {
+    public Transferable ReadMessageFromServer() throws Exception {
         int nextByte = inputStream.read();
         Transferable DTO = null;
 
@@ -37,7 +37,7 @@ public class ServerMessageProcessor implements Runnable{
         boolean readerFlag = true;
 
         while (readerFlag) {
-            Transferable DTO = ReadMessageFromClient();
+            Transferable DTO = ReadMessageFromServer();
             NotifyAllObservers(DTO);
 
             if(DTO.equals(null))

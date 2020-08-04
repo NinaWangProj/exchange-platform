@@ -13,6 +13,7 @@ import java.nio.ByteOrder;
 
 public class OrderDTO implements Transferable {
 
+    private final Long clientRequestID;
     private final DTOType dtoType;
     private final Direction direction;
     private final String tickerSymbol;
@@ -23,8 +24,9 @@ public class OrderDTO implements Transferable {
     public byte[] orderDTOByteArray;
     //constructor
     //this constructor is used for limit order data transfer object
-    public OrderDTO(Direction direction, OrderType orderType, String tickerSymbol, int size, double price, OrderDuration orderDuration)
+    public OrderDTO(long clientRequestID, Direction direction, OrderType orderType, String tickerSymbol, int size, double price, OrderDuration orderDuration)
     {
+        this.clientRequestID = clientRequestID;
         this.tickerSymbol = tickerSymbol;
         this.size = size;
         this.price = price;
@@ -38,6 +40,10 @@ public class OrderDTO implements Transferable {
     {
         try {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+                byte[] requestIDByteArray = ByteBuffer.allocate(8).putLong(clientRequestID).array();
+                outputStream.write(requestIDByteArray);
+
                 outputStream.write(getDirection().getByteValue());
 
                 outputStream.write(getOrderType().getByteValue());
@@ -69,6 +75,10 @@ public class OrderDTO implements Transferable {
     public static OrderDTO Deserialize(byte[] DTOByteArray) {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
 
+        byte[] requestIDBuffer = new byte[8];
+        inputStream.read(requestIDBuffer, 0, 8);
+        Long requestIDT = ByteBuffer.wrap(requestIDBuffer).getLong();
+
         Direction directionT = Direction.lookupEnumType(inputStream.read());
 
         OrderType orderTypeT = OrderType.valueOf(inputStream.read());
@@ -88,7 +98,7 @@ public class OrderDTO implements Transferable {
 
         OrderDuration orderDurationT = OrderDuration.valueOf(inputStream.read());
 
-        OrderDTO orderDTO = new OrderDTO(directionT, orderTypeT, tickerSymbolT, sizeT, priceT, orderDurationT);
+        OrderDTO orderDTO = new OrderDTO(requestIDT, directionT, orderTypeT, tickerSymbolT, sizeT, priceT, orderDurationT);
 
         return orderDTO;
     }
@@ -119,5 +129,9 @@ public class OrderDTO implements Transferable {
 
     public DTOType getDtoType() {
         return dtoType;
+    }
+
+    public Long getClientRequestID() {
+        return clientRequestID;
     }
 }

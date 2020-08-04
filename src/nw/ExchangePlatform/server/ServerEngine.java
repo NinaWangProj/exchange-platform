@@ -29,10 +29,11 @@ public class ServerEngine {
         serverSocket = new ServerSocket(config.getServerPortID());
         ServerQueue systemServerQueue = new ServerQueue(config.getNumOfOrderQueues(),config.getNumOfEngineResultQueues());
         LimitOrderBookWareHouse limitOrderBookWareHouse = new LimitOrderBookWareHouse(config.getComparatorType());
+        DTCCWarehouse DTCC = new DTCCWarehouse();
 
         //create session for each client and deserialize client requests
         SessionManager sessionManager = new SessionManager(serverSocket, systemServerQueue, config.getBaseOrderID(),
-                credentialWareHouse, limitOrderBookWareHouse, OrderBooklocks);
+                credentialWareHouse, limitOrderBookWareHouse, OrderBooklocks, DTCC.portfoliosMap);
         Thread sessions = new Thread(sessionManager);
         sessions.start();
 
@@ -40,7 +41,6 @@ public class ServerEngine {
                 limitOrderBookWareHouse, OrderBooklocks);
         tradingEngineManager.Start();
 
-        DTCCWarehouse DTCC = new DTCCWarehouse();
         ClearingEngineManager clearingEngineManager = new ClearingEngineManager(systemServerQueue,DTCC);
         clearingEngineManager.Start();
     }
