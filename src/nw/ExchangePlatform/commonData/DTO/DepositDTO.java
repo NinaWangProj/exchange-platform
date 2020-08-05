@@ -8,10 +8,12 @@ import java.nio.ByteOrder;
 public class DepositDTO implements Transferable{
     private final DTOType dtoType;
     private final double cashAmount;
+    private final Long clientRequestID;
 
-    public DepositDTO(double cashAmount) {
+    public DepositDTO(Long clientRequestID,double cashAmount) {
         dtoType = DTOType.DepositRequest;
         this.cashAmount = cashAmount;
+        this.clientRequestID = clientRequestID;
     }
 
     public byte[] Serialize() throws Exception{
@@ -26,10 +28,14 @@ public class DepositDTO implements Transferable{
     public static Transferable Deserialize(byte[] depositRequestByteArray) throws Exception{
         ByteArrayInputStream inputStream = new ByteArrayInputStream(depositRequestByteArray);
 
+        byte[] requestIDBuffer = new byte[8];
+        inputStream.read(requestIDBuffer, 0, 8);
+        Long requestIDT = ByteBuffer.wrap(requestIDBuffer).getLong();
+
         byte[] cashAmtBuffer = new byte[8];
         inputStream.read(cashAmtBuffer,0,8);
         double cashAmt = ByteBuffer.wrap(cashAmtBuffer).getDouble();
-        DepositDTO depositDTO = new DepositDTO(cashAmt);
+        DepositDTO depositDTO = new DepositDTO(requestIDT,cashAmt);
 
         return depositDTO;
     }
@@ -40,5 +46,9 @@ public class DepositDTO implements Transferable{
 
     public double getCashAmount() {
         return cashAmount;
+    }
+
+    public Long getClientRequestID() {
+        return clientRequestID;
     }
 }

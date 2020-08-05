@@ -5,6 +5,7 @@ import nw.ExchangePlatform.clearing.data.DTCCWarehouse;
 import nw.ExchangePlatform.trading.TradingEngine;
 import nw.ExchangePlatform.trading.data.MarketParticipantOrder;
 import nw.ExchangePlatform.trading.data.OrderBatch;
+import nw.ExchangePlatform.trading.data.OrderStatus;
 import nw.ExchangePlatform.trading.data.TradingOutput;
 import nw.ExchangePlatform.utility.MessageGenerator;
 
@@ -31,13 +32,13 @@ public class WrapperEngine {
     }
 
     //methods
-    public List<HashMap<Integer, ArrayList<String>>> ProcessOrders(ArrayList<MarketParticipantOrder> Orders) {
+    public List<HashMap<Integer, OrderStatus>> ProcessOrders(ArrayList<MarketParticipantOrder> Orders) throws Exception {
         //create new batch for each ticker that is being traded in this stream of orders
         ArrayList<OrderBatch> batches = GroupOrdersIntoBatches(Orders);
-        List<HashMap<Integer, ArrayList<String>>> finalMessageMap = null;
+        List<HashMap<Integer, OrderStatus>> finalMessageMap = null;
 
         for (OrderBatch batch : batches) {
-            HashMap<Integer, ArrayList<String>> messageMap = new HashMap<>();
+            HashMap<Integer, OrderStatus> messageMap = new HashMap<>();
             messageMap = ProcessOrderBatch(batch);
             finalMessageMap.add(messageMap);
         }
@@ -64,7 +65,7 @@ public class WrapperEngine {
         return batches;
     }
 
-    public HashMap<Integer, ArrayList<String>> ProcessOrderBatch(OrderBatch orderBatch) {
+    public HashMap<Integer, OrderStatus> ProcessOrderBatch(OrderBatch orderBatch) throws Exception {
         if (!tradingEngineMap.containsKey(orderBatch.tickerSymbol)) {
             //TradingEngine tradingEngine = new TradingEngine(orderBatch.tickerSymbol);
             //tradingEngineMap.put(orderBatch.tickerSymbol,tradingEngine);
@@ -72,7 +73,7 @@ public class WrapperEngine {
         TradingOutput output = tradingEngineMap.get(orderBatch.tickerSymbol).ProcessBatch(orderBatch.batch);
         clearingWarehouse.ClearTransactions(output.Transactions,clearingWarehouse.dtccWarehouse);
 
-        HashMap<Integer, ArrayList<String>> userMessagesMap = MessageGenerator.GenerateMessages(output);
+        HashMap<Integer, OrderStatus> userMessagesMap = MessageGenerator.GenerateMessages(output);
         return userMessagesMap;
     }
 }

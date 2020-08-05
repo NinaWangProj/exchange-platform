@@ -6,6 +6,7 @@ public class MarketData {
     private String tickerSymbol;
     private ArrayList<MarketDataItem> bids;
     private ArrayList<MarketDataItem> asks;
+    private boolean continuousLevel3DataFlag;
 
     public MarketData(ArrayList<MarketDataItem> bids, ArrayList<MarketDataItem> asks) {
         this.bids = bids;
@@ -15,6 +16,7 @@ public class MarketData {
         } else if (asks.size() != 0) {
             this.tickerSymbol = asks.get(0).getTickerSymbol();
         }
+        this.continuousLevel3DataFlag = false;
     }
 
     public String getTickerSymbol() {
@@ -35,5 +37,13 @@ public class MarketData {
 
     public void setAsks(ArrayList<MarketDataItem> asks) {
         this.asks = asks;
+    }
+
+    public boolean getContinuousLevel3DataFlag() {
+        return continuousLevel3DataFlag;
+    }
+
+    public void setContinuousLevel3DataFlag(boolean continuousLevel3DataFlag) {
+        this.continuousLevel3DataFlag = continuousLevel3DataFlag;
     }
 }

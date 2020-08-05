@@ -16,7 +16,7 @@ public class ServerQueue {
 
     private LinkedBlockingQueue<MarketParticipantOrder>[] orders;
     private LinkedBlockingQueue<TradingOutput>[] tradingEngineResults;
-    private ConcurrentHashMap<Integer,LinkedBlockingQueue<ArrayList<String>>> sessionMessagesMap;
+    private ConcurrentHashMap<Integer,LinkedBlockingQueue<OrderStatus>> sessionOrderStatusMap;
     private ConcurrentHashMap<Integer,LinkedBlockingQueue<Transferable>> sessionResponseDTOMap;
 
     public ServerQueue(int numberOfOrderQueues, int numOfEngineResultQueues) {
@@ -25,7 +25,7 @@ public class ServerQueue {
         this.numOfEngineResultQueues = numOfEngineResultQueues;
         orders = new LinkedBlockingQueue[numberOfOrderQueues];
         tradingEngineResults = new LinkedBlockingQueue[numOfEngineResultQueues];
-        sessionMessagesMap = new ConcurrentHashMap<Integer,LinkedBlockingQueue<ArrayList<String>>>();
+        sessionOrderStatusMap = new ConcurrentHashMap<Integer,LinkedBlockingQueue<OrderStatus>>();
         sessionResponseDTOMap = new ConcurrentHashMap<Integer,LinkedBlockingQueue<Transferable>>();
     }
 
@@ -141,17 +141,17 @@ public class ServerQueue {
     }
 
     public void RegisterSessionWithQueue(int sessionID) {
-        sessionMessagesMap.put(sessionID, new LinkedBlockingQueue<ArrayList<String>>());
+        sessionOrderStatusMap.put(sessionID, new LinkedBlockingQueue<OrderStatus>());
         sessionResponseDTOMap.put(sessionID, new LinkedBlockingQueue<Transferable>());
     }
 
-    public void PutMessage (int sessionID, ArrayList<String> message) throws Exception{
-        sessionMessagesMap.get(sessionID).put(message);
+    public void PutOrderStatus(int sessionID, OrderStatus orderStatus) throws Exception{
+        sessionOrderStatusMap.get(sessionID).put(orderStatus);
     }
 
-    public ArrayList<String> TakeMessage(int sessionID) throws Exception{
-        ArrayList<String> messages = sessionMessagesMap.get(sessionID).take();
-        return messages;
+    public OrderStatus TakeOrderStatus(int sessionID) throws Exception{
+        OrderStatus orderStatus = sessionOrderStatusMap.get(sessionID).take();
+        return orderStatus;
     }
 
     public void PutResponseDTO(int sessionID, Transferable DTO) throws Exception{

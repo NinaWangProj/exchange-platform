@@ -1,6 +1,7 @@
 package nw.ExchangePlatform.clearing;
 
 import nw.ExchangePlatform.clearing.data.DTCCWarehouse;
+import nw.ExchangePlatform.trading.data.OrderStatus;
 import nw.ExchangePlatform.trading.data.TradingOutput;
 import nw.ExchangePlatform.utility.MessageGenerator;
 import nw.ExchangePlatform.commonData.ServerQueue;
@@ -26,10 +27,10 @@ public class ClearingEngineWrapper implements Runnable {
 
         clearingEngine.ClearTrade(output.Transactions);
 
-        HashMap<Integer, ArrayList<String>> userMessagesMap = MessageGenerator.GenerateMessages(output);
+        HashMap<Integer, OrderStatus> userMessagesMap = MessageGenerator.GenerateMessages(output);
 
-        for(Map.Entry<Integer, ArrayList<String>> pair: userMessagesMap.entrySet()) {
-            systemServerQueue.PutMessage(pair.getKey(),pair.getValue());
+        for(Map.Entry<Integer, OrderStatus> pair: userMessagesMap.entrySet()) {
+            systemServerQueue.PutOrderStatus(pair.getKey(),pair.getValue());
         }
     }
 

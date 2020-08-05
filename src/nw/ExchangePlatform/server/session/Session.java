@@ -4,16 +4,16 @@ import javafx.util.Pair;
 import nw.ExchangePlatform.clearing.data.CredentialWareHouse;
 import nw.ExchangePlatform.clearing.data.MarketParticipantPortfolio;
 import nw.ExchangePlatform.commonData.DTO.*;
+import nw.ExchangePlatform.commonData.DataType.OrderStatusType;
 import nw.ExchangePlatform.commonData.ServerQueue;
-import nw.ExchangePlatform.commonData.MarketDataType;
+import nw.ExchangePlatform.commonData.DataType.MarketDataType;
 import nw.ExchangePlatform.trading.limitOrderBook.BookOperation;
 import nw.ExchangePlatform.trading.limitOrderBook.LimitOrderBookWareHouse;
 import nw.ExchangePlatform.trading.limitOrderBook.sortedOrderList;
 import nw.ExchangePlatform.trading.data.MarketParticipantOrder;
-import nw.ExchangePlatform.utility.BinSelector;
+import nw.ExchangePlatform.trading.data.OrderStatus;
 
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +32,7 @@ public class Session implements Runnable {
     private HashMap<Integer, MarketParticipantPortfolio> portfolioHashMap;
     private MarketParticipantPortfolio clientPortfolio;
     private ConcurrentHashMap<String,ReadWriteLock> locks;
+    private HashMap<Integer,Long> orderIDRequestIDMAP;
 
     public static AtomicInteger currentAvailableOrderID;
 
@@ -62,8 +63,8 @@ public class Session implements Runnable {
         Thread readerThread = new Thread(reader);
         readerThread.start();
 
-        MessageProcessor messageProcessor = new MessageProcessor();
-        Thread messageThread = new Thread(messageProcessor);
+        OrderStatusProcessor orderStatusProcessor = new OrderStatusProcessor();
+        Thread messageThread = new Thread(orderStatusProcessor);
         messageThread.start();
 
         ClientResponseProcessor writer = new ClientResponseProcessor(clientSocket.getOutputStream(), serverQueue,sessionID);
@@ -75,6 +76,7 @@ public class Session implements Runnable {
         if(Class.forName("OrderDTO").isInstance(DTO)) {
             OrderDTO orderDTO = (OrderDTO)DTO;
             int orderID = currentAvailableOrderID.getAndIncrement();
+            orderIDRequestIDMAP.put(orderID, orderDTO.getClientRequestID());
             MarketParticipantOrder order = new MarketParticipantOrder(sessionID,clientUserID,clientUserName, orderID,
                     new Date(),orderDTO.getDirection(),orderDTO.getTickerSymbol(),orderDTO.getSize(),orderDTO.getPrice(),
                     orderDTO.getOrderType(),orderDTO.getOrderDuration());
@@ -116,14 +118,15 @@ public class Session implements Runnable {
         if(Class.forName("DepositDTO").isInstance(DTO)) {
             DepositDTO depositDTO = (DepositDTO)DTO;
             double cashAmt = depositDTO.getCashAmount();
-            clientPortfolio.cash += cashAmt;
+            clientPortfolio.DepositCash(cashAmt);
             String message = cashAmt + " dollars have been successfully deposited into your account";
-            MessageDTO messageDTO = new MessageDTO(message);
+            MessageDTO messageDTO = new MessageDTO(depositDTO.getClientRequestID(), OrderStatusType.Deposit, message);
             serverQueue.PutResponseDTO(sessionID,messageDTO);
         }
 
         if(Class.forName("PortfolioRequestDTO").isInstance(DTO)) {
-            PortfolioDTO portfolioDTO = new PortfolioDTO(clientPortfolio.securities,clientPortfolio.cash);
+            PortfolioRequestDTO portfolioRequestDTO = (PortfolioRequestDTO)DTO;
+            PortfolioDTO portfolioDTO = new PortfolioDTO(portfolioRequestDTO.getClientRequestID(),clientPortfolio.getSecurities(),clientPortfolio.getCashAmt());
             serverQueue.PutResponseDTO(sessionID,portfolioDTO);
         }
 
@@ -145,7 +148,8 @@ public class Session implements Runnable {
 
                 if(marketData.getKey().size() > 0 || marketData.getValue().size() > 0) {
                     //Create market data dto and put into queue
-                    MarketDataDTO marketDataDTO = new MarketDataDTO(tickerSymbol, marketData);
+                    MarketDataDTO marketDataDTO = new MarketDataDTO(marketDataRequestDTO.getClientRequestID(),
+                            tickerSymbol, marketData);
                     serverQueue.PutResponseDTO(sessionID,marketDataDTO);
                 }
             } else {
@@ -156,12 +160,12 @@ public class Session implements Runnable {
 
     public void On_ReceivingLevel3DataChanges(String tickerSymbol, List<Pair<BookOperation, Object[]>> bookchanges) throws Exception {
         //Create change DTO and put into queue
-        BookChangesDTO DTO = new BookChangesDTO(tickerSymbol,bookchanges);
+        BookChangeDTO DTO = new BookChangeDTO(tickerSymbol,bookchanges);
         serverQueue.PutResponseDTO(sessionID, DTO);
     }
 
-    public MessageDTO CreateMessageDTOForWriter(String messages) {
-        MessageDTO messageDTO = new MessageDTO(messages);
+    public MessageDTO CreateMessageDTOForWriter(Long requestID, OrderStatusType msgType, String messages) {
+        MessageDTO messageDTO = new MessageDTO(requestID, msgType, messages);
         return messageDTO;
     }
 
@@ -173,11 +177,12 @@ public class Session implements Runnable {
         }
     }
 
-    private class MessageProcessor implements Runnable {
+    private class OrderStatusProcessor implements Runnable {
         private void Process() throws Exception{
-            ArrayList<String> messages = serverQueue.TakeMessage(sessionID);
-            for(String message : messages) {
-                MessageDTO messageDTO = new MessageDTO(message);
+            OrderStatus orderStatus = serverQueue.TakeOrderStatus(sessionID);
+            Long requestID = orderIDRequestIDMAP.get(orderStatus.getOrderID());
+            for(String statusMessage : orderStatus.getStatusMessages()) {
+                MessageDTO messageDTO = new MessageDTO(requestID,orderStatus.getMsgType(),statusMessage);
                 serverQueue.PutResponseDTO(sessionID,messageDTO);
             }
         }

@@ -78,7 +78,7 @@ public class TradingEngine{
                     valid = FillLimitOrder(order, currentLimitOrderBook, counterPartyLimitOrderBook, transactions, unfilledOrders, pendingOrders);
             }
         }
-        return new TradingOutput(transactions, unfilledOrders,pendingOrders);
+        return new TradingOutput(order.getOrderID(), transactions, unfilledOrders,pendingOrders);
     }
 
     private boolean FillMarketOrder(MarketParticipantOrder order, sortedOrderList counterPartyLimitOrderBook, ArrayList<Transaction> transactions,

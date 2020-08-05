@@ -4,25 +4,23 @@ import javafx.util.Pair;
 import nw.ExchangePlatform.client.marketData.MarketDataItem;
 import nw.ExchangePlatform.trading.data.MarketParticipantOrder;
 import nw.ExchangePlatform.trading.limitOrderBook.BookOperation;
-import nw.ExchangePlatform.trading.limitOrderBook.sortedOrderList;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BookChangesDTO implements Transferable{
+public class BookChangeDTO implements Transferable{
     private DTOType dtoType;
     private List<Pair<BookOperation, Object[]>> bookChanges;
     private String tickerSymbol;
     private byte[] bookChangesDTOByteArray;
 
 
-    public BookChangesDTO(String tickerSymbol, List<Pair<BookOperation, Object[]>> bookChanges) {
+    public BookChangeDTO(String tickerSymbol, List<Pair<BookOperation, Object[]>> bookChanges) {
         this.bookChanges = bookChanges;
-        dtoType = DTOType.BookChangesDTO;
+        dtoType = DTOType.BookChanges;
         this.tickerSymbol = tickerSymbol;
     }
 
@@ -64,7 +62,7 @@ public class BookChangesDTO implements Transferable{
         return bookChangesDTOByteArray;
     }
 
-    public static BookChangesDTO Deserialize(byte[] DTOByteArray) {
+    public static BookChangeDTO Deserialize(byte[] DTOByteArray) {
         List<Pair<BookOperation, Object[]>> bookChanges = new ArrayList<>();
         ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
 
@@ -107,7 +105,7 @@ public class BookChangesDTO implements Transferable{
                     bookChanges.add(insertOperation);
             }
         }
-        return new BookChangesDTO(tickerSymbolT,bookChanges);
+        return new BookChangeDTO(tickerSymbolT,bookChanges);
     }
 
     private static MarketDataItem DeserializeDataItem(ByteArrayInputStream inputStream, String tickerSymbolT) {
@@ -131,4 +129,7 @@ public class BookChangesDTO implements Transferable{
         return tickerSymbol;
     }
 
+    public List<Pair<BookOperation, Object[]>> getBookChanges() {
+        return bookChanges;
+    }
 }

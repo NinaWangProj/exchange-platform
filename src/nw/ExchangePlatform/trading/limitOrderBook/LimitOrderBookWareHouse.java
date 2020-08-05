@@ -1,7 +1,7 @@
 package nw.ExchangePlatform.trading.limitOrderBook;
 
 import javafx.util.Pair;
-import nw.ExchangePlatform.commonData.MarketDataType;
+import nw.ExchangePlatform.commonData.DataType.MarketDataType;
 import nw.ExchangePlatform.server.session.Session;
 
 import java.util.concurrent.ConcurrentHashMap;

@@ -2,12 +2,14 @@ package nw.ExchangePlatform.server.session;
 
 import nw.ExchangePlatform.clearing.data.CredentialWareHouse;
 import nw.ExchangePlatform.clearing.data.DTCCWarehouse;
+import nw.ExchangePlatform.clearing.data.MarketParticipantPortfolio;
 import nw.ExchangePlatform.commonData.ServerQueue;
 import nw.ExchangePlatform.trading.limitOrderBook.LimitOrderBookWareHouse;
 
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 
@@ -20,11 +22,11 @@ public class SessionManager implements Runnable{
     private CredentialWareHouse credentialWareHouse;
     private LimitOrderBookWareHouse dataWareHouse;
     private ConcurrentHashMap<String,ReadWriteLock> locks;
-    private DTCCWarehouse dtcc;
+    private HashMap<Integer, MarketParticipantPortfolio> portfoliosMap;
 
     public SessionManager(ServerSocket serverSocket, ServerQueue systemServerQueue, int baseOrderID,
                           CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse dataWareHouse,
-                          ConcurrentHashMap<String,ReadWriteLock> locks, DTCCWarehouse dtcc) {
+                          ConcurrentHashMap<String,ReadWriteLock> locks, HashMap<Integer, MarketParticipantPortfolio> portfoliosMap) {
         this.sessionUniverse = new ArrayList<Session>();
         this.serverSocket = serverSocket;
         this.systemServerQueue = systemServerQueue;
@@ -39,7 +41,7 @@ public class SessionManager implements Runnable{
         while (true) {
             Socket clientSocket = serverSocket.accept();
             Session session = new Session(clientSocket, nextAvailableSessionID, systemServerQueue, baseOrderID,
-                    credentialWareHouse,dataWareHouse,locks,dtcc.portfoliosMap);
+                    credentialWareHouse,dataWareHouse,locks, portfoliosMap);
             sessionUniverse.add(session);
             nextAvailableSessionID += 1;
             Thread sessionThread = new Thread(session);

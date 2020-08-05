@@ -1,29 +1,31 @@
-package nw.ExchangePlatform.commonData;
+package nw.ExchangePlatform.commonData.DataType;
 
 import java.util.HashMap;
 
-public enum MarketDataType {
-    Level1(1),
-    Level3(2),
-    ContinuousLevel3(3);
+public enum OrderStatusType {
+    Pending(1),
+    PartiallyFilled(2),
+    Unfilled(3),
+    Deposit(4),
+    MarketOrderComplete(5);
 
     private final int value;
     private final byte byteValue;
-    private static final HashMap<Integer,MarketDataType> map = new HashMap<Integer,MarketDataType>();
+    private static final HashMap<Integer, OrderStatusType> map = new HashMap<Integer, OrderStatusType>();
 
-    private MarketDataType(int value) {
+    private OrderStatusType(int value) {
         this.value = value;
         this.byteValue = (byte)value;
     }
 
     //static initialisation block; only run this method once when the class is first loaded;
     static {
-        for (MarketDataType type : MarketDataType.values()) {
+        for (OrderStatusType type : OrderStatusType.values()) {
             map.put(type.value, type);
         }
     }
 
-    public static MarketDataType valueOf(int typeInteger) {
+    public static OrderStatusType valueOf(int typeInteger) {
         return map.get(typeInteger);
     }
 
