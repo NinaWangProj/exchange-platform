@@ -60,7 +60,7 @@ public class ServerQueue {
     }
 
     private Map<Integer,TradingOutput> GroupOutputsByUserID(TradingOutput result) {
-        Map<Integer,TradingOutput> groupedTradingOutputs = new HashMap<>();
+        Map<Integer,TradingOutput> groupedTradingOutputs = new HashMap<Integer,TradingOutput>();
         if(result.Transactions != null) {
             for (Transaction transaction : result.Transactions) {
                 int userID = transaction.getUserID();
@@ -94,7 +94,7 @@ public class ServerQueue {
     }
 
     private Map<Integer,TradingOutput> GroupOutputsBySessionID(TradingOutput result) {
-        Map<Integer,TradingOutput> groupedTradingOutputs = new HashMap<>();
+        Map<Integer,TradingOutput> groupedTradingOutputs = new HashMap<Integer,TradingOutput>();
         if(result.Transactions != null) {
             for (Transaction transaction : result.Transactions) {
                 int sessionID = transaction.getSessionID();

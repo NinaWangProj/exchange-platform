@@ -63,7 +63,6 @@ public class MarketDataRequestDTO implements Transferable {
         return dataType;
     }
 
-    @Override
     public DTOType getDtoType() {
         return dtoType;
     }

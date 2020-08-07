@@ -55,7 +55,6 @@ public class LoginDTO implements Transferable {
         return password;
     }
 
-    @Override
     public DTOType getDtoType() {
         return dtoType;
     }

@@ -22,7 +22,7 @@ public class ServerEngine {
         this.config = config;
         //need to persist the credential; will work on it later. for now, hardcode baseuserid to 0;
         credentialWareHouse = new CredentialWareHouse(0);
-        OrderBooklocks = new ConcurrentHashMap<>();
+        OrderBooklocks = new ConcurrentHashMap<String,ReadWriteLock>();
     }
 
     public void Start() throws Exception{

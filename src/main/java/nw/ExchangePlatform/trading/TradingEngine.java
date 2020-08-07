@@ -1,5 +1,6 @@
 package nw.ExchangePlatform.trading;
 
+
 import javafx.util.Pair;
 import nw.ExchangePlatform.commonData.Order.Direction;
 import nw.ExchangePlatform.trading.limitOrderBook.sortedOrderList;
@@ -50,9 +51,9 @@ public class TradingEngine{
     //private methods
     private TradingOutput MatchOrder(MarketParticipantOrder order) throws Exception {
         boolean valid = true;
-        ArrayList<Transaction> transactions = new ArrayList<>();
-        ArrayList<UnfilledOrder> unfilledOrders = new ArrayList<>();
-        ArrayList<PendingOrder> pendingOrders = new ArrayList<>();
+        ArrayList<Transaction> transactions = new ArrayList<Transaction>();
+        ArrayList<UnfilledOrder> unfilledOrders = new ArrayList<UnfilledOrder>();
+        ArrayList<PendingOrder> pendingOrders = new ArrayList<PendingOrder>();
         sortedOrderList counterPartyLimitOrderBook;
         sortedOrderList currentLimitOrderBook ;
 

@@ -12,7 +12,7 @@ public class MarketDataWareHouse {
     private HashMap<String, MarketData> marketDataMap;
 
     public MarketDataWareHouse() {
-        marketDataMap = new HashMap<>();
+        marketDataMap = new HashMap<String, MarketData>();
     }
 
     public MarketData getMarketData(String tickerSymbol) {

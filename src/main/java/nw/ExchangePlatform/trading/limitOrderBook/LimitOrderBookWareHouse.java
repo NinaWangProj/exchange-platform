@@ -34,13 +34,13 @@ public class LimitOrderBookWareHouse {
     }
 
     public void AddNewLimitOrderBook(String tickerSymbol, ReadWriteLock lock) {
-        limitOrderBooks.put(tickerSymbol, new Pair<>(new sortedOrderList(bidComparator,lock,tickerSymbol),new sortedOrderList(askComparator,lock,tickerSymbol)));
+        limitOrderBooks.put(tickerSymbol, new Pair<sortedOrderList, sortedOrderList>(new sortedOrderList(bidComparator,lock,tickerSymbol),new sortedOrderList(askComparator,lock,tickerSymbol)));
     }
 
     public Pair<sortedOrderList, sortedOrderList> GetLimitOrderBook
             (String tickerSymbol, MarketDataType type, Session session) throws Exception{
         Pair<sortedOrderList, sortedOrderList> marketData =
-                new Pair<>(new sortedOrderList(bidComparator),new sortedOrderList(askComparator));
+                new Pair<sortedOrderList, sortedOrderList>(new sortedOrderList(bidComparator),new sortedOrderList(askComparator));
         switch (type) {
             case Level1:
                 marketData.getKey().add(limitOrderBooks.get(tickerSymbol).getKey().get(0));

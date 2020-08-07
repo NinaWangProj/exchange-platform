@@ -38,7 +38,7 @@ public class WrapperEngine {
         List<HashMap<Integer, OrderStatus>> finalMessageMap = null;
 
         for (OrderBatch batch : batches) {
-            HashMap<Integer, OrderStatus> messageMap = new HashMap<>();
+            HashMap<Integer, OrderStatus> messageMap = new HashMap<Integer, OrderStatus>();
             messageMap = ProcessOrderBatch(batch);
             finalMessageMap.add(messageMap);
         }
@@ -48,20 +48,20 @@ public class WrapperEngine {
 
     private ArrayList<OrderBatch> GroupOrdersIntoBatches(ArrayList<MarketParticipantOrder> Orders){
         //current implementation: group by tickerSymbol; one ticker Symbol related orders per batch
-        HashMap<String,OrderBatch> orderBatchMap = new HashMap<>();
+        HashMap<String,OrderBatch> orderBatchMap = new HashMap<String,OrderBatch>();
         for (MarketParticipantOrder order : Orders) {
             String tickerSymbol = order.getTickerSymbol();
             if (orderBatchMap.containsKey(tickerSymbol)) {
                 orderBatchMap.get(tickerSymbol).batch.add(order);
             } else {
-                ArrayList<MarketParticipantOrder> orderArrayList = new ArrayList<>();
+                ArrayList<MarketParticipantOrder> orderArrayList = new ArrayList<MarketParticipantOrder>();
                 orderArrayList.add(order);
                 OrderBatch batch = new OrderBatch(tickerSymbol, orderArrayList);
                 orderBatchMap.put(tickerSymbol,batch);
             }
         }
 
-        ArrayList<OrderBatch> batches = new ArrayList<>(orderBatchMap.values());
+        ArrayList<OrderBatch> batches = new ArrayList<OrderBatch>(orderBatchMap.values());
         return batches;
     }
 

@@ -66,7 +66,7 @@ public class PortfolioDTO implements Transferable{
     }
 
     public static PortfolioDTO Deserialize(byte[] DTOByteArray) throws Exception{
-        HashMap<String, SecurityCertificate> securities = new HashMap<>();
+        HashMap<String, SecurityCertificate> securities = new HashMap<String, SecurityCertificate>();
 
         ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
 

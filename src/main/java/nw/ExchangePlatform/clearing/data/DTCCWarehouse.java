@@ -11,7 +11,7 @@ public class DTCCWarehouse {
     public HashMap<Integer, MarketParticipantPortfolio> portfoliosMap;
 
     public DTCCWarehouse() {
-        certificatesMap = new HashMap<>();
-        portfoliosMap = new HashMap<>();
+        certificatesMap = new HashMap<String, HashMap<Integer, SecurityCertificate>>();
+        portfoliosMap = new HashMap<Integer, MarketParticipantPortfolio>();
     }
 }

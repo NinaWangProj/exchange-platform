@@ -41,7 +41,7 @@ public class BookChangeDTO implements Transferable{
             BookOperation operationType = bookChanges.get(i).getKey();
             outputStream.write(operationType.getByteValue());
             Object[] operationInputs = bookChanges.get(i).getValue();
-            int index = (int)operationInputs[0];
+            int index = (Integer) operationInputs[0];
             byte[] indexByteArray = ByteBuffer.allocate(4).putInt(index).array();
             outputStream.write(indexByteArray);
 
@@ -63,7 +63,7 @@ public class BookChangeDTO implements Transferable{
     }
 
     public static BookChangeDTO Deserialize(byte[] DTOByteArray) {
-        List<Pair<BookOperation, Object[]>> bookChanges = new ArrayList<>();
+        List<Pair<BookOperation, Object[]>> bookChanges = new ArrayList<Pair<BookOperation, Object[]>>();
         ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
 
         int tickerSymbolLength = inputStream.read();
@@ -86,7 +86,7 @@ public class BookChangeDTO implements Transferable{
 
             switch(operationTypeT) {
                 case REMOVE:
-                    Pair<BookOperation,Object[]> removeOperation = new Pair<>(BookOperation.REMOVE,
+                    Pair<BookOperation,Object[]> removeOperation = new Pair<BookOperation,Object[]>(BookOperation.REMOVE,
                             new Object[]{indexT});
                     bookChanges.add(removeOperation);
                 case INSERT:
@@ -100,7 +100,7 @@ public class BookChangeDTO implements Transferable{
                     MarketDataItem dataItem = new MarketDataItem(DataItemDTO.getTickerSymbol(),
                             DataItemDTO.getSize(),DataItemDTO.getPrice());
 
-                    Pair<BookOperation,Object[]> insertOperation = new Pair<>(BookOperation.INSERT,
+                    Pair<BookOperation,Object[]> insertOperation = new Pair<BookOperation,Object[]>(BookOperation.INSERT,
                             new Object[]{indexT,dataItem});
                     bookChanges.add(insertOperation);
             }

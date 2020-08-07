@@ -61,7 +61,6 @@ public class MessageDTO implements Transferable
         return DTO;
     }
 
-    @Override
     public DTOType getDtoType() {
         return dtoType;
     }

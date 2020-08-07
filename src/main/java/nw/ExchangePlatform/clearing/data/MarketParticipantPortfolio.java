@@ -15,7 +15,7 @@ public class MarketParticipantPortfolio {
     }
 
     public MarketParticipantPortfolio(){
-        securities = new HashMap<>();
+        securities = new HashMap<String, SecurityCertificate>();
         cash = 0.0;
     }
 

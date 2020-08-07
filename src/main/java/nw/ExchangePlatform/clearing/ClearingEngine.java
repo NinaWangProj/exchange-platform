@@ -50,7 +50,7 @@ public class ClearingEngine {
         }
     }
 
-    private void ClearTransactionWithDTCCWarehouse(Transaction transaction,HashMap<String, HashMap<Integer,SecurityCertificate>> certificatesMap){
+    private void ClearTransactionWithDTCCWarehouse(final Transaction transaction, HashMap<String, HashMap<Integer,SecurityCertificate>> certificatesMap){
         switch (transaction.getDirection()) {
             case BUY:
                 boolean foundTicker = certificatesMap.containsKey(transaction.getTickerSymbol());
@@ -62,8 +62,8 @@ public class ClearingEngine {
                     }
                     certificatesMap.get(transaction.getTickerSymbol()).get(transaction.getUserID()).quantity += transaction.getSize();
                 } else {
-                    SecurityCertificate certificate = new SecurityCertificate(transaction.getName(), transaction.getTickerSymbol(), transaction.getSize(), new Date());
-                    certificatesMap.put(transaction.getTickerSymbol(), new HashMap<>(){{put(transaction.getUserID(),certificate);}});
+                    final SecurityCertificate certificate = new SecurityCertificate(transaction.getName(), transaction.getTickerSymbol(), transaction.getSize(), new Date());
+                    certificatesMap.put(transaction.getTickerSymbol(), new HashMap<Integer,SecurityCertificate>(){{put(transaction.getUserID(),certificate);}});
                 }
 
             case SELL:

@@ -11,7 +11,7 @@ import java.util.HashMap;
 public class MessageGenerator {
 
     public static HashMap<Integer, OrderStatus> GenerateMessages (TradingOutput tradingOutput) {
-        HashMap<Integer, OrderStatus> userOrderStatusMap = new HashMap<>();
+        HashMap<Integer, OrderStatus> userOrderStatusMap = new HashMap<Integer, OrderStatus>();
 
         if (tradingOutput.Transactions.size() >0 ) {
             GenerateMessagesPerOutputType(userOrderStatusMap, MessageType.TransactionMessage, tradingOutput.Transactions);

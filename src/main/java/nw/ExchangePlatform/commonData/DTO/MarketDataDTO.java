@@ -79,8 +79,8 @@ public class MarketDataDTO implements Transferable{
 
     public static MarketDataDTO Deserialize(byte[] DTOByteArray) {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
-        ArrayList<MarketDataItem> bids = new ArrayList<>();
-        ArrayList<MarketDataItem> asks = new ArrayList<>();
+        ArrayList<MarketDataItem> bids = new ArrayList<MarketDataItem>();
+        ArrayList<MarketDataItem> asks = new ArrayList<MarketDataItem>();
 
         int tickerSymbolLength = inputStream.read();
         byte[] tickerSymbolBuffer = new byte[tickerSymbolLength];

@@ -20,7 +20,7 @@ public class ClientSession implements Runnable {
     public ClientSession(Socket clientSocket, OrderStatusEventHandler orderStatusObserver) {
         this.clientSocket = clientSocket;
         this.orderStatusObserver = orderStatusObserver;
-        requestIDMonitorMap = new ConcurrentHashMap<>();
+        requestIDMonitorMap = new ConcurrentHashMap<Long,Object>();
     }
 
     public void Start() throws Exception{
