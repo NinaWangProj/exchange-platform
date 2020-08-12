@@ -6,7 +6,13 @@
 
     <groupId>nwang</groupId>
     <artifactId>exchange-platform</artifactId>
+    <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
+    <modules>
+        <module>server</module>
+        <module>client</module>
+        <module>common</module>
+    </modules>
     <dependencies>
         <dependency>
             <groupId>org.openjfx</groupId>
