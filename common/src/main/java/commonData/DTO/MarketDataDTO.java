@@ -12,7 +12,6 @@ import java.util.ArrayList;
 public class MarketDataDTO implements Transferable{
     private DTOType dtoType;
     private String tickerSymbol;
-    private byte[] marketDataDTOByteArray;
     private ArrayList<MarketDataItem> bids;
     private ArrayList<MarketDataItem> asks;
     private Long clientRequestID;
@@ -26,24 +25,24 @@ public class MarketDataDTO implements Transferable{
         this.clientRequestID = clientRequestID;
     }
 
-    public MarketDataDTO(ArrayList<MarketDataItem> bids, ArrayList<MarketDataItem> asks) {
-        this.bids = bids;
-        this.asks = asks;
-    }
-
     public byte[] Serialize() throws Exception {
+
+        byte[] marketDataDTOByteArray = null;
         int numOfBids = bids.size();
         int numOfAsks = asks.size();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        byte[] requestIDByteArray = ByteBuffer.allocate(8).putLong(clientRequestID).array();
+        outputStream.write(requestIDByteArray);
 
         byte[] tickerSymbolByte = tickerSymbol.getBytes();
         byte tickerSize = (byte)tickerSymbolByte.length;
         outputStream.write(tickerSize);
         outputStream.write(tickerSymbolByte);
 
-        byte[] totalBidsByteSize = ByteBuffer.allocate(4).putInt(numOfBids * 12).array();
-        byte[] totalAsksByteSize = ByteBuffer.allocate(4).putInt(numOfAsks * 12).array();
+        byte[] totalBidsByteSize = ByteBuffer.allocate(4).putInt(numOfBids).array();
+        byte[] totalAsksByteSize = ByteBuffer.allocate(4).putInt(numOfAsks).array();
         outputStream.write(totalBidsByteSize);
         outputStream.write(totalAsksByteSize);
 
@@ -53,7 +52,7 @@ public class MarketDataDTO implements Transferable{
                 byte[] sizeByte = ByteBuffer.allocate(4).putInt(bids.get(i).getSize()).array();
                 outputStream.write(sizeByte);
 
-                byte[] priceByte = ByteBuffer.allocate(8).order(ByteOrder.nativeOrder()).putDouble(bids.get(i).getPrice()).array();
+                byte[] priceByte = ByteBuffer.allocate(8).putDouble(bids.get(i).getPrice()).array();
                 outputStream.write(priceByte);
             }
         }
@@ -63,7 +62,7 @@ public class MarketDataDTO implements Transferable{
                 byte[] sizeByte = ByteBuffer.allocate(4).putInt(asks.get(j).getSize()).array();
                 outputStream.write(sizeByte);
 
-                byte[] priceByte = ByteBuffer.allocate(8).order(ByteOrder.nativeOrder()).putDouble(asks.get(j).getPrice()).array();
+                byte[] priceByte = ByteBuffer.allocate(8).putDouble(asks.get(j).getPrice()).array();
                 outputStream.write(priceByte);
             }
         }
@@ -77,6 +76,10 @@ public class MarketDataDTO implements Transferable{
         ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
         ArrayList<MarketDataItem> bids = new ArrayList<MarketDataItem>();
         ArrayList<MarketDataItem> asks = new ArrayList<MarketDataItem>();
+
+        byte[] requestIDBuffer = new byte[8];
+        inputStream.read(requestIDBuffer, 0, 8);
+        Long requestIDT = ByteBuffer.wrap(requestIDBuffer).getLong();
 
         int tickerSymbolLength = inputStream.read();
         byte[] tickerSymbolBuffer = new byte[tickerSymbolLength];
@@ -105,7 +108,7 @@ public class MarketDataDTO implements Transferable{
             }
         }
 
-        MarketDataDTO DTO = new MarketDataDTO(bids,asks);
+        MarketDataDTO DTO = new MarketDataDTO(requestIDT,tickerSymbolT,bids,asks);
 
         return DTO;
     }

@@ -36,7 +36,7 @@ public class MarketDataRequestDTO implements Transferable {
         return outputStream.toByteArray();
     }
 
-    public static Transferable Deserialize(byte[] marketDataRequestBytes) throws Exception{
+    public static MarketDataRequestDTO Deserialize(byte[] marketDataRequestBytes) throws Exception{
         ByteArrayInputStream inputStream = new ByteArrayInputStream(marketDataRequestBytes);
 
         byte[] requestIDBuffer = new byte[8];

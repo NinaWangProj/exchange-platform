@@ -11,7 +11,6 @@ public class MessageDTO implements Transferable
     private final DTOType dtoType;
     private final String message;
     private final OrderStatusType msgType;
-    private byte[] msgDTOByteArray;
     private final long clientRequestID;
 
     public MessageDTO(long requestID, OrderStatusType msgType, String message)
@@ -24,13 +23,13 @@ public class MessageDTO implements Transferable
 
     public byte[] Serialize()
     {
+        byte[] msgDTOByteArray = null;
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             byte[] msgByteArray = message.getBytes();
             byte msgByteSize = (byte)msgByteArray.length;
 
             byte[] requestIDByteArray = ByteBuffer.allocate(8).putLong(clientRequestID).array();
-            outputStream.write(requestIDByteArray);
 
             outputStream.write(requestIDByteArray);
             outputStream.write(msgType.getByteValue());
