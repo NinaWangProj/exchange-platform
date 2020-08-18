@@ -19,13 +19,16 @@ public class DepositDTO implements Transferable{
     public byte[] Serialize() throws Exception{
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        byte[] cashAmountByte = ByteBuffer.allocate(8).order(ByteOrder.nativeOrder()).putDouble(cashAmount).array();
+        byte[] requestIDByteArray = ByteBuffer.allocate(8).putLong(clientRequestID).array();
+        outputStream.write(requestIDByteArray);
+
+        byte[] cashAmountByte = ByteBuffer.allocate(8).putDouble(cashAmount).array();
         outputStream.write(cashAmountByte);
 
         return outputStream.toByteArray();
     }
 
-    public static Transferable Deserialize(byte[] depositRequestByteArray) throws Exception{
+    public static DepositDTO Deserialize(byte[] depositRequestByteArray) throws Exception{
         ByteArrayInputStream inputStream = new ByteArrayInputStream(depositRequestByteArray);
 
         byte[] requestIDBuffer = new byte[8];

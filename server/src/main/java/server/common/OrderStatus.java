@@ -1,4 +1,4 @@
-package trading.data;
+package server.common;
 
 import commonData.DataType.OrderStatusType;
 

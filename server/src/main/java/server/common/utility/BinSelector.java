@@ -1,4 +1,4 @@
-package utility;
+package server.common.utility;
 
 public class BinSelector {
 

@@ -1,7 +1,7 @@
-package serverEngine.session;
+package session;
 
 import commonData.DTO.Transferable;
-import serverEngine.data.ServerQueue;
+import server.common.ServerQueue;
 
 import java.io.OutputStream;
 

@@ -1,4 +1,4 @@
-package serverEngine.session;
+package session;
 
 import commonData.DTO.*;
 

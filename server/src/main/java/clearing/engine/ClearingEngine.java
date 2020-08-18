@@ -4,7 +4,7 @@ import clearing.data.ClearingStatus;
 import clearing.data.DTCCWarehouse;
 import commonData.clearing.MarketParticipantPortfolio;
 import commonData.clearing.SecurityCertificate;
-import trading.data.Transaction;
+import server.common.Transaction;
 
 import java.util.ArrayList;
 import java.util.Date;

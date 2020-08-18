@@ -1,4 +1,4 @@
-package trading.data;
+package server.common;
 
 public enum TransactionType {
     ALLFILLED,

@@ -15,8 +15,6 @@ public class BookChangeDTO implements Transferable{
     private DTOType dtoType;
     private List<Pair<BookOperation, Object[]>> bookChanges;
     private String tickerSymbol;
-    private byte[] bookChangesDTOByteArray;
-
 
     public BookChangeDTO(String tickerSymbol, List<Pair<BookOperation, Object[]>> bookChanges) {
         this.bookChanges = bookChanges;
@@ -75,9 +73,7 @@ public class BookChangeDTO implements Transferable{
         inputStream.read(numOfOperationsBuffer,0,4);
         int numOfOperationsT = ByteBuffer.wrap(numOfOperationsBuffer).getInt();
 
-        for(int i =0; i < numOfOperationsT; i++) {
-            byte[] operationTypeBuffer = new byte[4];
-            inputStream.read(operationTypeBuffer,0,4);
+        for(int i =0; i < numOfOperationsT; i++) { ;
             BookOperation operationTypeT = BookOperation.valueOf(inputStream.read());
 
             byte[] indexByteBuffer = new byte[4];

@@ -1,4 +1,8 @@
-package trading.data;
+package server.common;
+
+import server.common.Transaction;
+import trading.data.PendingOrder;
+import trading.data.UnfilledOrder;
 
 import java.util.ArrayList;
 

@@ -3,7 +3,7 @@ package commonData.DTO;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
-public class OpenAcctDTO {
+public class OpenAcctDTO implements Transferable {
     private final DTOType dtoType;
     private final String userName;
     private final String password;
@@ -43,7 +43,7 @@ public class OpenAcctDTO {
         inputStream.read(passwordBuffer, 0, passwordLength);
         String passwordT = new String(passwordBuffer);
 
-        LoginDTO DTO = new LoginDTO(userNameT,passwordT);
+        OpenAcctDTO DTO = new OpenAcctDTO(userNameT,passwordT);
         return DTO;
     }
 

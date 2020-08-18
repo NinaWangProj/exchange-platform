@@ -1,9 +1,9 @@
-package utility;
+package server.common.utility;
 
 import commonData.DataType.OrderStatusType;
 import commonData.Order.Info;
-import trading.data.OrderStatus;
-import trading.data.TradingOutput;
+import server.common.OrderStatus;
+import server.common.TradingOutput;
 
 import java.util.ArrayList;
 import java.util.HashMap;

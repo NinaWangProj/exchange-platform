@@ -164,20 +164,31 @@ public class DTOTest {
         Assertions.assertThat(deserializedDTO).usingRecursiveComparison().isEqualTo(dto);
     }
 
-/*    @Test
+    @Test
     public void portfolioRequestDTOTest() throws Exception{
         //serialize an order then deserialize to see if we will get the same object back
-        long clientRequestID = 104;
+        long clientRequestID = 108;
 
-        PortfolioRequestDTO portRequestDTO = new PortfolioRequestDTO(clientRequestID);
+        PortfolioRequestDTO dto = new PortfolioRequestDTO(clientRequestID);
 
+        byte[] dTOByteArray = dto.Serialize();
 
-        PortfolioDTO portfolioDTO = new PortfolioDTO(clientRequestID,portfolio,500.23);
+        PortfolioRequestDTO deserializedDTO = PortfolioRequestDTO.Deserialize(dTOByteArray);
 
-        byte[] portfolioDTOByteArray = portfolioDTO.Serialize();
+        Assertions.assertThat(deserializedDTO).usingRecursiveComparison().isEqualTo(dto);
+    }
 
-        PortfolioDTO deserializedDTO = PortfolioDTO.Deserialize(portfolioDTOByteArray);
+    @Test
+    public void loginDTOTest() throws Exception{
+        //serialize an order then deserialize to see if we will get the same object back
+        long clientRequestID = 111;
 
-        Assertions.assertThat(deserializedDTO).usingRecursiveComparison().isEqualTo(portfolioDTO);
-    }*/
+        LoginDTO dto = new LoginDTO(clientRequestID,"user1","password$5");
+
+        byte[] dTOByteArray = dto.Serialize();
+
+        LoginDTO deserializedDTO = LoginDTO.Deserialize(dTOByteArray);
+
+        Assertions.assertThat(deserializedDTO).usingRecursiveComparison().isEqualTo(dto);
+    }
 }

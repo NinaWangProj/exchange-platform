@@ -1,9 +1,9 @@
-package serverEngine.session;
+package session;
 
 import clearing.data.CredentialWareHouse;
 import commonData.clearing.MarketParticipantPortfolio;
-import serverEngine.data.ServerQueue;
-import trading.limitOrderBook.LimitOrderBookWareHouse;
+import server.common.ServerQueue;
+import server.common.LimitOrderBookWareHouse;
 
 import java.net.ServerSocket;
 import java.net.Socket;

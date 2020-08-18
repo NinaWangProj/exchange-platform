@@ -1,9 +1,9 @@
-package serverEngine.data;
+package server.common;
 
 import commonData.DTO.Transferable;
 import commonData.Order.MarketParticipantOrder;
 import trading.data.*;
-import utility.BinSelector;
+import server.common.utility.BinSelector;
 
 import java.util.HashMap;
 import java.util.Map;

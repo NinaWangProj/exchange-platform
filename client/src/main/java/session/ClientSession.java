@@ -52,7 +52,6 @@ public class ClientSession implements Runnable {
                 String message = messageDTO.getMessage();
                 OrderStatusType msgType = messageDTO.getMsgType();
                 long requestID = messageDTO.getClientRequestID();
-
                 orderStatusObserver.On_ReceiveOrderStatusChange(requestID, msgType, message);
         }
     }
