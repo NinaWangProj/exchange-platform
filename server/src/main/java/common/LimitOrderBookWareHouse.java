@@ -1,8 +1,7 @@
-package server.common;
+package common;
 
 import javafx.util.Pair;
 import commonData.DataType.MarketDataType;
-import server.common.sortedOrderList;
 import session.Session;
 import trading.limitOrderBook.AskPriceTimeComparator;
 import trading.limitOrderBook.BidPriceTimeComparator;
@@ -51,15 +50,16 @@ public class LimitOrderBookWareHouse {
             case Level1:
                 marketData.getKey().add(limitOrderBooks.get(tickerSymbol).getKey().get(0));
                 marketData.getValue().add(limitOrderBooks.get(tickerSymbol).getValue().get(0));
-
+                break;
             case Level3:
                 marketData = limitOrderBooks.get(tickerSymbol);
-
+                break;
             case ContinuousLevel3:
                 //register session with bid book and ask book to have continuous level 3 data
                 marketData = limitOrderBooks.get(tickerSymbol);
                 limitOrderBooks.get(tickerSymbol).getKey().RegisterSessionForContinuousData(session);
                 limitOrderBooks.get(tickerSymbol).getValue().RegisterSessionForContinuousData(session);
+                break;
         }
         return marketData;
     }

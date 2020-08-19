@@ -1,9 +1,9 @@
-package server.common.utility;
+package common.utility;
 
 import commonData.DataType.OrderStatusType;
 import commonData.Order.Info;
-import server.common.OrderStatus;
-import server.common.TradingOutput;
+import common.OrderStatus;
+import common.TradingOutput;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,10 +31,13 @@ public class MessageGenerator {
         switch (messageType) {
             case TransactionMessage:
                 orderStatusType = OrderStatusType.PartiallyFilled;
+                break;
             case PendingOrderMessage:
                 orderStatusType = OrderStatusType.Pending;
+                break;
             case UnfilledOrderMessage:
                 orderStatusType = OrderStatusType.Unfilled;
+                break;
         }
 
         for (Info tradingOutput : TradingOutputs) {
@@ -67,6 +70,7 @@ public class MessageGenerator {
             case PendingOrderMessage:
                 message = "Dear " + userName + " Your order with orderID: " + orderID
                         + " is in pending now for the resason " + reason;
+                break;
         }
         return message;
     }

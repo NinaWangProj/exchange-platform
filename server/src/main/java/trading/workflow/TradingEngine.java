@@ -1,13 +1,13 @@
 package trading.workflow;
 
 
-import server.common.TradingOutput;
-import server.common.Transaction;
+import common.TradingOutput;
+import common.Transaction;
 import commonData.Order.MarketParticipantOrder;
 import javafx.util.Pair;
 import commonData.Order.Direction;
 import serverEngine.WrapperEngine;
-import server.common.sortedOrderList;
+import common.sortedOrderList;
 import trading.data.*;
 
 
@@ -81,6 +81,7 @@ public class TradingEngine{
                     break;
                 case LIMITORDER:
                     valid = FillLimitOrder(order, currentLimitOrderBook, counterPartyLimitOrderBook, transactions, unfilledOrders, pendingOrders);
+                    break;
             }
         }
         return new TradingOutput(order.getOrderID(), transactions, unfilledOrders,pendingOrders);

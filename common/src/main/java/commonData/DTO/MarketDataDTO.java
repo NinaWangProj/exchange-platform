@@ -72,7 +72,7 @@ public class MarketDataDTO implements Transferable{
         return marketDataDTOByteArray;
     }
 
-    public static MarketDataDTO Deserialize(byte[] DTOByteArray) {
+    public static MarketDataDTO Deserialize(byte[] DTOByteArray) throws Exception{
         ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
         ArrayList<MarketDataItem> bids = new ArrayList<MarketDataItem>();
         ArrayList<MarketDataItem> asks = new ArrayList<MarketDataItem>();

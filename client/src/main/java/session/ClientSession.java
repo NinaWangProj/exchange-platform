@@ -40,19 +40,20 @@ public class ClientSession implements Runnable {
                 marketDataWareHouse.setMarketData(marketDataTickerSymbol, marketDataDTO.getBids(), marketDataDTO.getAsks());
                 Object monitor = requestIDMonitorMap.get(marketDataDTO.getClientRequestID());
                 monitor.notifyAll();
-
+                break;
             case BookChanges:
                 BookChangeDTO bookChangeDTO = (BookChangeDTO) DTO;
                 String bookChangeTickerSymbol = bookChangeDTO.getTickerSymbol();
                 List<Pair<BookOperation, Object[]>> bookChanges = bookChangeDTO.getBookChanges();
                 marketDataWareHouse.applyBookChanges(bookChangeTickerSymbol, bookChanges);
-
+                break;
             case Message:
                 MessageDTO messageDTO = (MessageDTO) DTO;
                 String message = messageDTO.getMessage();
                 OrderStatusType msgType = messageDTO.getMsgType();
                 long requestID = messageDTO.getClientRequestID();
                 orderStatusObserver.On_ReceiveOrderStatusChange(requestID, msgType, message);
+                break;
         }
     }
 

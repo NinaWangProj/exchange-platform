@@ -8,11 +8,7 @@ import commonData.Order.OrderType;
 import commonData.clearing.SecurityCertificate;
 import commonData.marketData.MarketDataItem;
 import org.assertj.core.api.Assertions;
-import org.assertj.core.error.uri.ShouldHaveHost;
 import org.junit.jupiter.api.Test;
-
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;

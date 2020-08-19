@@ -25,12 +25,16 @@ public class ServerResponseProcessor implements Runnable{
             switch (dtoType) {
                 case Message:
                     DTO = MessageDTO.Deserialize(DTOByteArray);
+                    break;
                 case MarketData:
                     DTO = MarketDataDTO.Deserialize(DTOByteArray);
+                    break;
                 case BookChanges:
                     DTO = BookChangeDTO.Deserialize(DTOByteArray);
+                    break;
                 case Portfolio:
                     DTO = PortfolioDTO.Deserialize(DTOByteArray);
+                    break;
             }
         }
 

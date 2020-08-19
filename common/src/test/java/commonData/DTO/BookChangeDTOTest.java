@@ -14,16 +14,14 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 public class BookChangeDTOTest {
 
     @Test
     public void serialize() throws Exception{
         long clientRequestID = 110;
         String tickerSymbol = "AAPL";
-        List<Pair<BookOperation, Object[]>> bookChanges = new ArrayList<Pair<BookOperation, Object[]>>();
-        List<Pair<BookOperation, Object[]>> expectedBookChanges = new ArrayList<Pair<BookOperation, Object[]>>();
+        ArrayList<Pair<BookOperation, Object[]>> bookChanges = new ArrayList<Pair<BookOperation, Object[]>>();
+        ArrayList<Pair<BookOperation, Object[]>> expectedBookChanges = new ArrayList<Pair<BookOperation, Object[]>>();
 
         MarketParticipantOrder order1 = new MarketParticipantOrder(101,20,"user1",200, new Date(),
                 Direction.BUY,tickerSymbol,400,262.5, OrderType.LIMITORDER, OrderDuration.DAY);
@@ -46,6 +44,12 @@ public class BookChangeDTOTest {
         BookChangeDTO deserializedDTO = BookChangeDTO.Deserialize(dTOByteArray);
 
         BookChangeDTO expectedDTO = new BookChangeDTO(tickerSymbol,expectedBookChanges);
-        Assertions.assertThat(deserializedDTO).usingRecursiveComparison().isEqualTo(expectedDTO);
+
+        int expectedSize = expectedDTO.getBookChanges().size();
+        int size = deserializedDTO.getBookChanges().size();
+
+
+        Assertions.assertThat(deserializedDTO.getBookChanges()).usingRecursiveComparison().isEqualTo(expectedDTO.getBookChanges());
+
     }
 }

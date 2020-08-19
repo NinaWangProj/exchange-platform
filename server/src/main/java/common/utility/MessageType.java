@@ -1,4 +1,4 @@
-package server.common.utility;
+package common.utility;
 
 public enum MessageType {
     TransactionMessage,

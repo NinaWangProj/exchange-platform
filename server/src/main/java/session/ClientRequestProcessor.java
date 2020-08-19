@@ -25,10 +25,13 @@ public class ClientRequestProcessor implements Runnable{
             switch (dtoType) {
                 case Order:
                     DTO = OrderDTO.Deserialize(DTOByteArray);
+                    break;
                 case LoginRequest:
                     DTO = LoginDTO.Deserialize(DTOByteArray);
+                    break;
                 case MareketDataRequest:
                     DTO = MarketDataDTO.Deserialize(DTOByteArray);
+                    break;
             }
         }
 

@@ -81,10 +81,12 @@ public class ExchangeClient {
                     MarketDataRequestDTO level1DTO = new MarketDataRequestDTO(requestID,tickerSymbol,
                             MarketDataType.Level1);
                     TransmitMarketDataRequest(level1DTO);
+                    break;
                 case Level3:
                     MarketDataRequestDTO level3DTO = new MarketDataRequestDTO(requestID,tickerSymbol,
                             MarketDataType.Level3);
                     TransmitMarketDataRequest(level3DTO);
+                    break;
             }
 
             sharedMonitor.wait();

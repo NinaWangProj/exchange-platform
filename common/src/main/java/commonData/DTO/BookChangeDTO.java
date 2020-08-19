@@ -13,10 +13,10 @@ import java.util.List;
 
 public class BookChangeDTO implements Transferable{
     private DTOType dtoType;
-    private List<Pair<BookOperation, Object[]>> bookChanges;
+    private ArrayList<Pair<BookOperation, Object[]>> bookChanges;
     private String tickerSymbol;
 
-    public BookChangeDTO(String tickerSymbol, List<Pair<BookOperation, Object[]>> bookChanges) {
+    public BookChangeDTO(String tickerSymbol, ArrayList<Pair<BookOperation, Object[]>> bookChanges) {
         this.bookChanges = bookChanges;
         dtoType = DTOType.BookChanges;
         this.tickerSymbol = tickerSymbol;
@@ -53,6 +53,7 @@ public class BookChangeDTO implements Transferable{
                     byte[] orderByteSize = ByteBuffer.allocate(4).putInt(orderByteArray.length).array();
                     outputStream.write(orderByteSize);
                     outputStream.write(orderByteArray);
+                    break;
             }
         }
         byte[] bookChangesDTOByteArray = outputStream.toByteArray();
@@ -61,7 +62,7 @@ public class BookChangeDTO implements Transferable{
     }
 
     public static BookChangeDTO Deserialize(byte[] DTOByteArray) {
-        List<Pair<BookOperation, Object[]>> bookChanges = new ArrayList<Pair<BookOperation, Object[]>>();
+        ArrayList<Pair<BookOperation, Object[]>> bookChanges = new ArrayList<Pair<BookOperation, Object[]>>();
         ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
 
         int tickerSymbolLength = inputStream.read();
@@ -85,6 +86,7 @@ public class BookChangeDTO implements Transferable{
                     Pair<BookOperation,Object[]> removeOperation = new Pair<BookOperation,Object[]>(BookOperation.REMOVE,
                             new Object[]{indexT});
                     bookChanges.add(removeOperation);
+                    break;
                 case INSERT:
                     byte[] dataItemByteSizeBuffer = new byte[4];
                     inputStream.read(dataItemByteSizeBuffer,0,4);
@@ -99,6 +101,7 @@ public class BookChangeDTO implements Transferable{
                     Pair<BookOperation,Object[]> insertOperation = new Pair<BookOperation,Object[]>(BookOperation.INSERT,
                             new Object[]{indexT,dataItem});
                     bookChanges.add(insertOperation);
+                    break;
             }
         }
         return new BookChangeDTO(tickerSymbolT,bookChanges);
@@ -125,7 +128,7 @@ public class BookChangeDTO implements Transferable{
         return tickerSymbol;
     }
 
-    public List<Pair<BookOperation, Object[]>> getBookChanges() {
+    public ArrayList<Pair<BookOperation, Object[]>> getBookChanges() {
         return bookChanges;
     }
 }

@@ -1,6 +1,5 @@
-package server.common;
+package common;
 
-import server.common.Transaction;
 import trading.data.PendingOrder;
 import trading.data.UnfilledOrder;
 

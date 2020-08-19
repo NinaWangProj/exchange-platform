@@ -6,11 +6,11 @@ import clearing.data.ClearingWarehouse;
 import clearing.data.DTCCWarehouse;
 import commonData.Order.MarketParticipantOrder;
 import trading.data.OrderBatch;
-import server.common.OrderStatus;
-import server.common.TradingOutput;
+import common.OrderStatus;
+import common.TradingOutput;
 
 import trading.workflow.TradingEngine;
-import server.common.utility.MessageGenerator;
+import common.utility.MessageGenerator;
 
 import java.util.ArrayList;
 import java.util.HashMap;

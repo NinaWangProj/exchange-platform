@@ -2,8 +2,8 @@ package session;
 
 import clearing.data.CredentialWareHouse;
 import commonData.clearing.MarketParticipantPortfolio;
-import server.common.ServerQueue;
-import server.common.LimitOrderBookWareHouse;
+import common.ServerQueue;
+import common.LimitOrderBookWareHouse;
 
 import java.net.ServerSocket;
 import java.net.Socket;

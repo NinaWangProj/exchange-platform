@@ -1,4 +1,4 @@
-package server.common;
+package common;
 
 import session.Session;
 import commonData.Order.MarketParticipantOrder;

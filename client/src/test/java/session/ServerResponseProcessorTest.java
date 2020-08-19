@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class ServerResponseProcessorTest {
 
     @Test
-    void readMessageFromServer() throws Exception{
+    void readMessageFromServerTest() throws Exception{
 /*        OrderDTO orderDTO = new OrderDTO(113, Direction.SELL, OrderType.LIMITORDER,"AAPL",
                 3,150.235, OrderDuration.GTC);
         byte[] orderDTOByteArray = orderDTO.Serialize();*/
@@ -32,9 +32,10 @@ class ServerResponseProcessorTest {
         outputStream.write(messageDTO.getDtoType().getByteValue());
         outputStream.write((byte)messageDTOByteArray.length);
         outputStream.write(messageDTOByteArray);
+        byte[] dtoByteArray = outputStream.toByteArray();
 
         //read DTO from input stream
-        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(dtoByteArray);
 
         ServerResponseProcessor DTOreader = new ServerResponseProcessor(inputStream);
         Transferable marketDataItemDTOT = DTOreader.ReadMessageFromServer();
