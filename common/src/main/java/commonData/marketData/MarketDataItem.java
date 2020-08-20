@@ -1,5 +1,7 @@
 package commonData.marketData;
 
+import commonData.Order.MarketParticipantOrder;
+
 public class MarketDataItem {
     private final String tickerSymbol;
     private int size;
@@ -9,6 +11,12 @@ public class MarketDataItem {
         this.tickerSymbol = tickerSymbol;
         this.size = size;
         this.price = price;
+    }
+
+    public MarketDataItem(MarketParticipantOrder marketParticipantOrder) {
+        this.tickerSymbol = marketParticipantOrder.getTickerSymbol();
+        this.size = marketParticipantOrder.getSize();
+        this.price = marketParticipantOrder.getPrice();
     }
 
     public String getTickerSymbol() {

@@ -2,6 +2,7 @@ package commonData.DTO;
 
 import commonData.Order.MarketParticipantOrder;
 import commonData.limitOrderBook.BookOperation;
+import commonData.limitOrderBook.ChangeOperation;
 import commonData.marketData.MarketDataItem;
 import javafx.util.Pair;
 
@@ -13,10 +14,10 @@ import java.util.List;
 
 public class BookChangeDTO implements Transferable{
     private DTOType dtoType;
-    private ArrayList<Pair<BookOperation, Object[]>> bookChanges;
+    private List<ChangeOperation> bookChanges;
     private String tickerSymbol;
 
-    public BookChangeDTO(String tickerSymbol, ArrayList<Pair<BookOperation, Object[]>> bookChanges) {
+    public BookChangeDTO(String tickerSymbol, List<ChangeOperation> bookChanges) {
         this.bookChanges = bookChanges;
         dtoType = DTOType.BookChanges;
         this.tickerSymbol = tickerSymbol;
@@ -36,16 +37,15 @@ public class BookChangeDTO implements Transferable{
         outputStream.write(totalOperationsByteSize);
 
         for (int i = 0; i < numOfChangeOperations; i++) {
-            BookOperation operationType = bookChanges.get(i).getKey();
+            BookOperation operationType = bookChanges.get(i).Operation;
             outputStream.write(operationType.getByteValue());
-            Object[] operationInputs = bookChanges.get(i).getValue();
-            int index = (Integer) operationInputs[0];
+            int index = (Integer) bookChanges.get(i).IndexOfChange;
             byte[] indexByteArray = ByteBuffer.allocate(4).putInt(index).array();
             outputStream.write(indexByteArray);
 
             switch (operationType) {
                 case INSERT:
-                    MarketParticipantOrder order = (MarketParticipantOrder) operationInputs[1];
+                    MarketDataItem order = bookChanges.get(i).AddedRow;
                     //Since we are transmitting market data, so order will be converted to market data item
                     MarketDataItemDTO dataItemDTO = new MarketDataItemDTO(order.getTickerSymbol(),
                             order.getSize(),order.getPrice());
@@ -62,7 +62,7 @@ public class BookChangeDTO implements Transferable{
     }
 
     public static BookChangeDTO Deserialize(byte[] DTOByteArray) {
-        ArrayList<Pair<BookOperation, Object[]>> bookChanges = new ArrayList<Pair<BookOperation, Object[]>>();
+        ArrayList<ChangeOperation> bookChanges = new ArrayList<>();
         ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
 
         int tickerSymbolLength = inputStream.read();
@@ -83,8 +83,7 @@ public class BookChangeDTO implements Transferable{
 
             switch(operationTypeT) {
                 case REMOVE:
-                    Pair<BookOperation,Object[]> removeOperation = new Pair<BookOperation,Object[]>(BookOperation.REMOVE,
-                            new Object[]{indexT});
+                    ChangeOperation removeOperation = new ChangeOperation(BookOperation.REMOVE, indexT, null);
                     bookChanges.add(removeOperation);
                     break;
                 case INSERT:
@@ -98,8 +97,7 @@ public class BookChangeDTO implements Transferable{
                     MarketDataItem dataItem = new MarketDataItem(DataItemDTO.getTickerSymbol(),
                             DataItemDTO.getSize(),DataItemDTO.getPrice());
 
-                    Pair<BookOperation,Object[]> insertOperation = new Pair<BookOperation,Object[]>(BookOperation.INSERT,
-                            new Object[]{indexT,dataItem});
+                    ChangeOperation insertOperation = new ChangeOperation(BookOperation.INSERT, indexT, dataItem);
                     bookChanges.add(insertOperation);
                     break;
             }
@@ -128,7 +126,7 @@ public class BookChangeDTO implements Transferable{
         return tickerSymbol;
     }
 
-    public ArrayList<Pair<BookOperation, Object[]>> getBookChanges() {
+    public List<ChangeOperation> getBookChanges() {
         return bookChanges;
     }
 }

@@ -1,5 +1,7 @@
 package common;
 
+import commonData.limitOrderBook.ChangeOperation;
+import commonData.marketData.MarketDataItem;
 import session.Session;
 import commonData.Order.MarketParticipantOrder;
 import commonData.limitOrderBook.BookOperation;
@@ -41,7 +43,7 @@ public class sortedOrderList {
         lock.writeLock().lock();
         try {
             sortedList.remove(ithElement);
-            tracker.Add(new Pair<BookOperation, Object[]>(BookOperation.REMOVE, new Object[]{ithElement}));
+            tracker.Add(new ChangeOperation(BookOperation.REMOVE, ithElement, null));
         } finally {
             lock.writeLock().unlock();
         }
@@ -61,7 +63,7 @@ public class sortedOrderList {
                 lock.writeLock().lock();
                 try {
                     sortedList.add(0, order);
-                    tracker.Add(new Pair<BookOperation, Object[]>(BookOperation.INSERT, new Object[]{0, order}));
+                    tracker.Add(new ChangeOperation(BookOperation.INSERT, 0, new MarketDataItem(order)));
                 } finally {
                     lock.writeLock().unlock();
                 }
@@ -79,7 +81,7 @@ public class sortedOrderList {
                 lock.writeLock().lock();
                 try {
                     sortedList.add(index, order);
-                    tracker.Add(new Pair<BookOperation, Object[]>(BookOperation.INSERT, new Object[]{index, order}));
+                    tracker.Add(new ChangeOperation(BookOperation.INSERT, index, new MarketDataItem(order)));
                 } finally {
                     lock.writeLock().unlock();
                 }
@@ -105,16 +107,16 @@ public class sortedOrderList {
 
     //subclass
     private class ChangeTracker {
-        private List<Pair<BookOperation, Object[]>> bookChanges;
+        private List<ChangeOperation> bookChanges;
         private List<Session> observers;
         private String tickerSymbol;
 
         private ChangeTracker() {
             observers = Collections.synchronizedList(new ArrayList<Session>());
-            bookChanges = Collections.synchronizedList(new ArrayList<Pair<BookOperation, Object[]>>());
+            bookChanges = Collections.synchronizedList(new ArrayList<ChangeOperation>());
         }
 
-        private void Add(Pair<BookOperation, Object[]> change) throws Exception {
+        private void Add(ChangeOperation change) throws Exception {
             bookChanges.add(change);
             NotifyObservers(bookChanges);
             ClearChanges();
@@ -128,7 +130,7 @@ public class sortedOrderList {
             observers.add(session);
         }
 
-        private void NotifyObservers(List<Pair<BookOperation, Object[]>> bookChanges) throws Exception{
+        private void NotifyObservers(List<ChangeOperation> bookChanges) throws Exception{
             for(Session session : observers) {
                 session.On_ReceivingLevel3DataChanges(tickerSymbol, bookChanges);
             }
