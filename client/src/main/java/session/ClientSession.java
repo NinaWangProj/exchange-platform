@@ -1,8 +1,7 @@
 package session;
 
 import commonData.DTO.*;
-import commonData.limitOrderBook.BookOperation;
-import javafx.util.Pair;
+import commonData.limitOrderBook.ChangeOperation;
 import marketData.MarketDataWareHouse;
 import commonData.DataType.OrderStatusType;
 
@@ -44,7 +43,7 @@ public class ClientSession implements Runnable {
             case BookChanges:
                 BookChangeDTO bookChangeDTO = (BookChangeDTO) DTO;
                 String bookChangeTickerSymbol = bookChangeDTO.getTickerSymbol();
-                List<Pair<BookOperation, Object[]>> bookChanges = bookChangeDTO.getBookChanges();
+                List<ChangeOperation> bookChanges = bookChangeDTO.getBookChanges();
                 marketDataWareHouse.applyBookChanges(bookChangeTickerSymbol, bookChanges);
                 break;
             case Message:

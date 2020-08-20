@@ -1,6 +1,6 @@
 package session;
 
-import commonData.limitOrderBook.BookOperation;
+import commonData.limitOrderBook.ChangeOperation;
 import commonData.marketData.MarketDataItem;
 import javafx.util.Pair;
 import clearing.data.CredentialWareHouse;
@@ -179,7 +179,7 @@ public class Session implements Runnable {
         return new Pair<>(bids,asks);
     }
 
-    public void On_ReceivingLevel3DataChanges(String tickerSymbol, List<Pair<BookOperation, Object[]>> bookchanges) throws Exception {
+    public void On_ReceivingLevel3DataChanges(String tickerSymbol, List<ChangeOperation> bookchanges) throws Exception {
         //Create change DTO and put into queue
         BookChangeDTO DTO = new BookChangeDTO(tickerSymbol,bookchanges);
         serverQueue.PutResponseDTO(sessionID, DTO);

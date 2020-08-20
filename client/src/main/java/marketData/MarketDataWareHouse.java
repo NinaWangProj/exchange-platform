@@ -1,8 +1,7 @@
 package marketData;
 
-import commonData.limitOrderBook.BookOperation;
+import commonData.limitOrderBook.ChangeOperation;
 import commonData.marketData.MarketDataItem;
-import javafx.util.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,7 +24,7 @@ public class MarketDataWareHouse {
         marketDataMap.get(tickerSymbol).setAsks(asks);
     }
 
-    public void applyBookChanges(String tickerSymbol, List<Pair<BookOperation, Object[]>> bookChanges) {
+    public void applyBookChanges(String tickerSymbol, List<ChangeOperation> bookChanges) {
 
     }
 }
