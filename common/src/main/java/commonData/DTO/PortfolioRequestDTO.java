@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
-public class PortfolioRequestDTO {
+public class PortfolioRequestDTO implements Transferable{
     private final DTOType dtoType;
     private final Long clientRequestID;
 
