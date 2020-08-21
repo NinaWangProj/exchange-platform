@@ -44,7 +44,7 @@ public class ExchangeClient {
 
     public void SetupClient(OrderStatusEventHandler orderStatusObserver) {
         //set up session to start reading from inputStream and process responses sent from server
-        clientSession = new ClientSession(clientSocket, orderStatusObserver);
+        clientSession = new ClientSession(clientSocket, orderStatusObserver,marketDataWareHouse);
         Thread sessionThread = new Thread(clientSession);
         sessionThread.start();
     }

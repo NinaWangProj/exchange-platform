@@ -1,5 +1,6 @@
 package common;
 
+import commonData.Order.Direction;
 import javafx.util.Pair;
 import commonData.DataType.MarketDataType;
 import session.Session;
@@ -39,28 +40,31 @@ public class LimitOrderBookWareHouse {
     }
 
     public void AddNewLimitOrderBook(String tickerSymbol, ReadWriteLock lock) {
-        limitOrderBooks.put(tickerSymbol, new Pair<sortedOrderList, sortedOrderList>(new sortedOrderList(bidComparator,lock,tickerSymbol),new sortedOrderList(askComparator,lock,tickerSymbol)));
+        limitOrderBooks.put(tickerSymbol, new Pair<sortedOrderList, sortedOrderList>(new sortedOrderList(bidComparator,lock,tickerSymbol, Direction.BUY)
+                ,new sortedOrderList(askComparator,lock,tickerSymbol,Direction.SELL)));
     }
 
     public Pair<sortedOrderList, sortedOrderList> GetLimitOrderBook
             (String tickerSymbol, MarketDataType type, Session session) throws Exception{
-        Pair<sortedOrderList, sortedOrderList> marketData =
-                new Pair<sortedOrderList, sortedOrderList>(new sortedOrderList(bidComparator),new sortedOrderList(askComparator));
+
+        Pair<sortedOrderList, sortedOrderList> limitOrderBook = new Pair<sortedOrderList, sortedOrderList>
+                (new sortedOrderList(bidComparator,Direction.BUY),new sortedOrderList(askComparator,Direction.SELL));
+
         switch (type) {
             case Level1:
-                marketData.getKey().add(limitOrderBooks.get(tickerSymbol).getKey().get(0));
-                marketData.getValue().add(limitOrderBooks.get(tickerSymbol).getValue().get(0));
+                limitOrderBook.getKey().add(limitOrderBooks.get(tickerSymbol).getKey().get(0));
+                limitOrderBook.getValue().add(limitOrderBooks.get(tickerSymbol).getValue().get(0));
                 break;
             case Level3:
-                marketData = limitOrderBooks.get(tickerSymbol);
+                limitOrderBook = limitOrderBooks.get(tickerSymbol);
                 break;
             case ContinuousLevel3:
                 //register session with bid book and ask book to have continuous level 3 data
-                marketData = limitOrderBooks.get(tickerSymbol);
+                limitOrderBook = limitOrderBooks.get(tickerSymbol);
                 limitOrderBooks.get(tickerSymbol).getKey().RegisterSessionForContinuousData(session);
                 limitOrderBooks.get(tickerSymbol).getValue().RegisterSessionForContinuousData(session);
                 break;
         }
-        return marketData;
+        return limitOrderBook;
     }
 }

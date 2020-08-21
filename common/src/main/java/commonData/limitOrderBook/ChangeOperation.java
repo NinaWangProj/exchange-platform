@@ -1,5 +1,6 @@
 package commonData.limitOrderBook;
 
+import commonData.Order.Direction;
 import commonData.Order.MarketParticipantOrder;
 import commonData.marketData.MarketDataItem;
 

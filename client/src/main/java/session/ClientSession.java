@@ -1,6 +1,7 @@
 package session;
 
 import commonData.DTO.*;
+import commonData.Order.Direction;
 import commonData.limitOrderBook.ChangeOperation;
 import marketData.MarketDataWareHouse;
 import commonData.DataType.OrderStatusType;
@@ -16,9 +17,10 @@ public class ClientSession implements Runnable {
     private ConcurrentHashMap<Long,Object> requestIDMonitorMap;
     private ConcurrentHashMap<Long,PortfolioDTO> requestIDPortfolioMap;
 
-    public ClientSession(Socket clientSocket, OrderStatusEventHandler orderStatusObserver) {
+    public ClientSession(Socket clientSocket, OrderStatusEventHandler orderStatusObserver,MarketDataWareHouse marketDataWareHouse) {
         this.clientSocket = clientSocket;
         this.orderStatusObserver = orderStatusObserver;
+        this.marketDataWareHouse = marketDataWareHouse;
         requestIDMonitorMap = new ConcurrentHashMap<Long,Object>();
     }
 
@@ -38,13 +40,15 @@ public class ClientSession implements Runnable {
                 String marketDataTickerSymbol = marketDataDTO.getTickerSymbol();
                 marketDataWareHouse.setMarketData(marketDataTickerSymbol, marketDataDTO.getBids(), marketDataDTO.getAsks());
                 Object monitor = requestIDMonitorMap.get(marketDataDTO.getClientRequestID());
-                monitor.notifyAll();
+                if(monitor != null)
+                    monitor.notifyAll();
                 break;
             case BookChanges:
                 BookChangeDTO bookChangeDTO = (BookChangeDTO) DTO;
-                String bookChangeTickerSymbol = bookChangeDTO.getTickerSymbol();
+                String tickerSymbol = bookChangeDTO.getTickerSymbol();
                 List<ChangeOperation> bookChanges = bookChangeDTO.getBookChanges();
-                marketDataWareHouse.applyBookChanges(bookChangeTickerSymbol, bookChanges);
+                Direction direction = bookChangeDTO.getDirection();
+                marketDataWareHouse.applyBookChanges(tickerSymbol, direction, bookChanges);
                 break;
             case Message:
                 MessageDTO messageDTO = (MessageDTO) DTO;

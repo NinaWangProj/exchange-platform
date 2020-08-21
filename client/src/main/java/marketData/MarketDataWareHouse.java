@@ -1,5 +1,6 @@
 package marketData;
 
+import commonData.Order.Direction;
 import commonData.limitOrderBook.ChangeOperation;
 import commonData.marketData.MarketDataItem;
 
@@ -20,11 +21,20 @@ public class MarketDataWareHouse {
     }
 
     public void setMarketData(String tickerSymbol, ArrayList<MarketDataItem> bids, ArrayList<MarketDataItem> asks ) {
+
+        if (!marketDataMap.containsKey(tickerSymbol)) {
+            marketDataMap.put(tickerSymbol,new MarketData(new ArrayList<MarketDataItem>(),
+                    new ArrayList<MarketDataItem>()));
+        }
+
         marketDataMap.get(tickerSymbol).setBids(bids);
         marketDataMap.get(tickerSymbol).setAsks(asks);
     }
 
-    public void applyBookChanges(String tickerSymbol, List<ChangeOperation> bookChanges) {
+    public void applyBookChanges(String tickerSymbol, Direction direction, List<ChangeOperation> bookChanges) {
+        if(!marketDataMap.containsKey(tickerSymbol))
+            marketDataMap.put(tickerSymbol, new MarketData(tickerSymbol));
 
+        marketDataMap.get(tickerSymbol).applyBookOperations(direction,bookChanges);
     }
 }

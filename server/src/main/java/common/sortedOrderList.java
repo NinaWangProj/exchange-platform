@@ -1,5 +1,6 @@
 package common;
 
+import commonData.Order.Direction;
 import commonData.limitOrderBook.ChangeOperation;
 import commonData.marketData.MarketDataItem;
 import session.Session;
@@ -17,21 +18,24 @@ public class sortedOrderList {
     public ArrayList<MarketParticipantOrder> sortedList;
     private ChangeTracker tracker;
     private OrderComparator comparator;
+    private Direction direction;
     private ReadWriteLock lock;
     private String tickerSymbol;
 
-    public sortedOrderList(OrderComparator comparator, ReadWriteLock lock, String tickerSymbol) {
+    public sortedOrderList(OrderComparator comparator, ReadWriteLock lock, String tickerSymbol, Direction direction) {
         sortedList = new ArrayList<MarketParticipantOrder>();
         this.comparator = comparator;
         tracker = new ChangeTracker();
         this.lock = lock;
         this.tickerSymbol = tickerSymbol;
+        this.direction = direction;
     }
 
-    public sortedOrderList(OrderComparator comparator) {
+    public sortedOrderList(OrderComparator comparator, Direction direction) {
         sortedList = new ArrayList<MarketParticipantOrder>();
         this.comparator = comparator;
         tracker = new ChangeTracker();
+        this.direction = direction;
     }
 
     public MarketParticipantOrder get(int ithElement) {
@@ -109,7 +113,6 @@ public class sortedOrderList {
     private class ChangeTracker {
         private List<ChangeOperation> bookChanges;
         private List<Session> observers;
-        private String tickerSymbol;
 
         private ChangeTracker() {
             observers = Collections.synchronizedList(new ArrayList<Session>());
@@ -118,7 +121,7 @@ public class sortedOrderList {
 
         private void Add(ChangeOperation change) throws Exception {
             bookChanges.add(change);
-            NotifyObservers(bookChanges);
+            NotifyObservers(direction, bookChanges);
             ClearChanges();
         }
 
@@ -130,9 +133,9 @@ public class sortedOrderList {
             observers.add(session);
         }
 
-        private void NotifyObservers(List<ChangeOperation> bookChanges) throws Exception{
+        private void NotifyObservers(Direction direction, List<ChangeOperation> bookChanges) throws Exception{
             for(Session session : observers) {
-                session.On_ReceivingLevel3DataChanges(tickerSymbol, bookChanges);
+                session.On_ReceivingLevel3DataChanges(tickerSymbol, direction, bookChanges);
             }
         }
     }

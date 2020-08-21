@@ -1,5 +1,6 @@
 package commonData.DTO;
 
+import commonData.Order.Direction;
 import commonData.Order.MarketParticipantOrder;
 import commonData.limitOrderBook.BookOperation;
 import commonData.limitOrderBook.ChangeOperation;
@@ -16,11 +17,13 @@ public class BookChangeDTO implements Transferable{
     private DTOType dtoType;
     private List<ChangeOperation> bookChanges;
     private String tickerSymbol;
+    private Direction direction;
 
-    public BookChangeDTO(String tickerSymbol, List<ChangeOperation> bookChanges) {
+    public BookChangeDTO(String tickerSymbol, Direction direction, List<ChangeOperation> bookChanges) {
         this.bookChanges = bookChanges;
         dtoType = DTOType.BookChanges;
         this.tickerSymbol = tickerSymbol;
+        this.direction = direction;
     }
 
     public byte[] Serialize() throws Exception {
@@ -32,6 +35,8 @@ public class BookChangeDTO implements Transferable{
         byte tickerSize = (byte)tickerSymbolByte.length;
         outputStream.write(tickerSize);
         outputStream.write(tickerSymbolByte);
+
+        outputStream.write(direction.getByteValue());
 
         byte[] totalOperationsByteSize = ByteBuffer.allocate(4).putInt(numOfChangeOperations).array();
         outputStream.write(totalOperationsByteSize);
@@ -70,6 +75,8 @@ public class BookChangeDTO implements Transferable{
         inputStream.read(tickerSymbolBuffer, 0, tickerSymbolLength);
         String tickerSymbolT = new String(tickerSymbolBuffer);
 
+        Direction directionT = Direction.lookupEnumType(inputStream.read());
+
         byte[] numOfOperationsBuffer = new byte[4];
         inputStream.read(numOfOperationsBuffer,0,4);
         int numOfOperationsT = ByteBuffer.wrap(numOfOperationsBuffer).getInt();
@@ -102,7 +109,7 @@ public class BookChangeDTO implements Transferable{
                     break;
             }
         }
-        return new BookChangeDTO(tickerSymbolT,bookChanges);
+        return new BookChangeDTO(tickerSymbolT, directionT, bookChanges);
     }
 
     private static MarketDataItem DeserializeDataItem(ByteArrayInputStream inputStream, String tickerSymbolT) {
@@ -128,5 +135,9 @@ public class BookChangeDTO implements Transferable{
 
     public List<ChangeOperation> getBookChanges() {
         return bookChanges;
+    }
+
+    public Direction getDirection() {
+        return direction;
     }
 }

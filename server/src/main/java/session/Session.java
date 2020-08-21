@@ -1,5 +1,6 @@
 package session;
 
+import commonData.Order.Direction;
 import commonData.limitOrderBook.ChangeOperation;
 import commonData.marketData.MarketDataItem;
 import javafx.util.Pair;
@@ -179,9 +180,9 @@ public class Session implements Runnable {
         return new Pair<>(bids,asks);
     }
 
-    public void On_ReceivingLevel3DataChanges(String tickerSymbol, List<ChangeOperation> bookchanges) throws Exception {
+    public void On_ReceivingLevel3DataChanges(String tickerSymbol, Direction direction, List<ChangeOperation> bookchanges) throws Exception {
         //Create change DTO and put into queue
-        BookChangeDTO DTO = new BookChangeDTO(tickerSymbol,bookchanges);
+        BookChangeDTO DTO = new BookChangeDTO(tickerSymbol, direction, bookchanges);
         serverQueue.PutResponseDTO(sessionID, DTO);
     }
 

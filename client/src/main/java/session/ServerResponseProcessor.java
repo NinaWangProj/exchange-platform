@@ -37,7 +37,6 @@ public class ServerResponseProcessor implements Runnable{
                     break;
             }
         }
-
         return DTO;
     }
 
@@ -46,10 +45,12 @@ public class ServerResponseProcessor implements Runnable{
 
         while (readerFlag) {
             Transferable DTO = ReadMessageFromServer();
-            NotifyAllObservers(DTO);
 
-            if(DTO.equals(null))
+            if(DTO != null) {
+                NotifyAllObservers(DTO);
+            } else {
                 readerFlag = false;
+            }
         }
     }
 
@@ -65,6 +66,7 @@ public class ServerResponseProcessor implements Runnable{
         try {
             Start();
         } catch (Exception e) {
+            String test = null;
         }
     }
 }
