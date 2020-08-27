@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -20,9 +21,6 @@ class ServerResponseProcessorTest {
 
     @Test
     void readMessageFromServerTest() throws Exception{
-/*        OrderDTO orderDTO = new OrderDTO(113, Direction.SELL, OrderType.LIMITORDER,"AAPL",
-                3,150.235, OrderDuration.GTC);
-        byte[] orderDTOByteArray = orderDTO.Serialize();*/
 
         MessageDTO messageDTO = new MessageDTO(113, OrderStatusType.PartiallyFilled,
                 "200 share of AAPL has been filled");
@@ -38,8 +36,8 @@ class ServerResponseProcessorTest {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(dtoByteArray);
 
         ServerResponseProcessor DTOreader = new ServerResponseProcessor(inputStream);
-        Transferable marketDataItemDTOT = DTOreader.ReadMessageFromServer();
+        Transferable messageDTOT = DTOreader.ReadMessageFromServer();
 
-        Assertions.assertThat(marketDataItemDTOT).usingRecursiveComparison().isEqualTo(messageDTO);
+        Assertions.assertThat(messageDTOT).usingRecursiveComparison().isEqualTo(messageDTO);
     }
 }

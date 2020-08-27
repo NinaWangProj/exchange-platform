@@ -79,6 +79,8 @@ public class MarketData {
                 case REMOVE:
                     book.remove(change.IndexOfChange);
                     break;
+                case MODIFY:
+                    book.set(change.IndexOfChange,change.AddedRow);
             }
         }
     }

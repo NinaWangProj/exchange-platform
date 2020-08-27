@@ -9,6 +9,7 @@ import javafx.util.Pair;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,7 @@ public class BookChangeDTO implements Transferable{
 
             switch (operationType) {
                 case INSERT:
+                case MODIFY:
                     MarketDataItem order = bookChanges.get(i).AddedRow;
                     //Since we are transmitting market data, so order will be converted to market data item
                     MarketDataItemDTO dataItemDTO = new MarketDataItemDTO(order.getTickerSymbol(),
@@ -66,7 +68,7 @@ public class BookChangeDTO implements Transferable{
         return bookChangesDTOByteArray;
     }
 
-    public static BookChangeDTO Deserialize(byte[] DTOByteArray) {
+    public static BookChangeDTO Deserialize(byte[] DTOByteArray) throws Exception {
         ArrayList<ChangeOperation> bookChanges = new ArrayList<>();
         ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
 
@@ -88,28 +90,41 @@ public class BookChangeDTO implements Transferable{
             inputStream.read(indexByteBuffer,0,4);
             int indexT = ByteBuffer.wrap(indexByteBuffer).getInt();
 
+            MarketDataItem dataItem;
+
             switch(operationTypeT) {
                 case REMOVE:
                     ChangeOperation removeOperation = new ChangeOperation(BookOperation.REMOVE, indexT, null);
                     bookChanges.add(removeOperation);
                     break;
                 case INSERT:
-                    byte[] dataItemByteSizeBuffer = new byte[4];
-                    inputStream.read(dataItemByteSizeBuffer,0,4);
-                    int dataItemSizeT = ByteBuffer.wrap(dataItemByteSizeBuffer).getInt();
-
-                    byte[] dataItemBuffer = new byte[dataItemSizeT];
-                    inputStream.read(dataItemBuffer,0,dataItemSizeT);
-                    MarketDataItemDTO DataItemDTO = MarketDataItemDTO.Deserialize(dataItemBuffer);
-                    MarketDataItem dataItem = new MarketDataItem(DataItemDTO.getTickerSymbol(),
-                            DataItemDTO.getSize(),DataItemDTO.getPrice());
+                    dataItem = deserializeMarketDataItem(inputStream);
 
                     ChangeOperation insertOperation = new ChangeOperation(BookOperation.INSERT, indexT, dataItem);
                     bookChanges.add(insertOperation);
                     break;
+                case MODIFY:
+                    dataItem = deserializeMarketDataItem(inputStream);
+
+                    ChangeOperation modifyOperation = new ChangeOperation(BookOperation.MODIFY, indexT, dataItem);
+                    bookChanges.add(modifyOperation);
+                    break;
             }
         }
         return new BookChangeDTO(tickerSymbolT, directionT, bookChanges);
+    }
+
+    private static MarketDataItem deserializeMarketDataItem(InputStream inputStream) throws Exception{
+        byte[] dataItemByteSizeBuffer = new byte[4];
+        inputStream.read(dataItemByteSizeBuffer,0,4);
+        int dataItemSizeT = ByteBuffer.wrap(dataItemByteSizeBuffer).getInt();
+
+        byte[] dataItemBuffer = new byte[dataItemSizeT];
+        inputStream.read(dataItemBuffer,0,dataItemSizeT);
+        MarketDataItemDTO DataItemDTO = MarketDataItemDTO.Deserialize(dataItemBuffer);
+        MarketDataItem dataItem = new MarketDataItem(DataItemDTO.getTickerSymbol(),
+                DataItemDTO.getSize(),DataItemDTO.getPrice());
+        return dataItem;
     }
 
     private static MarketDataItem DeserializeDataItem(ByteArrayInputStream inputStream, String tickerSymbolT) {

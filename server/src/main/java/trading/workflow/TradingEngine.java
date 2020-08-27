@@ -146,17 +146,20 @@ public class TradingEngine{
             //If there is a match, match order, put remaining in limit order book if possible
             MarketParticipantOrder topCounterLimitOrder = counterPartyLimitOrderBook.get(0);
             double transactionPrice = topCounterLimitOrder.getPrice();
+            int counterOrderSize = topCounterLimitOrder.getSize();
             int transactionSize;
 
             if(order.getSize() == topCounterLimitOrder.getSize()) {
                 transactionSize = order.getSize();
                 counterPartyLimitOrderBook.remove(0);
                 active = false;
-            } else if (order.getSize() < topCounterLimitOrder.getSize()) {
+            } else if (order.getSize() < counterOrderSize) {
                 transactionSize = order.getSize();
+                int updatedCounterOrderSize = counterOrderSize-transactionSize;
+                counterPartyLimitOrderBook.modify(0,"size",updatedCounterOrderSize);
                 active = false;
             } else {
-                transactionSize = topCounterLimitOrder.getSize();
+                transactionSize = counterOrderSize;
                 order.setSize(order.getSize() - transactionSize);
                 counterPartyLimitOrderBook.remove(0);
                 active = true;

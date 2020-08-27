@@ -9,6 +9,7 @@ import commonData.limitOrderBook.BookOperation;
 import javafx.util.Pair;
 import trading.limitOrderBook.OrderComparator;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +24,7 @@ public class sortedOrderList {
     private String tickerSymbol;
 
     public sortedOrderList(OrderComparator comparator, ReadWriteLock lock, String tickerSymbol, Direction direction) {
-        sortedList = new ArrayList<MarketParticipantOrder>();
+        sortedList = new ArrayList<>();
         this.comparator = comparator;
         tracker = new ChangeTracker();
         this.lock = lock;
@@ -98,6 +99,22 @@ public class sortedOrderList {
             } else {
                 listStartIndex = partition;
             }
+        }
+    }
+
+    public <U> void modify(int index, String fieldName, U value) throws Exception {
+        MarketParticipantOrder targetObject = sortedList.get(index);
+
+        Class metaClass = targetObject.getClass();
+        Field field = metaClass.getField(fieldName);
+        field.setAccessible(true);
+
+        lock.writeLock().lock();
+        try {
+            field.set(targetObject, value);
+            MarketDataItem modifiedItem = new MarketDataItem(tickerSymbol,targetObject.getSize(),targetObject.getPrice());
+            tracker.Add(new ChangeOperation(BookOperation.MODIFY, index, modifiedItem));
+        } catch (IllegalAccessException e) {
         }
     }
 
