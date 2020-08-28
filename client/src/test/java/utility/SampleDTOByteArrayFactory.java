@@ -10,7 +10,7 @@ public class SampleDTOByteArrayFactory {
         byte[] byteArray = null;
         switch (type) {
             case MarketData_L1:
-                byteArray = produceMarketOrderDTOByteArray();
+                byteArray = produceMarketDataDTOByteArray();
                 break;
             case MarketData_L3_Msg_PartialFillLimitBuyOrder:
                 byteArray = ProduceMarketData_MessageDTOByteArray();
@@ -24,7 +24,7 @@ public class SampleDTOByteArrayFactory {
         return byteArray;
     }
 
-    private static byte[] produceMarketOrderDTOByteArray() throws Exception {
+    private static byte[] produceMarketDataDTOByteArray() throws Exception {
         SampleDTOFactory dtoFactory = new SampleDTOFactory();
         Transferable marketDataDTO = dtoFactory.ProduceSampleDTO(DTOTestType.MarketData_Level1);
         byte[] DTOByteArray = marketDataDTO.Serialize();

@@ -5,9 +5,9 @@ import commonData.Order.Direction;
 import commonData.Order.OrderDuration;
 import org.junit.jupiter.api.Test;
 
-public class ExchangeClientTest {
+public class testchangelater {
 
-    @Test
+    //@Test
     public void ClientSubmitOrderTest() throws Exception {
         ExchangeClient client = new ExchangeClient();
         boolean connected = client.ConnectWithServer();

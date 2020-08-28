@@ -106,7 +106,7 @@ public class sortedOrderList {
         MarketParticipantOrder targetObject = sortedList.get(index);
 
         Class metaClass = targetObject.getClass();
-        Field field = metaClass.getField(fieldName);
+        Field field = metaClass.getDeclaredField(fieldName);
         field.setAccessible(true);
 
         lock.writeLock().lock();

@@ -157,4 +157,11 @@ public class ExchangeClient {
         outputStream.write(portfolioRequestDTOByteArray);
     }
 
+    public Socket getClientSocket() {
+        return clientSocket;
+    }
+
+    public AtomicLong getClientRequestID() {
+        return clientRequestID;
+    }
 }
