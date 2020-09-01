@@ -89,7 +89,10 @@ public class ExchangeClient {
                     break;
             }
 
-            sharedMonitor.wait();
+            synchronized (sharedMonitor) {
+                sharedMonitor.wait();
+            }
+
             marketData = marketDataWareHouse.getMarketData(tickerSymbol);
             clientSession.RemoveMonitor(requestID);
         }

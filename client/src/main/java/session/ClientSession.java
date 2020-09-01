@@ -40,8 +40,11 @@ public class ClientSession implements Runnable {
                 String marketDataTickerSymbol = marketDataDTO.getTickerSymbol();
                 marketDataWareHouse.setMarketData(marketDataTickerSymbol, marketDataDTO.getBids(), marketDataDTO.getAsks());
                 Object monitor = requestIDMonitorMap.get(marketDataDTO.getClientRequestID());
-                if(monitor != null)
-                    monitor.notifyAll();
+
+                synchronized (monitor) {
+                    if (monitor != null)
+                        monitor.notifyAll();
+                }
                 break;
             case BookChanges:
                 BookChangeDTO bookChangeDTO = (BookChangeDTO) DTO;

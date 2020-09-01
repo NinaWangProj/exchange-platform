@@ -2,57 +2,58 @@ package utility;
 
 import commonData.DTO.*;
 import commonData.DataType.OrderStatusType;
+import commonData.marketData.MarketDataItem;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.util.ArrayList;
 
 public class MockServer {
-    private ByteArrayOutputStream clientOutputStream;
-    private ByteArrayInputStream inputStream;
-    private Transferable DTO;
-    private ByteArrayOutputStream outputStream;
+    private PipedInputStream serverInputStream;
+    private PipedOutputStream serverOutputStream;
+    private Transferable ReceivedDTO;
     private Transferable ResponseDTO;
 
-    public MockServer(ByteArrayOutputStream clientOutputStream) {
-        this.clientOutputStream = clientOutputStream;
+    public MockServer(PipedInputStream serverInputStream, PipedOutputStream serverOutputStream) {
+        this.serverInputStream = serverInputStream;
+        this.serverOutputStream = serverOutputStream;
     }
 
-    public void Initialize() {
-        inputStream = new ByteArrayInputStream(clientOutputStream.toByteArray());
-        this.outputStream = new ByteArrayOutputStream();
-    }
-
-    public Transferable ReadRequestFromClient() throws Exception {
-
-        DTOType dtoType = DTOType.valueOf(inputStream.read());
-        int byteSizeOfDTO = inputStream.read();
+    public void ReadRequestFromClient() throws Exception {
+        DTOType dtoType = DTOType.valueOf(serverInputStream.read());
+        int byteSizeOfDTO = serverInputStream.read();
         byte[] DTOByteArray = new byte[byteSizeOfDTO];
-        inputStream.read(DTOByteArray, 0, byteSizeOfDTO);
+        serverInputStream.read(DTOByteArray, 0, byteSizeOfDTO);
 
         switch (dtoType) {
             case Order:
-                DTO = OrderDTO.Deserialize(DTOByteArray);
+                ReceivedDTO = OrderDTO.Deserialize(DTOByteArray);
                 break;
             case LoginRequest:
-                DTO = LoginDTO.Deserialize(DTOByteArray);
+                ReceivedDTO = LoginDTO.Deserialize(DTOByteArray);
                 break;
             case MareketDataRequest:
-                DTO = MarketDataDTO.Deserialize(DTOByteArray);
+                ReceivedDTO = MarketDataDTO.Deserialize(DTOByteArray);
                 break;
         }
-        return DTO;
     }
 
     public void RespondToClient() throws Exception {
-        DTOType type = DTO.getDtoType();
+        DTOType type = ReceivedDTO.getDtoType();
 
         switch (type) {
             case Order:
-                OrderDTO orderDTO = (OrderDTO)DTO;
+                OrderDTO orderDTO = (OrderDTO) ReceivedDTO;
                 ResponseDTO = new MessageDTO(orderDTO.getClientRequestID(), OrderStatusType.PartiallyFilled,
                         "Your market Order has been filled with 100 shares @ $300");
                 break;
             case MareketDataRequest:
+                MarketDataRequestDTO marketDataRequestDTO = (MarketDataRequestDTO) ReceivedDTO;
+                ArrayList<MarketDataItem> bids = new ArrayList<MarketDataItem>();
+                bids.add(new MarketDataItem("AAPL",5000,129.01));
+                ArrayList<MarketDataItem> asks = new ArrayList<MarketDataItem>();
+                bids.add(new MarketDataItem("AAPL",2000,129.35));
+                ResponseDTO = new MarketDataDTO((long)1,"AAPL",bids,asks);
 
                 break;
             case PortfolioRequest:
@@ -60,12 +61,16 @@ public class MockServer {
         }
 
         byte[] DTOByteArray = ResponseDTO.Serialize();
-        outputStream.write(ResponseDTO.getDtoType().getByteValue());
-        outputStream.write((byte)DTOByteArray.length);
-        outputStream.write(DTOByteArray);
+        serverOutputStream.write(ResponseDTO.getDtoType().getByteValue());
+        serverOutputStream.write((byte)DTOByteArray.length);
+        serverOutputStream.write(DTOByteArray);
     }
 
-    public ByteArrayOutputStream getOutputStream() {
-        return outputStream;
+    public Transferable getReceivedDTO() {
+        return ReceivedDTO;
+    }
+
+    public Transferable getResponseDTO() {
+        return ResponseDTO;
     }
 }

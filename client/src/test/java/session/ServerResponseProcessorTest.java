@@ -36,7 +36,7 @@ class ServerResponseProcessorTest {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(dtoByteArray);
 
         ServerResponseProcessor DTOreader = new ServerResponseProcessor(inputStream);
-        Transferable messageDTOT = DTOreader.ReadMessageFromServer();
+        Transferable messageDTOT = DTOreader.ReadMessageFromServer().getKey();
 
         Assertions.assertThat(messageDTOT).usingRecursiveComparison().isEqualTo(messageDTO);
     }

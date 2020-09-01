@@ -1,6 +1,7 @@
 package session;
 
 import commonData.DTO.*;
+import javafx.util.Pair;
 
 import java.io.InputStream;
 
@@ -12,11 +13,12 @@ public class ServerResponseProcessor implements Runnable{
         this.inputStream = inputStream;
     }
 
-    public Transferable ReadMessageFromServer() throws Exception {
+    public Pair<Transferable, Boolean> ReadMessageFromServer() throws Exception {
         int nextByte = inputStream.read();
         Transferable DTO = null;
+        Boolean endOfStream = false;
 
-        if(nextByte != -1) {
+            if(nextByte != -1) {
             DTOType dtoType = DTOType.valueOf(nextByte);
             int byteSizeOfDTO = inputStream.read();
             byte[] DTOByteArray = new byte[byteSizeOfDTO];
@@ -36,21 +38,25 @@ public class ServerResponseProcessor implements Runnable{
                     DTO = PortfolioDTO.Deserialize(DTOByteArray);
                     break;
             }
+        } else {
+            endOfStream = true;
         }
-        return DTO;
+        return new Pair<Transferable,Boolean>(DTO,endOfStream);
     }
 
     private void Start() throws Exception {
         boolean readerFlag = true;
 
         while (readerFlag) {
-            Transferable DTO = ReadMessageFromServer();
+            Pair<Transferable, Boolean> readerOutput = ReadMessageFromServer();
+            Transferable DTO = readerOutput.getKey();
+            Boolean endOfStream = readerOutput.getValue();
 
-            if(DTO != null) {
+            if(DTO != null)
                 NotifyAllObservers(DTO);
-            } else {
+
+            if(endOfStream)
                 readerFlag = false;
-            }
         }
     }
 
