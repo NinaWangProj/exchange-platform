@@ -89,7 +89,7 @@ class ClientSessionTest {
         expectedBids.add(new MarketDataItem("GE",item0.getSize(),item0.getPrice()));
         expectedBids.add(new MarketDataItem("GE",item1.getSize(),item1.getPrice()));
 
-        MarketData expectedMarketData = new MarketData(expectedBids,new ArrayList<>());
+        MarketData expectedMarketData = new MarketData("GE", expectedBids,new ArrayList<>());
 
         Assertions.assertThat(dataWareHouse.getMarketData("GE")).
                 usingRecursiveComparison().isEqualTo(expectedMarketData);

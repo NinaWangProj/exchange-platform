@@ -10,7 +10,7 @@ import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ClientSession implements Runnable {
+public class ClientSession {
     private Socket clientSocket;
     private MarketDataWareHouse marketDataWareHouse;
     private OrderStatusEventHandler orderStatusObserver;
@@ -77,12 +77,5 @@ public class ClientSession implements Runnable {
 
     public PortfolioDTO GetPortfolio(long requestID) {
         return requestIDPortfolioMap.get(requestID);
-    }
-
-    public void run() {
-        try {
-            Start();
-        } catch (Exception e) {
-        }
     }
 }

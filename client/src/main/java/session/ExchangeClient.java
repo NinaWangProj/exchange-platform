@@ -42,11 +42,10 @@ public class ExchangeClient {
         return connected;
     }
 
-    public void SetupClient(OrderStatusEventHandler orderStatusObserver) {
+    public void SetupClient(OrderStatusEventHandler orderStatusObserver) throws Exception {
         //set up session to start reading from inputStream and process responses sent from server
         clientSession = new ClientSession(clientSocket, orderStatusObserver,marketDataWareHouse);
-        Thread sessionThread = new Thread(clientSession);
-        sessionThread.start();
+        clientSession.Start();
     }
 
     public Long SubmitMarketOrder(Direction direction, String tickerSymbol, int size, OrderDuration orderDuration) throws Exception{

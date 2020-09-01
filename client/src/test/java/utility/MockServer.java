@@ -8,7 +8,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
 
-public class MockServer {
+public class MockServer implements Runnable{
     private PipedInputStream serverInputStream;
     private PipedOutputStream serverOutputStream;
     private Transferable ReceivedDTO;
@@ -33,7 +33,7 @@ public class MockServer {
                 ReceivedDTO = LoginDTO.Deserialize(DTOByteArray);
                 break;
             case MareketDataRequest:
-                ReceivedDTO = MarketDataDTO.Deserialize(DTOByteArray);
+                ReceivedDTO = MarketDataRequestDTO.Deserialize(DTOByteArray);
                 break;
         }
     }
@@ -52,7 +52,7 @@ public class MockServer {
                 ArrayList<MarketDataItem> bids = new ArrayList<MarketDataItem>();
                 bids.add(new MarketDataItem("AAPL",5000,129.01));
                 ArrayList<MarketDataItem> asks = new ArrayList<MarketDataItem>();
-                bids.add(new MarketDataItem("AAPL",2000,129.35));
+                asks.add(new MarketDataItem("AAPL",2000,129.35));
                 ResponseDTO = new MarketDataDTO((long)1,"AAPL",bids,asks);
 
                 break;
@@ -72,5 +72,13 @@ public class MockServer {
 
     public Transferable getResponseDTO() {
         return ResponseDTO;
+    }
+
+    public void run() {
+        try{
+            ReadRequestFromClient();
+            RespondToClient();
+        } catch(Exception e) {
+        }
     }
 }

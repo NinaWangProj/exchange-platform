@@ -23,7 +23,7 @@ public class MarketDataWareHouse {
     public void setMarketData(String tickerSymbol, ArrayList<MarketDataItem> bids, ArrayList<MarketDataItem> asks ) {
 
         if (!marketDataMap.containsKey(tickerSymbol)) {
-            marketDataMap.put(tickerSymbol,new MarketData(new ArrayList<MarketDataItem>(),
+            marketDataMap.put(tickerSymbol,new MarketData(tickerSymbol, new ArrayList<MarketDataItem>(),
                     new ArrayList<MarketDataItem>()));
         }
 

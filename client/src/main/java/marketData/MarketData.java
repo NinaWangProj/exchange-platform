@@ -14,14 +14,10 @@ public class MarketData {
     private ArrayList<MarketDataItem> asks;
     private boolean continuousLevel3DataFlag;
 
-    public MarketData(ArrayList<MarketDataItem> bids, ArrayList<MarketDataItem> asks) {
+    public MarketData(String tickerSymbol, ArrayList<MarketDataItem> bids, ArrayList<MarketDataItem> asks) {
         this.bids = bids;
         this.asks = asks;
-        if (bids.size() != 0) {
-            this.tickerSymbol = bids.get(0).getTickerSymbol();
-        } else if (asks.size() != 0) {
-            this.tickerSymbol = asks.get(0).getTickerSymbol();
-        }
+        this.tickerSymbol = tickerSymbol;
         this.continuousLevel3DataFlag = false;
     }
 

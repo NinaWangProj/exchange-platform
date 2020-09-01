@@ -1,5 +1,6 @@
 package session;
 
+import commonData.DTO.MarketDataDTO;
 import commonData.DTO.MarketDataRequestDTO;
 import commonData.DTO.OrderDTO;
 import commonData.DTO.Transferable;
@@ -106,16 +107,11 @@ public class ExchangeClientTest {
         //call api: to submit request
         MarketData marketData = exchangeClient.SubmitMarketDataRequest(MarketDataType.Level1, "AAPL");
 
-        //server does work
-        server.ReadRequestFromClient();
-        server.RespondToClient();
-
-        Thread.sleep(2000);
-
         //compare
-        Assertions.assertThat(server.getReceivedDTO()).
+        Assertions.assertThat((MarketDataRequestDTO)server.getReceivedDTO()).
                 usingRecursiveComparison().isEqualTo(marketDataRequestDTO);
-        Assertions.assertThat(server.getResponseDTO()).
+        MarketDataDTO marketDataDTO = (MarketDataDTO) server.getResponseDTO();
+        Assertions.assertThat(new MarketData("AAPL", marketDataDTO.getBids(), marketDataDTO.getAsks())).
                 usingRecursiveComparison().isEqualTo(marketData);
     }
 
@@ -139,12 +135,14 @@ public class ExchangeClientTest {
         //serverOutputStream.connect(clientInputStream);
         when(clientSocket.getInputStream()).thenReturn(clientInputStream);
 
-        //set up mock server:
-        server = new MockServer(serverInputStream, serverOutputStream);
-
         //instantiate mock status event handler
         statusEventHandler = new MockOrderStatusEventHandler();
 
         exchangeClient.SetupClient(statusEventHandler);
+
+        //set up mock server:
+        server = new MockServer(serverInputStream, serverOutputStream);
+        Thread serverThread = new Thread(server);
+        serverThread.start();
     }
 }
