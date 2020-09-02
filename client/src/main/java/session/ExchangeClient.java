@@ -116,12 +116,13 @@ public class ExchangeClient {
         PortfolioRequestDTO reqeustDTO = new PortfolioRequestDTO(requestID);
         TransmitPortfolioDataRequestDTO(reqeustDTO);
 
-        sharedMonitor.wait();
-        PortfolioDTO portfolioDTO = clientSession.GetPortfolio(requestID);
+        synchronized (sharedMonitor) {
+            sharedMonitor.wait();
+        }
+
+        MarketParticipantPortfolio portfolio = clientSession.GetPortfolio(requestID);
         clientSession.RemovePortfolio(requestID);
         clientSession.RemoveMonitor(requestID);
-
-        MarketParticipantPortfolio portfolio = new MarketParticipantPortfolio(portfolioDTO.getSecurities(),portfolioDTO.getCash());
 
         return portfolio;
     }

@@ -14,7 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 
 public class LimitOrderBookWareHouse {
-    //<tickerSymbol,<bids,asks>>
     private ConcurrentHashMap<String, Pair<sortedOrderList, sortedOrderList>> limitOrderBooks;
     private OrderComparator bidComparator;
     private OrderComparator askComparator;

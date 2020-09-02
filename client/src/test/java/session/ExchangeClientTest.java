@@ -1,15 +1,13 @@
 package session;
 
-import commonData.DTO.MarketDataDTO;
-import commonData.DTO.MarketDataRequestDTO;
-import commonData.DTO.OrderDTO;
-import commonData.DTO.Transferable;
+import commonData.DTO.*;
 import commonData.DataType.MarketDataType;
 import commonData.DataType.OrderStatusType;
 import commonData.Order.Direction;
 import commonData.Order.MarketParticipantOrder;
 import commonData.Order.OrderDuration;
 import commonData.Order.OrderType;
+import commonData.clearing.MarketParticipantPortfolio;
 import javafx.util.Pair;
 import marketData.MarketData;
 import org.assertj.core.api.Assertions;
@@ -18,6 +16,8 @@ import org.mockito.Mock;
 import utility.DTOTestType;
 import utility.MockOrderStatusEventHandler;
 import utility.MockServer;
+
+import javax.print.DocFlavor;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PipedInputStream;
@@ -46,10 +46,6 @@ public class ExchangeClientTest {
         exchangeClient.SubmitMarketOrder(marketOrderDTO.getDirection(), marketOrderDTO.getTickerSymbol(),
               marketOrderDTO.getSize(),marketOrderDTO.getOrderDuration());
 
-        //server does work
-        server.ReadRequestFromClient();
-        server.RespondToClient();
-
         Thread.sleep(2000);
 
         //compare
@@ -77,10 +73,6 @@ public class ExchangeClientTest {
         //call api: to submit limit order
         exchangeClient.SubmitLimitOrder(limitOrderDTO.getDirection(), limitOrderDTO.getTickerSymbol(),
                 limitOrderDTO.getSize(),limitOrderDTO.getPrice(), limitOrderDTO.getOrderDuration());
-
-        //server does work
-        server.ReadRequestFromClient();
-        server.RespondToClient();
 
         Thread.sleep(2000);
 
@@ -113,6 +105,37 @@ public class ExchangeClientTest {
         MarketDataDTO marketDataDTO = (MarketDataDTO) server.getResponseDTO();
         Assertions.assertThat(new MarketData("AAPL", marketDataDTO.getBids(), marketDataDTO.getAsks())).
                 usingRecursiveComparison().isEqualTo(marketData);
+    }
+
+    @Test
+    public void API_SubmitContinuousMarketDataRequest() throws Exception{
+        PrepareUnitTest();
+
+        MarketDataRequestDTO marketDataRequestDTO = new MarketDataRequestDTO((long)1,"AAPL",
+                MarketDataType.ContinuousLevel3);
+
+        //call api: to submit request
+        String returnMsg = exchangeClient.SubmitContinuousMarketDataRequest("AAPL");
+
+        Thread.sleep(2000);
+        //compare
+        Assertions.assertThat((MarketDataRequestDTO)server.getReceivedDTO()).
+                usingRecursiveComparison().isEqualTo(marketDataRequestDTO);
+    }
+
+    @Test
+    public void API_SubmitPortfolioDataRequest() throws Exception{
+        PrepareUnitTest();
+
+        //call api: to submit request
+        MarketParticipantPortfolio portfolio = exchangeClient.SubmitPortfolioDataRequest();
+
+        //compare
+        PortfolioDTO expectedDTO = (PortfolioDTO)server.getResponseDTO();
+        MarketParticipantPortfolio expectedPortfolio = new MarketParticipantPortfolio(expectedDTO.getSecurities(),
+                expectedDTO.getCash());
+        Assertions.assertThat(expectedPortfolio).
+                usingRecursiveComparison().isEqualTo(portfolio);
     }
 
     private void PrepareUnitTest() throws Exception{

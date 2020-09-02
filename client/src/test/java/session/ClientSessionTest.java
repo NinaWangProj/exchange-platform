@@ -50,6 +50,8 @@ class ClientSessionTest {
         ClientSession session = new ClientSession(clientSocket,eventHandler,dataWareHouse);
         session.Start();
 
+        Thread.sleep(3000);
+
         //Baseline MarketDataWareHouse
         MarketDataWareHouse expectedWareHouse = new MarketDataWareHouse();
         MarketDataDTO marketDataDTO = (MarketDataDTO)SampleDTOFactory.ProduceSampleDTO(DTOTestType.MarketData_Level3);

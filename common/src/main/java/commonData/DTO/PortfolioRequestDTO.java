@@ -9,7 +9,7 @@ public class PortfolioRequestDTO implements Transferable{
     private final Long clientRequestID;
 
     public PortfolioRequestDTO(Long clientRequestID) {
-        dtoType = DTOType.DepositRequest;
+        dtoType = DTOType.PortfolioRequest;
         this.clientRequestID = clientRequestID;
     }
 

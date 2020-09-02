@@ -2,11 +2,14 @@ package utility;
 
 import commonData.DTO.*;
 import commonData.DataType.OrderStatusType;
+import commonData.clearing.SecurityCertificate;
 import commonData.marketData.MarketDataItem;
 
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
 
 public class MockServer implements Runnable{
     private PipedInputStream serverInputStream;
@@ -35,6 +38,9 @@ public class MockServer implements Runnable{
             case MareketDataRequest:
                 ReceivedDTO = MarketDataRequestDTO.Deserialize(DTOByteArray);
                 break;
+            case PortfolioRequest:
+                ReceivedDTO = PortfolioRequestDTO.Deserialize(DTOByteArray);
+                break;
         }
     }
 
@@ -49,14 +55,25 @@ public class MockServer implements Runnable{
                 break;
             case MareketDataRequest:
                 MarketDataRequestDTO marketDataRequestDTO = (MarketDataRequestDTO) ReceivedDTO;
-                ArrayList<MarketDataItem> bids = new ArrayList<MarketDataItem>();
-                bids.add(new MarketDataItem("AAPL",5000,129.01));
-                ArrayList<MarketDataItem> asks = new ArrayList<MarketDataItem>();
-                asks.add(new MarketDataItem("AAPL",2000,129.35));
-                ResponseDTO = new MarketDataDTO((long)1,"AAPL",bids,asks);
-
+                switch (marketDataRequestDTO.getDataType()) {
+                    case Level1:
+                        ArrayList<MarketDataItem> bids = new ArrayList<MarketDataItem>();
+                        bids.add(new MarketDataItem("AAPL",5000,129.01));
+                        ArrayList<MarketDataItem> asks = new ArrayList<MarketDataItem>();
+                        asks.add(new MarketDataItem("AAPL",2000,129.35));
+                        ResponseDTO = new MarketDataDTO(marketDataRequestDTO.getClientRequestID(),"AAPL",bids,asks);
+                        break;
+                    case ContinuousLevel3:
+                        break;
+                }
                 break;
             case PortfolioRequest:
+                PortfolioRequestDTO portfolioRequestDTO = (PortfolioRequestDTO) ReceivedDTO;
+                double cash = 12000000.879065;
+                HashMap<String, SecurityCertificate> securities = new HashMap<>();
+                securities.put("TSLA", new SecurityCertificate("user1", "TSLA",400, new Date()));
+                securities.put("AAPL", new SecurityCertificate("user1", "AAPL",300, new Date()));
+                ResponseDTO = new PortfolioDTO(portfolioRequestDTO.getClientRequestID(), securities, cash);
                 break;
         }
 
