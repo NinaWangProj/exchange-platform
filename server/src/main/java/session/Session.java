@@ -11,7 +11,7 @@ import commonData.DataType.OrderStatusType;
 import common.ServerQueue;
 import commonData.DataType.MarketDataType;
 import common.LimitOrderBookWareHouse;
-import common.sortedOrderList;
+import common.SortedOrderList;
 import commonData.Order.MarketParticipantOrder;
 import common.OrderStatus;
 import java.net.Socket;
@@ -138,7 +138,7 @@ public class Session implements Runnable {
             MarketDataType type = marketDataRequestDTO.getDataType();
             boolean found = limitOrderBookWareHouse.ValidateRequest(tickerSymbol);
             if(found) {
-                Pair<sortedOrderList, sortedOrderList> limitOrderBook;
+                Pair<SortedOrderList, SortedOrderList> limitOrderBook;
 
                 ReadWriteLock lock = locks.get(tickerSymbol);
                 lock.readLock().lock();
@@ -163,16 +163,16 @@ public class Session implements Runnable {
     }
 
     private Pair<ArrayList<MarketDataItem>,ArrayList<MarketDataItem>> FormMarketDataFromOrderBook(
-        Pair<sortedOrderList,sortedOrderList> limitOrderBook) {
+        Pair<SortedOrderList, SortedOrderList> limitOrderBook) {
         ArrayList<MarketDataItem> bids = new ArrayList<MarketDataItem>();
         ArrayList<MarketDataItem> asks = new ArrayList<MarketDataItem>();
 
-        for(MarketParticipantOrder order : limitOrderBook.getKey().sortedList) {
+        for(MarketParticipantOrder order : limitOrderBook.getKey().getSortedList()) {
             MarketDataItem item = new MarketDataItem(order.getTickerSymbol(),order.getSize(),order.getPrice());
             bids.add(item);
         }
 
-        for(MarketParticipantOrder order : limitOrderBook.getValue().sortedList) {
+        for(MarketParticipantOrder order : limitOrderBook.getValue().getSortedList()) {
             MarketDataItem item = new MarketDataItem(order.getTickerSymbol(),order.getSize(),order.getPrice());
             asks.add(item);
         }

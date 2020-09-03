@@ -5,7 +5,7 @@ import common.ServerQueue;
 import common.LimitOrderBookWareHouse;
 import commonData.Order.MarketParticipantOrder;
 import common.TradingOutput;
-import common.sortedOrderList;
+import common.SortedOrderList;
 
 
 import java.util.HashMap;
@@ -38,7 +38,7 @@ public class TradingEngineGroup implements Runnable{
                 ReadWriteLock lock = new ReentrantReadWriteLock();
                 locks.put(tickerSymbol,lock);
                 dataWareHouse.AddNewLimitOrderBook(tickerSymbol,lock);
-                Pair<sortedOrderList, sortedOrderList> limitOrderBook
+                Pair<SortedOrderList, SortedOrderList> limitOrderBook
                         = dataWareHouse.GetLimitOrderBook(tickerSymbol);
                 TradingEngine tradingEngine = new TradingEngine(tickerSymbol,limitOrderBook);
                 tradingEngineMap.put(tickerSymbol,tradingEngine);

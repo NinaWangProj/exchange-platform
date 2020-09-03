@@ -14,12 +14,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 
 public class LimitOrderBookWareHouse {
-    private ConcurrentHashMap<String, Pair<sortedOrderList, sortedOrderList>> limitOrderBooks;
+    private ConcurrentHashMap<String, Pair<SortedOrderList, SortedOrderList>> limitOrderBooks;
     private OrderComparator bidComparator;
     private OrderComparator askComparator;
 
     public LimitOrderBookWareHouse(OrderComparatorType comparatorType) {
-        limitOrderBooks = new ConcurrentHashMap<String, Pair<sortedOrderList, sortedOrderList>>();
+        limitOrderBooks = new ConcurrentHashMap<String, Pair<SortedOrderList, SortedOrderList>>();
         if(comparatorType==OrderComparatorType.PriceTimePriority) {
             bidComparator = new BidPriceTimeComparator();
             askComparator = new AskPriceTimeComparator();
@@ -34,20 +34,20 @@ public class LimitOrderBookWareHouse {
         return found;
     }
 
-    public Pair<sortedOrderList, sortedOrderList> GetLimitOrderBook(String tickerSymbol) {
+    public Pair<SortedOrderList, SortedOrderList> GetLimitOrderBook(String tickerSymbol) {
         return limitOrderBooks.get(tickerSymbol);
     }
 
     public void AddNewLimitOrderBook(String tickerSymbol, ReadWriteLock lock) {
-        limitOrderBooks.put(tickerSymbol, new Pair<sortedOrderList, sortedOrderList>(new sortedOrderList(bidComparator,lock,tickerSymbol, Direction.BUY)
-                ,new sortedOrderList(askComparator,lock,tickerSymbol,Direction.SELL)));
+        limitOrderBooks.put(tickerSymbol, new Pair<SortedOrderList, SortedOrderList>(new SortedOrderList(bidComparator,lock,tickerSymbol, Direction.BUY)
+                ,new SortedOrderList(askComparator,lock,tickerSymbol,Direction.SELL)));
     }
 
-    public Pair<sortedOrderList, sortedOrderList> GetLimitOrderBook
+    public Pair<SortedOrderList, SortedOrderList> GetLimitOrderBook
             (String tickerSymbol, MarketDataType type, Session session) throws Exception{
 
-        Pair<sortedOrderList, sortedOrderList> limitOrderBook = new Pair<sortedOrderList, sortedOrderList>
-                (new sortedOrderList(bidComparator,Direction.BUY),new sortedOrderList(askComparator,Direction.SELL));
+        Pair<SortedOrderList, SortedOrderList> limitOrderBook = new Pair<SortedOrderList, SortedOrderList>
+                (new SortedOrderList(bidComparator,Direction.BUY),new SortedOrderList(askComparator,Direction.SELL));
 
         switch (type) {
             case Level1:

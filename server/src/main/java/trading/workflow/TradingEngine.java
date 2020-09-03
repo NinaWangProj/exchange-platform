@@ -7,7 +7,7 @@ import commonData.Order.MarketParticipantOrder;
 import javafx.util.Pair;
 import commonData.Order.Direction;
 import serverEngine.WrapperEngine;
-import common.sortedOrderList;
+import common.SortedOrderList;
 import trading.data.*;
 
 
@@ -17,12 +17,12 @@ import java.util.Date;
 public class TradingEngine{
     //fields
     public final String tickerSymbol;
-    private sortedOrderList bids;
-    private sortedOrderList asks;
+    private SortedOrderList bids;
+    private SortedOrderList asks;
 
 
     //constructor
-    public TradingEngine(String tickerSymbol, Pair<sortedOrderList, sortedOrderList> limitOrderBook) {
+    public TradingEngine(String tickerSymbol, Pair<SortedOrderList, SortedOrderList> limitOrderBook) {
         this.tickerSymbol = tickerSymbol;
         this.bids = limitOrderBook.getKey();
         this.asks = limitOrderBook.getValue();
@@ -58,8 +58,8 @@ public class TradingEngine{
         ArrayList<Transaction> transactions = new ArrayList<Transaction>();
         ArrayList<UnfilledOrder> unfilledOrders = new ArrayList<UnfilledOrder>();
         ArrayList<PendingOrder> pendingOrders = new ArrayList<PendingOrder>();
-        sortedOrderList counterPartyLimitOrderBook;
-        sortedOrderList currentLimitOrderBook ;
+        SortedOrderList counterPartyLimitOrderBook;
+        SortedOrderList currentLimitOrderBook ;
 
         switch (order.getDirection()) {
             case BUY:
@@ -87,7 +87,7 @@ public class TradingEngine{
         return new TradingOutput(order.getOrderID(), transactions, unfilledOrders,pendingOrders);
     }
 
-    private boolean FillMarketOrder(MarketParticipantOrder order, sortedOrderList counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
+    private boolean FillMarketOrder(MarketParticipantOrder order, SortedOrderList counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
                                     ArrayList<UnfilledOrder> unfilledOrders) throws Exception {
         boolean active;
 
@@ -128,7 +128,7 @@ public class TradingEngine{
         return active;
     }
 
-    private boolean FillLimitOrder(MarketParticipantOrder order, sortedOrderList currentLimitOrderBook, sortedOrderList counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
+    private boolean FillLimitOrder(MarketParticipantOrder order, SortedOrderList currentLimitOrderBook, SortedOrderList counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
                                    ArrayList<UnfilledOrder> unfilledOrders, ArrayList<PendingOrder> pendingOrders) throws Exception{
         boolean active;
 

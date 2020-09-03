@@ -15,15 +15,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 
-public class sortedOrderList {
-    public ArrayList<MarketParticipantOrder> sortedList;
+public class SortedOrderList {
+    private ArrayList<MarketParticipantOrder> sortedList;
     private ChangeTracker tracker;
     private OrderComparator comparator;
     private Direction direction;
     private ReadWriteLock lock;
     private String tickerSymbol;
 
-    public sortedOrderList(OrderComparator comparator, ReadWriteLock lock, String tickerSymbol, Direction direction) {
+    public SortedOrderList(OrderComparator comparator, ReadWriteLock lock, String tickerSymbol, Direction direction) {
         sortedList = new ArrayList<>();
         this.comparator = comparator;
         tracker = new ChangeTracker();
@@ -32,7 +32,7 @@ public class sortedOrderList {
         this.direction = direction;
     }
 
-    public sortedOrderList(OrderComparator comparator, Direction direction) {
+    public SortedOrderList(OrderComparator comparator, Direction direction) {
         sortedList = new ArrayList<MarketParticipantOrder>();
         this.comparator = comparator;
         tracker = new ChangeTracker();
@@ -115,6 +115,8 @@ public class sortedOrderList {
             MarketDataItem modifiedItem = new MarketDataItem(tickerSymbol,targetObject.getSize(),targetObject.getPrice());
             tracker.Add(new ChangeOperation(BookOperation.MODIFY, index, modifiedItem));
         } catch (IllegalAccessException e) {
+        } finally {
+            lock.writeLock().unlock();
         }
     }
 
@@ -126,14 +128,21 @@ public class sortedOrderList {
         tracker.AttachObserver(session);
     }
 
+    public ArrayList<MarketParticipantOrder> getSortedList() {
+        return sortedList;
+    }
+
     //subclass
     private class ChangeTracker {
         private List<ChangeOperation> bookChanges;
         private List<Session> observers;
 
         private ChangeTracker() {
-            observers = Collections.synchronizedList(new ArrayList<Session>());
-            bookChanges = Collections.synchronizedList(new ArrayList<ChangeOperation>());
+            /*observers = Collections.synchronizedList(new ArrayList<Session>());
+            bookChanges = Collections.synchronizedList(new ArrayList<ChangeOperation>());*/
+
+            observers = new ArrayList<Session>();
+            bookChanges = new ArrayList<ChangeOperation>();
         }
 
         private void Add(ChangeOperation change) throws Exception {

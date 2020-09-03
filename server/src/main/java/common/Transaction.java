@@ -19,7 +19,6 @@ public class Transaction implements Info {
     private final int size;
     private final double price;
 
-
     //constructor
     public Transaction(int sessionID, int userID, String name, long transactionID, int orderID, Date time, Direction direction, String tickerSymbol, int size,
                        double price)
