@@ -180,10 +180,9 @@ public class Session implements Runnable {
         return new Pair<>(bids,asks);
     }
 
-    public void On_ReceivingLevel3DataChanges(String tickerSymbol, Direction direction, List<ChangeOperation> bookchanges) throws Exception {
-        //Create change DTO and put into queue
-        BookChangeDTO DTO = new BookChangeDTO(tickerSymbol, direction, bookchanges);
-        serverQueue.PutResponseDTO(sessionID, DTO);
+    public void On_ReceivingLevel3DataChanges(BookChangeDTO bookChangeDTO) throws Exception {
+        //place book change dto to queue:
+        serverQueue.PutResponseDTO(sessionID, bookChangeDTO);
     }
 
     public MessageDTO CreateMessageDTOForWriter(Long requestID, OrderStatusType msgType, String messages) {

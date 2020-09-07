@@ -1,5 +1,6 @@
 package common;
 
+import commonData.DTO.BookChangeDTO;
 import commonData.Order.Direction;
 import commonData.limitOrderBook.ChangeOperation;
 import commonData.marketData.MarketDataItem;
@@ -9,6 +10,7 @@ import commonData.limitOrderBook.BookOperation;
 import javafx.util.Pair;
 import trading.limitOrderBook.OrderComparator;
 
+import java.awt.print.Book;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -39,16 +41,26 @@ public class SortedOrderList {
         this.direction = direction;
     }
 
-    public MarketParticipantOrder get(int ithElement) {
-        MarketParticipantOrder order = sortedList.get(ithElement);
+    public MarketParticipantOrder get(int index) {
+        MarketParticipantOrder order = null;
+        if(index >= 0 && index < sortedList.size()) {
+            order = sortedList.get(index);
+        }
         return order;
+    }
+
+    //For testing purpose
+    public void set(ArrayList<MarketParticipantOrder> sortedList) {
+        this.sortedList = sortedList;
     }
 
     public void remove(int ithElement) throws Exception {
         lock.writeLock().lock();
         try {
-            sortedList.remove(ithElement);
-            tracker.Add(new ChangeOperation(BookOperation.REMOVE, ithElement, null));
+            if(ithElement >=0 && ithElement <= sortedList.size() - 1) {
+                sortedList.remove(ithElement);
+                tracker.Add(new ChangeOperation(BookOperation.REMOVE, ithElement, null));
+            }
         } finally {
             lock.writeLock().unlock();
         }
@@ -58,13 +70,15 @@ public class SortedOrderList {
         //using bisection to determine where to insert the order
         Boolean iterate = true;
         int listStartIndex = 0;
-        int listEndIndex = sortedList.size() - 1;
+        int listEndIndex = -1;
+        if(sortedList.size() != 0)
+            listEndIndex = sortedList.size() - 1;
 
         while(iterate) {
             int listSize = listEndIndex - listStartIndex + 1;
             int partition = listStartIndex + (listEndIndex - listStartIndex) / 2;
 
-            if(listSize == 0) {
+            if(sortedList.size() == 0) {
                 lock.writeLock().lock();
                 try {
                     sortedList.add(0, order);
@@ -73,9 +87,7 @@ public class SortedOrderList {
                     lock.writeLock().unlock();
                 }
                 break;
-            }
-
-            if(listSize == 1) {
+            } else if (listSize == 1) {
                 int compareIndicator = comparator.compare(order, sortedList.get(partition));
                 int index;
                 if (compareIndicator > 0) {
@@ -97,26 +109,31 @@ public class SortedOrderList {
             if (compareIndicator > 0) {
                 listEndIndex = partition - 1;
             } else {
-                listStartIndex = partition;
+                listStartIndex = partition + 1;
             }
         }
     }
 
     public <U> void modify(int index, String fieldName, U value) throws Exception {
-        MarketParticipantOrder targetObject = sortedList.get(index);
 
-        Class metaClass = targetObject.getClass();
-        Field field = metaClass.getDeclaredField(fieldName);
-        field.setAccessible(true);
+        MarketParticipantOrder targetObject = null;
 
-        lock.writeLock().lock();
-        try {
-            field.set(targetObject, value);
-            MarketDataItem modifiedItem = new MarketDataItem(tickerSymbol,targetObject.getSize(),targetObject.getPrice());
-            tracker.Add(new ChangeOperation(BookOperation.MODIFY, index, modifiedItem));
-        } catch (IllegalAccessException e) {
-        } finally {
-            lock.writeLock().unlock();
+        if(index >= 0 && index < sortedList.size()){
+            targetObject = sortedList.get(index);
+
+            Class metaClass = targetObject.getClass();
+            Field field = metaClass.getDeclaredField(fieldName);
+            field.setAccessible(true);
+
+            lock.writeLock().lock();
+            try {
+                field.set(targetObject, value);
+                MarketDataItem modifiedItem = new MarketDataItem(tickerSymbol,targetObject.getSize(),targetObject.getPrice());
+                tracker.Add(new ChangeOperation(BookOperation.MODIFY, index, modifiedItem));
+            } catch (IllegalAccessException e) {
+            } finally {
+                lock.writeLock().unlock();
+            }
         }
     }
 
@@ -147,7 +164,8 @@ public class SortedOrderList {
 
         private void Add(ChangeOperation change) throws Exception {
             bookChanges.add(change);
-            NotifyObservers(direction, bookChanges);
+            BookChangeDTO clonedBookChangeDTO = DeepCloneBookChanges(bookChanges);
+            NotifyObservers(clonedBookChangeDTO);
             ClearChanges();
         }
 
@@ -159,10 +177,18 @@ public class SortedOrderList {
             observers.add(session);
         }
 
-        private void NotifyObservers(Direction direction, List<ChangeOperation> bookChanges) throws Exception{
+        private void NotifyObservers(BookChangeDTO bookChangeDTO) throws Exception{
             for(Session session : observers) {
-                session.On_ReceivingLevel3DataChanges(tickerSymbol, direction, bookChanges);
+                session.On_ReceivingLevel3DataChanges(bookChangeDTO);
             }
+        }
+
+        private BookChangeDTO DeepCloneBookChanges(List<ChangeOperation> bookChanges) throws Exception {
+            //serialize and deserialize to deep clone BookChangeDTO
+            BookChangeDTO dto = new BookChangeDTO(tickerSymbol,direction,bookChanges);
+            byte[] dtoByteArray = dto.Serialize();
+            BookChangeDTO deepClonedDTO = BookChangeDTO.Deserialize(dtoByteArray);
+            return deepClonedDTO;
         }
     }
 }
