@@ -1,22 +1,37 @@
 package common;
 
 
+import com.opencsv.bean.CsvBindByName;
+import com.opencsv.bean.CsvCustomBindByName;
+import com.opencsv.bean.CsvDate;
 import commonData.Order.Direction;
+import commonData.Order.DirectionEnumConverter;
 import commonData.Order.Info;
 
 import java.util.Date;
 
 public class Transaction implements Info {
     //fields
+    @CsvBindByName
     private final int sessionID;
+    @CsvBindByName
     private final int userID;
+    @CsvBindByName
     private final String name;
+    @CsvBindByName
     public final long transactionID;
+    @CsvBindByName
     private final int orderID;
+    @CsvBindByName
+    @CsvDate("yyyy-MM-dd HH:mm:ss.SSS")
     private final Date time;
+    @CsvCustomBindByName(converter = DirectionEnumConverter.class)
     private final Direction direction;
+    @CsvBindByName
     private final String tickerSymbol;
+    @CsvBindByName
     private final int size;
+    @CsvBindByName
     private final double price;
 
     //constructor
@@ -73,5 +88,20 @@ public class Transaction implements Info {
 
     public int getSessionID() {
         return sessionID;
+    }
+
+    @Override
+    public String toString() {
+        String result = getSessionID() + "," +
+                getUserID() + "," +
+                getName() + "," +
+                transactionID + "," +
+                getOrderID() + "," +
+                getTime() + "," +
+                getTickerSymbol() + "," +
+                getSize() + "," +
+                getPrice() + "," +
+                getDirection();
+        return result;
     }
 }

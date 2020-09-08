@@ -1,0 +1,7 @@
+sessionID,userID,name,orderID,time,direction,tickerSymbol,size,price,orderType,orderDuration,reason
+4,4,Default Name,1,2020-08-31 09:30:00.011000,Direction.BUY,AAPL,9,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price,Could not match market order price
+1,1,Default Name,2,2020-08-31 09:30:00.012000,Direction.SELL,AAPL,4,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price,Could not match market order price
+1,1,Default Name,3,2020-08-31 09:30:00.012000,Direction.SELL,AAPL,8,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price,Could not match market order price
+4,4,Default Name,6,2020-08-31 09:30:00.023000,Direction.BUY,AAPL,5,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price,Could not match market order price
+1,1,Default Name,7,2020-08-31 09:30:00.025000,Direction.SELL,AAPL,2,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price,Could not match market order price
+4,4,Default Name,8,2020-08-31 09:30:00.033000,Direction.SELL,AAPL,2,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price,Could not match market order price
