@@ -131,7 +131,7 @@ public class ExchangeClient {
         byte[] dataRequestDTOByteArray = dataRequestDTO.Serialize();
 
         OutputStream outputStream = clientSocket.getOutputStream();
-        DTOType type = DTOType.MareketDataRequest;
+        DTOType type = DTOType.MarketDataRequest;
         outputStream.write(type.getByteValue());
         outputStream.write((byte)dataRequestDTOByteArray.length);
         outputStream.write(dataRequestDTOByteArray);

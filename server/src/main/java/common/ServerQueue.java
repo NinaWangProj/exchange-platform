@@ -24,7 +24,13 @@ public class ServerQueue {
         this.numberOfOrderQueues = numberOfOrderQueues;
         this.numOfEngineResultQueues = numOfEngineResultQueues;
         orders = new LinkedBlockingQueue[numberOfOrderQueues];
+        for (int i = 0; i < numberOfOrderQueues; i ++) {
+           orders[i] = new LinkedBlockingQueue<MarketParticipantOrder>();
+        }
         tradingEngineResults = new LinkedBlockingQueue[numOfEngineResultQueues];
+        for (int j = 0; j < numberOfOrderQueues; j ++) {
+            orders[j] = new LinkedBlockingQueue<MarketParticipantOrder>();
+        }
         sessionOrderStatusMap = new ConcurrentHashMap<Integer,LinkedBlockingQueue<OrderStatus>>();
         sessionResponseDTOMap = new ConcurrentHashMap<Integer,LinkedBlockingQueue<Transferable>>();
     }
@@ -161,5 +167,9 @@ public class ServerQueue {
     public Transferable TakeResponseDTO(int sessionID) throws Exception{
         Transferable DTO = sessionResponseDTOMap.get(sessionID).take();
         return DTO;
+    }
+
+    public ConcurrentHashMap<Integer, LinkedBlockingQueue<Transferable>> getSessionResponseDTOMap() {
+        return sessionResponseDTOMap;
     }
 }

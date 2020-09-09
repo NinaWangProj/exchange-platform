@@ -15,7 +15,7 @@ public class MarketDataRequestDTO implements Transferable {
     public MarketDataRequestDTO(Long clientRequestID, String tickerSymbol, MarketDataType dataType) {
         this.tickerSymbol = tickerSymbol;
         this.dataType = dataType;
-        dtoType = DTOType.MareketDataRequest;
+        dtoType = DTOType.MarketDataRequest;
         this.clientRequestID = clientRequestID;
     }
 

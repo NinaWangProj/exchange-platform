@@ -35,7 +35,7 @@ public class MockServer implements Runnable{
             case LoginRequest:
                 ReceivedDTO = LoginDTO.Deserialize(DTOByteArray);
                 break;
-            case MareketDataRequest:
+            case MarketDataRequest:
                 ReceivedDTO = MarketDataRequestDTO.Deserialize(DTOByteArray);
                 break;
             case PortfolioRequest:
@@ -53,7 +53,7 @@ public class MockServer implements Runnable{
                 ResponseDTO = new MessageDTO(orderDTO.getClientRequestID(), OrderStatusType.PartiallyFilled,
                         "Your market Order has been filled with 100 shares @ $300");
                 break;
-            case MareketDataRequest:
+            case MarketDataRequest:
                 MarketDataRequestDTO marketDataRequestDTO = (MarketDataRequestDTO) ReceivedDTO;
                 switch (marketDataRequestDTO.getDataType()) {
                     case Level1:

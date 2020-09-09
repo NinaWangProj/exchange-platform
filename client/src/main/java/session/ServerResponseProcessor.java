@@ -18,7 +18,7 @@ public class ServerResponseProcessor implements Runnable{
         Transferable DTO = null;
         Boolean endOfStream = false;
 
-            if(nextByte != -1) {
+        if(nextByte != -1) {
             DTOType dtoType = DTOType.valueOf(nextByte);
             int byteSizeOfDTO = inputStream.read();
             byte[] DTOByteArray = new byte[byteSizeOfDTO];
@@ -37,7 +37,7 @@ public class ServerResponseProcessor implements Runnable{
                 case Portfolio:
                     DTO = PortfolioDTO.Deserialize(DTOByteArray);
                     break;
-            }
+                }
         } else {
             endOfStream = true;
         }

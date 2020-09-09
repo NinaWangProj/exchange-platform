@@ -18,5 +18,7 @@ public enum DTOTestType {
     Order_LimitOrder_Buy,
     Order_MarketOrder_Sell,
     Order_LimitOrder_Sell,
-    DepositRequest
+    DepositRequest,
+    OpenAcctRequest_user1,
+    LoginRequest
 }

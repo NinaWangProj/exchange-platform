@@ -1,7 +1,5 @@
 package session;
 
-import commonData.Order.Direction;
-import commonData.limitOrderBook.ChangeOperation;
 import commonData.marketData.MarketDataItem;
 import javafx.util.Pair;
 import clearing.data.CredentialWareHouse;
@@ -18,7 +16,6 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -32,9 +29,9 @@ public class Session implements Runnable {
     private CredentialWareHouse credentialWareHouse;
     private LimitOrderBookWareHouse limitOrderBookWareHouse;
     private HashMap<Integer, MarketParticipantPortfolio> portfolioHashMap;
-    private MarketParticipantPortfolio clientPortfolio;
+    //private MarketParticipantPortfolio clientPortfolio;
     private ConcurrentHashMap<String,ReadWriteLock> locks;
-    private HashMap<Integer,Long> orderIDRequestIDMAP;
+    private HashMap<Integer,Long> orderIDRequestIDMap;
 
     public static AtomicInteger currentAvailableOrderID;
 
@@ -52,6 +49,7 @@ public class Session implements Runnable {
         this.limitOrderBookWareHouse = limitOrderBookWareHouse;
         this.locks = locks;
         this.portfolioHashMap = portfolioHashMap;
+        this.orderIDRequestIDMap = new HashMap<Integer,Long>();
         if(currentAvailableOrderID == null) {
             currentAvailableOrderID = new AtomicInteger(baseOrderID);
         }
@@ -75,90 +73,89 @@ public class Session implements Runnable {
     }
 
     public void On_ReceivingDTO(Transferable DTO) throws Exception {
-        if(Class.forName("OrderDTO").isInstance(DTO)) {
-            OrderDTO orderDTO = (OrderDTO)DTO;
-            int orderID = currentAvailableOrderID.getAndIncrement();
-            orderIDRequestIDMAP.put(orderID, orderDTO.getClientRequestID());
-            MarketParticipantOrder order = new MarketParticipantOrder(sessionID,clientUserID,clientUserName, orderID,
-                    new Date(),orderDTO.getDirection(),orderDTO.getTickerSymbol(),orderDTO.getSize(),orderDTO.getPrice(),
-                    orderDTO.getOrderType(),orderDTO.getOrderDuration());
-            serverQueue.PutOrder(order);
-        }
+        DTOType type = DTO.getDtoType();
+        switch (type) {
+            case Order:
+                OrderDTO orderDTO = (OrderDTO)DTO;
+                int orderID = currentAvailableOrderID.getAndIncrement();
+                orderIDRequestIDMap.put(orderID, orderDTO.getClientRequestID());
+                MarketParticipantOrder order = new MarketParticipantOrder(sessionID,clientUserID,clientUserName, orderID,
+                        new Date(),orderDTO.getDirection(),orderDTO.getTickerSymbol(),orderDTO.getSize(),orderDTO.getPrice(),
+                        orderDTO.getOrderType(),orderDTO.getOrderDuration());
+                serverQueue.PutOrder(order);
+                break;
+            case OpenAcctRequest:
+                OpenAcctDTO openAcctDTO = (OpenAcctDTO)DTO;
+                String userName = openAcctDTO.getUserName();
+                String password = openAcctDTO.getPassword();
+                boolean pass = credentialWareHouse.CreateAccount(userName,password);
+                if(pass) {
+                    clientUserName = userName;
+                    clientUserID = credentialWareHouse.GetUserID(userName);
 
-        if(Class.forName("OpenAcctDTO").isInstance(DTO)) {
-            LoginDTO loginDTO = (LoginDTO)DTO;
-            String userName = loginDTO.getUserName();
-            String password = loginDTO.getPassword();
-            boolean pass = credentialWareHouse.CreateAccount(userName,password);
-            if(pass) {
-                clientUserName = userName;
-                clientUserID = credentialWareHouse.GetUserID(userName);
-
-                //set up portfolio for client when they open an account
-                MarketParticipantPortfolio portfolio = new MarketParticipantPortfolio();
-                portfolioHashMap.put(clientUserID,portfolio);
-                clientPortfolio = portfolio;
-            } else {
-                //send message back to client
-            }
-        }
-
-        if(Class.forName("LoginDTO").isInstance(DTO)) {
-            LoginDTO loginDTO = (LoginDTO)DTO;
-            String userName = loginDTO.getUserName();
-            String password = loginDTO.getPassword();
-            boolean pass = credentialWareHouse.ValidateLogin(userName,password);
-            if(pass) {
-                clientUserName = userName;
-                clientUserID = credentialWareHouse.GetUserID(userName);
-            } else {
-                //session needs to send client a message "wrong credential, please try again"
-                //implement later
-            }
-        }
-
-        if(Class.forName("DepositDTO").isInstance(DTO)) {
-            DepositDTO depositDTO = (DepositDTO)DTO;
-            double cashAmt = depositDTO.getCashAmount();
-            clientPortfolio.DepositCash(cashAmt);
-            String message = cashAmt + " dollars have been successfully deposited into your account";
-            MessageDTO messageDTO = new MessageDTO(depositDTO.getClientRequestID(), OrderStatusType.Deposit, message);
-            serverQueue.PutResponseDTO(sessionID,messageDTO);
-        }
-
-        if(Class.forName("PortfolioRequestDTO").isInstance(DTO)) {
-            PortfolioRequestDTO portfolioRequestDTO = (PortfolioRequestDTO)DTO;
-            PortfolioDTO portfolioDTO = new PortfolioDTO(portfolioRequestDTO.getClientRequestID(),clientPortfolio.getSecurities(),clientPortfolio.getCashAmt());
-            serverQueue.PutResponseDTO(sessionID,portfolioDTO);
-        }
-
-        if(Class.forName("MareketDataRequestDTO").isInstance(DTO)) {
-            MarketDataRequestDTO marketDataRequestDTO = (MarketDataRequestDTO)DTO;
-            String tickerSymbol = marketDataRequestDTO.getTickerSymbol();
-            MarketDataType type = marketDataRequestDTO.getDataType();
-            boolean found = limitOrderBookWareHouse.ValidateRequest(tickerSymbol);
-            if(found) {
-                Pair<SortedOrderList, SortedOrderList> limitOrderBook;
-
-                ReadWriteLock lock = locks.get(tickerSymbol);
-                lock.readLock().lock();
-                try{
-                    limitOrderBook = limitOrderBookWareHouse.GetLimitOrderBook(tickerSymbol,type,this);
-                } finally {
-                    lock.readLock().unlock();
+                    //set up portfolio for client when they open an account
+                    MarketParticipantPortfolio portfolio = new MarketParticipantPortfolio();
+                    portfolioHashMap.put(clientUserID,portfolio);
+                    //clientPortfolio = portfolio;
+                } else {
+                    //send message back to client
                 }
-
-                if(limitOrderBook.getKey().size() > 0 || limitOrderBook.getValue().size() > 0) {
-                    //Create market data dto and put into queue
-                    Pair<ArrayList<MarketDataItem>,ArrayList<MarketDataItem>> marketData =
-                            FormMarketDataFromOrderBook(limitOrderBook);
-                    MarketDataDTO marketDataDTO = new MarketDataDTO(marketDataRequestDTO.getClientRequestID(),
-                            tickerSymbol, marketData.getKey(),marketData.getValue());
-                    serverQueue.PutResponseDTO(sessionID,marketDataDTO);
+                break;
+            case LoginRequest:
+                LoginDTO loginDTO = (LoginDTO)DTO;
+                String loginUserName = loginDTO.getUserName();
+                String loginPassword = loginDTO.getPassword();
+                boolean loginPass = credentialWareHouse.ValidateLogin(loginUserName,loginPassword);
+                if(loginPass) {
+                    clientUserName = loginUserName;
+                    clientUserID = credentialWareHouse.GetUserID(loginUserName);
+                } else {
+                    //session needs to send client a message "wrong credential, please try again"
+                    //implement later
                 }
-            } else {
-                //send message back to client, no market data for the request ticker symbol is found
-            }
+                break;
+            case DepositRequest:
+                DepositDTO depositDTO = (DepositDTO)DTO;
+                double cashAmt = depositDTO.getCashAmount();
+                portfolioHashMap.get(clientUserID).DepositCash(cashAmt);
+                String message = cashAmt + " dollars have been successfully deposited into your account";
+                MessageDTO messageDTO = new MessageDTO(depositDTO.getClientRequestID(), OrderStatusType.Deposit, message);
+                serverQueue.PutResponseDTO(sessionID,messageDTO);
+                break;
+            case PortfolioRequest:
+                PortfolioRequestDTO portfolioRequestDTO = (PortfolioRequestDTO)DTO;
+                PortfolioDTO portfolioDTO = new PortfolioDTO(portfolioRequestDTO.getClientRequestID(),
+                        portfolioHashMap.get(clientUserID).getSecurities(),portfolioHashMap.get(clientUserID).getCashAmt());
+                serverQueue.PutResponseDTO(sessionID,portfolioDTO);
+                break;
+            case MarketDataRequest:
+                MarketDataRequestDTO marketDataRequestDTO = (MarketDataRequestDTO)DTO;
+                String tickerSymbol = marketDataRequestDTO.getTickerSymbol();
+                MarketDataType marketDataType = marketDataRequestDTO.getDataType();
+                boolean found = limitOrderBookWareHouse.ValidateRequest(tickerSymbol);
+                if(found) {
+                    Pair<SortedOrderList, SortedOrderList> limitOrderBook;
+
+                    ReadWriteLock lock = locks.get(tickerSymbol);
+                    lock.readLock().lock();
+                    try{
+                        limitOrderBook = limitOrderBookWareHouse.GetLimitOrderBook(tickerSymbol,marketDataType,this);
+                    } finally {
+                        lock.readLock().unlock();
+                    }
+
+                    if(limitOrderBook.getKey().size() > 0 || limitOrderBook.getValue().size() > 0) {
+                        //Create market data dto and put into queue
+                        Pair<ArrayList<MarketDataItem>,ArrayList<MarketDataItem>> marketData =
+                                FormMarketDataFromOrderBook(limitOrderBook);
+                        MarketDataDTO marketDataDTO = new MarketDataDTO(marketDataRequestDTO.getClientRequestID(),
+                                tickerSymbol, marketData.getKey(),marketData.getValue());
+                        serverQueue.PutResponseDTO(sessionID,marketDataDTO);
+                    }
+                } else {
+                    //send message back to client, no market data for the request ticker symbol is found
+                }
+                break;
         }
     }
 
@@ -185,6 +182,22 @@ public class Session implements Runnable {
         serverQueue.PutResponseDTO(sessionID, bookChangeDTO);
     }
 
+    public HashMap<Integer, MarketParticipantPortfolio> getPortfolioHashMap() {
+        return portfolioHashMap;
+    }
+
+    public MarketParticipantPortfolio getClientPortfolio() {
+        return portfolioHashMap.get(clientUserID);
+    }
+
+    public int getClientUserID() {
+        return clientUserID;
+    }
+
+    public String getClientUserName() {
+        return clientUserName;
+    }
+
     public MessageDTO CreateMessageDTOForWriter(Long requestID, OrderStatusType msgType, String messages) {
         MessageDTO messageDTO = new MessageDTO(requestID, msgType, messages);
         return messageDTO;
@@ -201,7 +214,7 @@ public class Session implements Runnable {
     private class OrderStatusProcessor implements Runnable {
         private void Process() throws Exception{
             OrderStatus orderStatus = serverQueue.TakeOrderStatus(sessionID);
-            Long requestID = orderIDRequestIDMAP.get(orderStatus.getOrderID());
+            Long requestID = orderIDRequestIDMap.get(orderStatus.getOrderID());
             for(String statusMessage : orderStatus.getStatusMessages()) {
                 MessageDTO messageDTO = new MessageDTO(requestID,orderStatus.getMsgType(),statusMessage);
                 serverQueue.PutResponseDTO(sessionID,messageDTO);

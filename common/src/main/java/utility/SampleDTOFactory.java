@@ -74,6 +74,12 @@ public class SampleDTOFactory {
             case DepositRequest:
                 sampleDTO = ProduceSampleDepositRequestDTO();
                 break;
+            case OpenAcctRequest_user1:
+                sampleDTO = ProduceOpenAcctRequestDTO();
+                break;
+            case LoginRequest:
+                sampleDTO = ProduceLoginRequestDTO();
+                break;
         }
         return sampleDTO;
     }
@@ -249,5 +255,15 @@ public class SampleDTOFactory {
         double cashAmt = 12550.36;
 
         return new DepositDTO(clientRequestID,cashAmt);
+    }
+
+    private static OpenAcctDTO ProduceOpenAcctRequestDTO() {
+        OpenAcctDTO openAcctDTO = new OpenAcctDTO("user1","user1Password$1");
+        return openAcctDTO;
+    }
+
+    private static LoginDTO ProduceLoginRequestDTO() {
+        LoginDTO loginDTO = new LoginDTO((long)101,"user1","user1Password$1");
+        return loginDTO;
     }
 }

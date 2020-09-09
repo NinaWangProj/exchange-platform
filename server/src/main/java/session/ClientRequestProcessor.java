@@ -1,6 +1,7 @@
 package session;
 
 import commonData.DTO.*;
+import javafx.util.Pair;
 
 import java.io.InputStream;
 
@@ -12,9 +13,10 @@ public class ClientRequestProcessor implements Runnable{
         this.inputStream = inputStream;
     }
 
-    public Transferable ReadRequestFromClient() throws Exception {
+    public Pair<Transferable, Boolean> ReadRequestFromClient() throws Exception {
         int nextByte = inputStream.read();
         Transferable DTO = null;
+        Boolean endOfStream = false;
 
         if(nextByte != -1) {
             DTOType dtoType = DTOType.valueOf(nextByte);
@@ -26,26 +28,38 @@ public class ClientRequestProcessor implements Runnable{
                 case Order:
                     DTO = OrderDTO.Deserialize(DTOByteArray);
                     break;
+                case OpenAcctRequest:
+                    DTO = OpenAcctDTO.Deserialize(DTOByteArray);
+                    break;
                 case LoginRequest:
                     DTO = LoginDTO.Deserialize(DTOByteArray);
                     break;
-                case MareketDataRequest:
+                case MarketDataRequest:
                     DTO = MarketDataDTO.Deserialize(DTOByteArray);
                     break;
+                case PortfolioRequest:
+                    DTO = PortfolioRequestDTO.Deserialize(DTOByteArray);
+                    break;
             }
+        } else {
+            endOfStream = true;
         }
-
-        return DTO;
+        return new Pair<Transferable,Boolean>(DTO,endOfStream);
     }
 
     private void Start() throws Exception {
         boolean readerFlag = true;
 
         while (readerFlag) {
-            Transferable DTO = ReadRequestFromClient();
-            NotifyAllObservers(DTO);
+            Pair<Transferable, Boolean> readerOutput = ReadRequestFromClient();
+            Transferable DTO = readerOutput.getKey();
+            Boolean endOfStream = readerOutput.getValue();
 
-            if(DTO.equals(null))
+            if(DTO != null) {
+                NotifyAllObservers(DTO);
+            }
+
+            if(endOfStream)
                 readerFlag = false;
         }
     }

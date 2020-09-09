@@ -33,6 +33,7 @@ public class SessionManager implements Runnable{
         this.credentialWareHouse = credentialWareHouse;
         this.dataWareHouse = dataWareHouse;
         this.locks = locks;
+        this.portfoliosMap = portfoliosMap;
         nextAvailableSessionID = 0;
     }
 
