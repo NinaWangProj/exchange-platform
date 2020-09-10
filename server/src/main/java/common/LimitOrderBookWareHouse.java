@@ -12,6 +12,7 @@ import trading.limitOrderBook.OrderComparatorType;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class LimitOrderBookWareHouse {
     private ConcurrentHashMap<String, Pair<SortedOrderList, SortedOrderList>> limitOrderBooks;
@@ -46,8 +47,10 @@ public class LimitOrderBookWareHouse {
     public Pair<SortedOrderList, SortedOrderList> GetLimitOrderBook
             (String tickerSymbol, MarketDataType type, Session session) throws Exception{
 
+
         Pair<SortedOrderList, SortedOrderList> limitOrderBook = new Pair<SortedOrderList, SortedOrderList>
-                (new SortedOrderList(bidComparator,Direction.BUY),new SortedOrderList(askComparator,Direction.SELL));
+                (new SortedOrderList(bidComparator,new ReentrantReadWriteLock(),tickerSymbol,Direction.BUY),
+                        new SortedOrderList(askComparator,new ReentrantReadWriteLock(),tickerSymbol,Direction.SELL));
 
         switch (type) {
             case Level1:

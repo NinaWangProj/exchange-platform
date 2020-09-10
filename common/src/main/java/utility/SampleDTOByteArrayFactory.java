@@ -26,14 +26,16 @@ public class SampleDTOByteArrayFactory {
             case LoginRequest_user1:
                 byteArray = ProduceLoginRequestDTO_user1();
                 break;
-            case PortfolioRequestDTO:
+            case PortfolioRequest:
                 byteArray = ProducePortfolioRequestDTO();
                 break;
-            case MareketDataRequestDTO_L1:
+            case MarketDataRequest_L1:
+                byteArray = ProduceMarketDataRequestDTO_AAPL();
                 break;
-            case MareketDataRequestDTO_L3:
+            case MarketDataRequest_L3:
+                byteArray = ProduceMarketDataRequest_L3_AAPL();
                 break;
-            case MareketDataRequestDTO_ContL3:
+            case MarketDataRequest_ContL3:
                 break;
             case OrderDTO_Limit_Buy:
                 byteArray = ProduceLimitOrder_Buy_DTOByteArray();
@@ -45,8 +47,7 @@ public class SampleDTOByteArrayFactory {
     }
 
     private static byte[] produceMarketDataDTOByteArray() throws Exception {
-        SampleDTOFactory dtoFactory = new SampleDTOFactory();
-        Transferable marketDataDTO = dtoFactory.ProduceSampleDTO(DTOTestType.MarketData_Level1);
+        Transferable marketDataDTO = SampleDTOFactory.ProduceSampleDTO(DTOTestType.MarketData_Level1);
         byte[] DTOByteArray = marketDataDTO.Serialize();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -58,14 +59,12 @@ public class SampleDTOByteArrayFactory {
     }
 
     private static byte[] ProduceMarketData_MessageDTOByteArray() throws Exception {
-        SampleDTOFactory dtoFactory = new SampleDTOFactory();
-
         //market data
-        Transferable marketDataDTO = dtoFactory.ProduceSampleDTO(DTOTestType.MarketData_Level3);
+        Transferable marketDataDTO = SampleDTOFactory.ProduceSampleDTO(DTOTestType.MarketData_Level3);
         byte[] marketDataDTOByteArray = marketDataDTO.Serialize();
 
         //message
-        Transferable msgDTO = dtoFactory.ProduceSampleDTO(DTOTestType.Message_PartiallyFilled_LimitBuyOrder);
+        Transferable msgDTO = SampleDTOFactory.ProduceSampleDTO(DTOTestType.Message_PartiallyFilled_LimitBuyOrder);
         byte[] msgDTOByteArray = msgDTO.Serialize();
 
         //write market data to output stream
@@ -83,12 +82,10 @@ public class SampleDTOByteArrayFactory {
     }
 
     private static byte[] ProduceBookChanges_2Ops_DTOByteArray() throws Exception {
-        SampleDTOFactory dtoFactory = new SampleDTOFactory();
-
         //Book Changes
-        Transferable bookChangesDTO0 = dtoFactory.ProduceSampleDTO(DTOTestType.BookChanges_InsertTo0);
+        Transferable bookChangesDTO0 = SampleDTOFactory.ProduceSampleDTO(DTOTestType.BookChanges_InsertTo0);
         byte[] bookChangesDTO0ByteArray = bookChangesDTO0.Serialize();
-        Transferable bookChangesDTO1 = dtoFactory.ProduceSampleDTO(DTOTestType.BookChanges_InsertTo1);
+        Transferable bookChangesDTO1 = SampleDTOFactory.ProduceSampleDTO(DTOTestType.BookChanges_InsertTo1);
         byte[] bookChangesDTO1ByteArray = bookChangesDTO1.Serialize();
 
         //write market data to output stream
@@ -106,10 +103,8 @@ public class SampleDTOByteArrayFactory {
     }
 
     private static byte[] ProduceLimitOrder_Buy_DTOByteArray() throws Exception {
-        SampleDTOFactory dtoFactory = new SampleDTOFactory();
-
         //Limit order
-        Transferable limitOrderDTO = dtoFactory.ProduceSampleDTO(DTOTestType.Order_LimitOrder_Buy);
+        Transferable limitOrderDTO = SampleDTOFactory.ProduceSampleDTO(DTOTestType.Order_LimitOrder_Buy);
         byte[] limitOrderDTOByteArray = limitOrderDTO.Serialize();
 
         //write order to output stream
@@ -122,8 +117,7 @@ public class SampleDTOByteArrayFactory {
     }
 
     private static byte[] ProduceOpenAcctRequestDTO_user1() throws Exception {
-        SampleDTOFactory dtoFactory = new SampleDTOFactory();
-        Transferable openAcctRequestDTO = dtoFactory.ProduceSampleDTO(DTOTestType.OpenAcctRequest_user1);
+        Transferable openAcctRequestDTO = SampleDTOFactory.ProduceSampleDTO(DTOTestType.OpenAcctRequest_user1);
         byte[] DTOByteArray = openAcctRequestDTO.Serialize();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -135,8 +129,7 @@ public class SampleDTOByteArrayFactory {
     }
 
     private static byte[] ProduceLoginRequestDTO_user1() throws Exception {
-        SampleDTOFactory dtoFactory = new SampleDTOFactory();
-        Transferable loginRequestDTO = dtoFactory.ProduceSampleDTO(DTOTestType.LoginRequest);
+        Transferable loginRequestDTO = SampleDTOFactory.ProduceSampleDTO(DTOTestType.LoginRequest);
         byte[] DTOByteArray = loginRequestDTO.Serialize();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -148,12 +141,35 @@ public class SampleDTOByteArrayFactory {
     }
 
     private static byte[] ProducePortfolioRequestDTO() throws Exception {
-        SampleDTOFactory dtoFactory = new SampleDTOFactory();
-        Transferable portfolioRequestDTO = dtoFactory.ProduceSampleDTO(DTOTestType.PortfolioRequest);
+        Transferable portfolioRequestDTO = SampleDTOFactory.ProduceSampleDTO(DTOTestType.PortfolioRequest);
         byte[] DTOByteArray = portfolioRequestDTO.Serialize();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(portfolioRequestDTO.getDtoType().getByteValue());
+        outputStream.write((byte)DTOByteArray.length);
+        outputStream.write(DTOByteArray);
+
+        return outputStream.toByteArray();
+    }
+
+    private static byte[] ProduceMarketDataRequestDTO_AAPL() throws Exception {
+        Transferable marketDataRequestDTO = SampleDTOFactory.ProduceSampleDTO(DTOTestType.MarketDataReq_Level1);
+        byte[] DTOByteArray = marketDataRequestDTO.Serialize();
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(marketDataRequestDTO.getDtoType().getByteValue());
+        outputStream.write((byte)DTOByteArray.length);
+        outputStream.write(DTOByteArray);
+
+        return outputStream.toByteArray();
+    }
+
+    private static byte[] ProduceMarketDataRequest_L3_AAPL() throws Exception {
+        Transferable marketDataRequestDTO = SampleDTOFactory.ProduceSampleDTO(DTOTestType.MarketDataReq_Level3);
+        byte[] DTOByteArray = marketDataRequestDTO.Serialize();
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(marketDataRequestDTO.getDtoType().getByteValue());
         outputStream.write((byte)DTOByteArray.length);
         outputStream.write(DTOByteArray);
 

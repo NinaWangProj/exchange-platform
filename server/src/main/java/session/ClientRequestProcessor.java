@@ -35,7 +35,7 @@ public class ClientRequestProcessor implements Runnable{
                     DTO = LoginDTO.Deserialize(DTOByteArray);
                     break;
                 case MarketDataRequest:
-                    DTO = MarketDataDTO.Deserialize(DTOByteArray);
+                    DTO = MarketDataRequestDTO.Deserialize(DTOByteArray);
                     break;
                 case PortfolioRequest:
                     DTO = PortfolioRequestDTO.Deserialize(DTOByteArray);

@@ -7,10 +7,10 @@ public enum ByteArrayType {
     BookChanges_MixedOperations,
     OpenAcctRequest,
     LoginRequest_user1,
-    PortfolioRequestDTO,
-    MareketDataRequestDTO_L1,
-    MareketDataRequestDTO_L3,
-    MareketDataRequestDTO_ContL3,
+    PortfolioRequest,
+    MarketDataRequest_L1,
+    MarketDataRequest_L3,
+    MarketDataRequest_ContL3,
     OrderDTO_Limit_Buy,
     OrderDTO_Market
 }
