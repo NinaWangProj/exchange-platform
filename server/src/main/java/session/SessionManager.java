@@ -44,8 +44,7 @@ public class SessionManager implements Runnable{
                     credentialWareHouse,dataWareHouse,locks, portfoliosMap);
             sessionUniverse.add(session);
             nextAvailableSessionID += 1;
-            Thread sessionThread = new Thread(session);
-            sessionThread.start();
+            session.RunCurrentSession();
         }
     }
 

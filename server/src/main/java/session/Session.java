@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 
-public class Session implements Runnable {
+public class Session {
     private final int sessionID;
     private final Socket clientSocket;
     private int clientUserID;
@@ -55,7 +55,7 @@ public class Session implements Runnable {
         }
     }
 
-    private void RunCurrentSession() throws Exception{
+    public void RunCurrentSession() throws Exception{
         serverQueue.RegisterSessionWithQueue(sessionID);
 
         ClientRequestProcessor reader = new ClientRequestProcessor(clientSocket.getInputStream());
@@ -196,19 +196,6 @@ public class Session implements Runnable {
 
     public String getClientUserName() {
         return clientUserName;
-    }
-
-    public MessageDTO CreateMessageDTOForWriter(Long requestID, OrderStatusType msgType, String messages) {
-        MessageDTO messageDTO = new MessageDTO(requestID, msgType, messages);
-        return messageDTO;
-    }
-
-    public void run() {
-        try {
-            RunCurrentSession();
-        } catch (Exception e) {
-
-        }
     }
 
     private class OrderStatusProcessor implements Runnable {
