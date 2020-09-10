@@ -26,6 +26,11 @@ public class UnfilledOrder extends MarketParticipantOrder {
         this.reason = reason;
     }
 
+    public UnfilledOrder() {
+        super();
+        this.reason = "Default Reason";
+    }
+
     public String getReason() {
         return reason;
     }

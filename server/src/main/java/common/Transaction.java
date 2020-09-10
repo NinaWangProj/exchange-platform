@@ -50,6 +50,20 @@ public class Transaction implements Info {
         this.direction = direction;
     }
 
+    public Transaction()
+    {
+        this.sessionID = -1;
+        this.userID = -1;
+        this.name = "Default Name";
+        this.transactionID = -1;
+        this.orderID = -1;
+        this.time = new Date();
+        this.tickerSymbol = "Def";
+        this.size = -1;
+        this.price = -1;
+        this.direction = Direction.BUY;
+    }
+
     public int getUserID() {
         return userID;
     }

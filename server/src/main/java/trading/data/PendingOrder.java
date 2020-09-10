@@ -24,6 +24,11 @@ public class PendingOrder extends MarketParticipantOrder {
         this.pendingMessage = pendingMessage;
     }
 
+    public PendingOrder() {
+        super();
+        this.pendingMessage = "Default Message";
+    }
+
     public String getReason() {
         return pendingMessage;
     }

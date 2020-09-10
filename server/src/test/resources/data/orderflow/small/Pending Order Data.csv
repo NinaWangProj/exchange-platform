@@ -1,5 +1,0 @@
-sessionID,userID,name,orderID,time,direction,tickerSymbol,size,price,orderType,orderDuration,reason
-4,4,Default Name,0,2020-08-31 09:30:00.006000,Direction.BUY,AAPL,5,105.63,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match,Your order has been processed. Will notify you when we find a match
-1,1,Default Name,4,2020-08-31 09:30:00.017000,Direction.BUY,AAPL,9,95.72,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match,Your order has been processed. Will notify you when we find a match
-0,0,Default Name,5,2020-08-31 09:30:00.018000,Direction.SELL,AAPL,1,107.07,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match,Your order has been processed. Will notify you when we find a match
-2,2,Default Name,9,2020-08-31 09:30:00.041000,Direction.BUY,AAPL,10,99.65,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match,Your order has been processed. Will notify you when we find a match

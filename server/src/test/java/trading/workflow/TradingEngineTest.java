@@ -28,15 +28,47 @@ public class TradingEngineTest {
     @Test
     public void SmallOrderBatchTest()
     {
+        String orderDataFileName = "data/orderflow/small/Order Data1.csv";
+        String transactionDataFileName = "data/orderflow/small/Transaction Data1.csv";
+        String pendingDataFileName = "data/orderflow/small/Pending Order Data1.csv";
+        String unfilledDataFileName = "data/orderflow/small/Unfilled Order Data1.csv";
+
+        RunTest(orderDataFileName, transactionDataFileName, pendingDataFileName, unfilledDataFileName);
+       }
+
+    @Test
+    public void MediumOrderBatchTest()
+    {
+        String orderDataFileName = "data/orderflow/medium/Order Data2.csv";
+        String transactionDataFileName = "data/orderflow/medium/Transaction Data2.csv";
+        String pendingDataFileName = "data/orderflow/medium/Pending Order Data2.csv";
+        String unfilledDataFileName = "data/orderflow/medium/Unfilled Order Data2.csv";
+
+        RunTest(orderDataFileName, transactionDataFileName, pendingDataFileName, unfilledDataFileName);
+    }
+
+    @Test
+    public void LargeOrderBatchTest()
+    {
+        String orderDataFileName = "data/orderflow/large/Order Data3.csv";
+        String transactionDataFileName = "data/orderflow/large/Transaction Data3.csv";
+        String pendingDataFileName = "data/orderflow/large/Pending Order Data3.csv";
+        String unfilledDataFileName = "data/orderflow/large/Unfilled Order Data3.csv";
+
+        RunTest(orderDataFileName, transactionDataFileName, pendingDataFileName, unfilledDataFileName);
+    }
+
+    private void RunTest(String orderDataFileName, String transactionDataFileName, String pendingDataFileName,
+                              String unfilledDataFileName)
+    {
         String testTicker = "AAPL";
         Pair<SortedOrderList, SortedOrderList> limitOrderBook = new Pair<>(
-                        new SortedOrderList(new BidPriceTimeComparator(), Direction.BUY),
-                        new SortedOrderList(new AskPriceTimeComparator(), Direction.SELL));
+                new SortedOrderList(new BidPriceTimeComparator(), Direction.BUY),
+                new SortedOrderList(new AskPriceTimeComparator(), Direction.SELL));
 
         TradingEngine tradingEngine = new TradingEngine(testTicker,limitOrderBook);
 
-        // inputs
-        String orderDataFileName = "data/orderflow/small/Order Data.csv";
+        // get inputs
         List<MarketParticipantOrder> orderFlow = GetRowsFromCSV(orderDataFileName, MarketParticipantOrder.class);
 
         TradingOutput testResult = null;
@@ -45,11 +77,7 @@ public class TradingEngineTest {
         }
         catch(Exception ex) {assert false: "Exception in Trading Engine";}
 
-        // expected output
-        String transactionDataFileName = "data/orderflow/small/Transaction Data.csv";
-        String pendingDataFileName = "data/orderflow/small/Pending Order Data.csv";
-        String unfilledDataFileName = "data/orderflow/small/Unfilled Order Data.csv";
-
+        // get expected outputs
         List<Transaction> expectedTransactions = GetRowsFromCSV(transactionDataFileName, Transaction.class);
         List<PendingOrder> expectedPendingOrders = GetRowsFromCSV(pendingDataFileName, PendingOrder.class);
         List<UnfilledOrder> expectedUnfilledOrders = GetRowsFromCSV(unfilledDataFileName, UnfilledOrder.class);
@@ -57,12 +85,6 @@ public class TradingEngineTest {
         Assertions.assertThat(testResult.Transactions).usingRecursiveComparison().isEqualTo(expectedTransactions);
         Assertions.assertThat(testResult.PendingOrders).usingRecursiveComparison().isEqualTo(expectedPendingOrders);
         Assertions.assertThat(testResult.UnfilledOrders).usingRecursiveComparison().isEqualTo(expectedUnfilledOrders);
-    }
-
-    @Test
-    public void LargeOrderBatchTest()
-    {
-
     }
 
     private <T> List<T> GetRowsFromCSV(String resourcePath, Class<T> type)
