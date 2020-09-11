@@ -78,7 +78,7 @@ public class SortedOrderList {
             int listSize = listEndIndex - listStartIndex + 1;
             int partition = listStartIndex + (listEndIndex - listStartIndex) / 2;
 
-            if(sortedList.size() == 0) {
+            if(listSize == 0) {
                 lock.writeLock().lock();
                 try {
                     sortedList.add(0, order);

@@ -20,6 +20,9 @@ public class TradingOutput {
     }
 
     public TradingOutput() {
+        Transactions = new ArrayList<>();
+        UnfilledOrders = new ArrayList<>();
+        PendingOrders = new ArrayList<>();
     }
 
 

@@ -3,6 +3,7 @@ package trading.workflow;
 import common.SortedOrderList;
 import common.TradingOutput;
 import common.Transaction;
+import commonData.DTO.MarketDataRequestDTO;
 import commonData.Order.Direction;
 import commonData.Order.MarketParticipantOrder;
 import javafx.util.Pair;
@@ -22,6 +23,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class TradingEngineTest {
 
@@ -29,7 +31,7 @@ public class TradingEngineTest {
     public void SmallOrderBatchTest()
     {
         String orderDataFileName = "data/orderflow/small/Order Data1.csv";
-        String transactionDataFileName = "data/orderflow/small/Transaction Data1.csv";
+        String transactionDataFileName = "data/orderflow/small/Transactions Data1.csv";
         String pendingDataFileName = "data/orderflow/small/Pending Order Data1.csv";
         String unfilledDataFileName = "data/orderflow/small/Unfilled Order Data1.csv";
 
@@ -40,7 +42,7 @@ public class TradingEngineTest {
     public void MediumOrderBatchTest()
     {
         String orderDataFileName = "data/orderflow/medium/Order Data2.csv";
-        String transactionDataFileName = "data/orderflow/medium/Transaction Data2.csv";
+        String transactionDataFileName = "data/orderflow/medium/Transactions Data2.csv";
         String pendingDataFileName = "data/orderflow/medium/Pending Order Data2.csv";
         String unfilledDataFileName = "data/orderflow/medium/Unfilled Order Data2.csv";
 
@@ -51,7 +53,7 @@ public class TradingEngineTest {
     public void LargeOrderBatchTest()
     {
         String orderDataFileName = "data/orderflow/large/Order Data3.csv";
-        String transactionDataFileName = "data/orderflow/large/Transaction Data3.csv";
+        String transactionDataFileName = "data/orderflow/large/Transactions Data3.csv";
         String pendingDataFileName = "data/orderflow/large/Pending Order Data3.csv";
         String unfilledDataFileName = "data/orderflow/large/Unfilled Order Data3.csv";
 
@@ -63,8 +65,8 @@ public class TradingEngineTest {
     {
         String testTicker = "AAPL";
         Pair<SortedOrderList, SortedOrderList> limitOrderBook = new Pair<>(
-                new SortedOrderList(new BidPriceTimeComparator(), Direction.BUY),
-                new SortedOrderList(new AskPriceTimeComparator(), Direction.SELL));
+                new SortedOrderList(new BidPriceTimeComparator(), new ReentrantReadWriteLock(),testTicker, Direction.BUY),
+                new SortedOrderList(new AskPriceTimeComparator(), new ReentrantReadWriteLock(),testTicker, Direction.SELL));
 
         TradingEngine tradingEngine = new TradingEngine(testTicker,limitOrderBook);
 
@@ -76,6 +78,8 @@ public class TradingEngineTest {
             testResult = tradingEngine.ProcessBatch((ArrayList<MarketParticipantOrder>) orderFlow);
         }
         catch(Exception ex) {assert false: "Exception in Trading Engine";}
+
+        String test = System.getProperty("user.dir");
 
         // get expected outputs
         List<Transaction> expectedTransactions = GetRowsFromCSV(transactionDataFileName, Transaction.class);

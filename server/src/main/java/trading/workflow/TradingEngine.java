@@ -91,7 +91,8 @@ public class TradingEngine{
                                     ArrayList<UnfilledOrder> unfilledOrders) throws Exception {
         boolean active;
 
-        if(counterPartyLimitOrderBook == null  || !CheckTradeViability(order, counterPartyLimitOrderBook.get(0))) {
+        if(counterPartyLimitOrderBook == null  || counterPartyLimitOrderBook.size() == 0
+                ||!CheckTradeViability(order, counterPartyLimitOrderBook.get(0))) {
             UnfilledOrder unfilled = new UnfilledOrder(order, "Could not match market order price");
             unfilledOrders.add(unfilled);
             active = false;
@@ -133,7 +134,8 @@ public class TradingEngine{
         boolean active;
 
         //If no match is found, add order to limit order book, return pending message to participant
-        if(counterPartyLimitOrderBook == null  || !CheckTradeViability(order, counterPartyLimitOrderBook.get(0))) {
+        if(counterPartyLimitOrderBook == null  || counterPartyLimitOrderBook.size() == 0 ||
+                !CheckTradeViability(order, counterPartyLimitOrderBook.get(0))) {
             //add limit order to limit order book:
             currentLimitOrderBook.add(order);
             //Collections.sort(currentLimitOrderBook);
