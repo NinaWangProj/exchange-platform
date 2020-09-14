@@ -24,12 +24,16 @@ public class ExchangeClient {
     private MarketDataWareHouse marketDataWareHouse;
     private ClientSession clientSession;
     private AtomicLong clientRequestID;
+    private Boolean loggedIn;
+    private Boolean hasAccount;
 
     public ExchangeClient() {
         serverIP = "192.168.0.20";
         serverPort = 58673;
         marketDataWareHouse = new MarketDataWareHouse();
         clientRequestID = new AtomicLong(0);
+        hasAccount = false;
+        loggedIn = false;
     }
 
     public boolean ConnectWithServer() {
@@ -51,6 +55,9 @@ public class ExchangeClient {
     }
 
     public Long SubmitMarketOrder(Direction direction, String tickerSymbol, int size, OrderDuration orderDuration) throws Exception{
+        if(!loggedIn) {
+            throw new Exception("Please login.");
+        }
         Long requestID = clientRequestID.incrementAndGet();
 
         OrderDTO marketOrder = new OrderDTO(requestID, direction, OrderType.MARKETORDER,tickerSymbol,size,-1,orderDuration);
@@ -61,6 +68,9 @@ public class ExchangeClient {
 
     public Long SubmitLimitOrder(Direction direction, String tickerSymbol, int size, double price,
                                  OrderDuration orderDuration) throws Exception {
+        if(!loggedIn) {
+            throw new Exception("Please login.");
+        }
         Long requestID = clientRequestID.incrementAndGet();
         OrderDTO limitOrder = new OrderDTO(requestID,direction,OrderType.LIMITORDER,tickerSymbol,size,price,orderDuration);
         TransmitRequestDTOToServer(limitOrder);
@@ -69,6 +79,9 @@ public class ExchangeClient {
     }
 
     public MarketData SubmitMarketDataRequest(MarketDataType dataType, String tickerSymbol) throws Exception {
+        if(!loggedIn) {
+            throw new Exception("Please login.");
+        }
         MarketData marketData = marketDataWareHouse.getMarketData(tickerSymbol);
 
         if(marketData == null || !marketData.getContinuousLevel3DataFlag()) {
@@ -103,6 +116,9 @@ public class ExchangeClient {
     }
 
     public String SubmitContinuousMarketDataRequest(String tickerSymbol) throws Exception {
+        if(!loggedIn) {
+            throw new Exception("Please login.");
+        }
         Long requestID = clientRequestID.incrementAndGet();
         MarketDataRequestDTO requestDTO = new MarketDataRequestDTO(requestID,tickerSymbol,MarketDataType.ContinuousLevel3);
         TransmitRequestDTOToServer(requestDTO);
@@ -112,12 +128,15 @@ public class ExchangeClient {
 
     public MarketParticipantPortfolio SubmitPortfolioDataRequest() throws Exception {
         //synchronous method
+        if(!loggedIn) {
+            throw new Exception("Please login.");
+        }
         Object sharedMonitor = new Object();
         Long requestID = clientRequestID.incrementAndGet();
         clientSession.AttachMonitor(requestID,sharedMonitor);
 
-        PortfolioRequestDTO reqeustDTO = new PortfolioRequestDTO(requestID);
-        TransmitRequestDTOToServer(reqeustDTO);
+        PortfolioRequestDTO requestDTO = new PortfolioRequestDTO(requestID);
+        TransmitRequestDTOToServer(requestDTO);
 
         synchronized (sharedMonitor) {
             sharedMonitor.wait();
@@ -132,7 +151,10 @@ public class ExchangeClient {
 
     public Boolean SubmitLoginRequest(String userName, String password) throws Exception {
         //synchronous method
-        Boolean loginSuccessful = false;
+        if(!hasAccount) {
+            throw new Exception("sorry, you currently do not have an account. Please create an account " +
+                    "first, and try loggin in again.");
+        }
         Object sharedMonitor = new Object();
         Long requestID = clientRequestID.incrementAndGet();
         clientSession.AttachMonitor(requestID,sharedMonitor);
@@ -150,7 +172,7 @@ public class ExchangeClient {
 
         switch (msgType) {
             case SuccessMessage:
-                loginSuccessful = true;
+                loggedIn = true;
                 clientSession.RemoveMessage(requestID);
                 clientSession.RemoveMonitor(requestID);
                 break;
@@ -161,12 +183,11 @@ public class ExchangeClient {
                 throw new Exception(msg);
         }
 
-        return loginSuccessful;
+        return loggedIn;
     }
 
     public Boolean SubmitOpenAcctRequest(String userName, String password) throws Exception {
         //synchronous method
-        Boolean successful = false;
         Object sharedMonitor = new Object();
         Long requestID = clientRequestID.incrementAndGet();
         clientSession.AttachMonitor(requestID,sharedMonitor);
@@ -184,7 +205,7 @@ public class ExchangeClient {
 
         switch (msgType) {
             case SuccessMessage:
-                successful = true;
+                hasAccount = true;
                 clientSession.RemoveMessage(requestID);
                 clientSession.RemoveMonitor(requestID);
                 break;
@@ -195,7 +216,7 @@ public class ExchangeClient {
                 throw new Exception(msg);
         }
 
-        return successful;
+        return hasAccount;
     }
 
     private void TransmitRequestDTOToServer(Transferable DTO) throws Exception {
@@ -211,13 +232,5 @@ public class ExchangeClient {
         } catch(IOException E) {
         }
 
-    }
-
-    public Socket getClientSocket() {
-        return clientSocket;
-    }
-
-    public AtomicLong getClientRequestID() {
-        return clientRequestID;
     }
 }
