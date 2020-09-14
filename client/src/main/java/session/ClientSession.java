@@ -1,9 +1,11 @@
 package session;
 
 import commonData.DTO.*;
+import commonData.DataType.MessageType;
 import commonData.Order.Direction;
 import commonData.clearing.MarketParticipantPortfolio;
 import commonData.limitOrderBook.ChangeOperation;
+import javafx.util.Pair;
 import marketData.MarketDataWareHouse;
 import commonData.DataType.OrderStatusType;
 
@@ -16,14 +18,16 @@ public class ClientSession {
     private MarketDataWareHouse marketDataWareHouse;
     private OrderStatusEventHandler orderStatusObserver;
     private ConcurrentHashMap<Long,Object> requestIDMonitorMap;
+    private ConcurrentHashMap<Long, Pair<MessageType, String>> requestIDMessageMap;
     private ConcurrentHashMap<Long,MarketParticipantPortfolio> requestIDPortfolioMap;
 
     public ClientSession(Socket clientSocket, OrderStatusEventHandler orderStatusObserver,MarketDataWareHouse marketDataWareHouse) {
         this.clientSocket = clientSocket;
         this.orderStatusObserver = orderStatusObserver;
         this.marketDataWareHouse = marketDataWareHouse;
-        requestIDMonitorMap = new ConcurrentHashMap<Long,Object>();
+        requestIDMonitorMap = new ConcurrentHashMap<>();
         requestIDPortfolioMap = new ConcurrentHashMap<>();
+        requestIDMessageMap = new ConcurrentHashMap<>();
     }
 
     public void Start() throws Exception{
@@ -57,13 +61,15 @@ public class ClientSession {
                 Direction direction = bookChangeDTO.getDirection();
                 marketDataWareHouse.applyBookChanges(tickerSymbol, direction, bookChanges);
                 break;
-            case Message:
-                MessageDTO messageDTO = (MessageDTO) DTO;
-                String message = messageDTO.getMessage();
-                OrderStatusType msgType = messageDTO.getMsgType();
-                long requestID = messageDTO.getClientRequestID();
+
+            case OrderStatus:
+                OrderStatusDTO orderStatusDTO = (OrderStatusDTO) DTO;
+                String message = orderStatusDTO.getMessage();
+                OrderStatusType msgType = orderStatusDTO.getStatusType();
+                long requestID = orderStatusDTO.getClientRequestID();
                 orderStatusObserver.On_ReceiveOrderStatusChange(requestID, msgType, message);
                 break;
+
             case Portfolio:
                 PortfolioDTO portfolioDTO = (PortfolioDTO) DTO;
                 MarketParticipantPortfolio portfolio = new MarketParticipantPortfolio(portfolioDTO.getSecurities(),
@@ -74,6 +80,18 @@ public class ClientSession {
                 synchronized (monitorForPortfolioRequest) {
                     if (monitorForPortfolioRequest != null)
                         monitorForPortfolioRequest.notifyAll();
+                }
+                break;
+
+            case Message:
+                MessageDTO messageDTO = (MessageDTO) DTO;
+                requestIDMessageMap.put(messageDTO.getClientRequestID(), new Pair<MessageType,String>
+                        (messageDTO.getMsgType(),messageDTO.getMessage()));
+                Object messageMonitor = requestIDMonitorMap.get(messageDTO.getClientRequestID());
+
+                synchronized (messageMonitor) {
+                    if (messageMonitor != null)
+                        messageMonitor.notifyAll();
                 }
                 break;
         }
@@ -87,11 +105,19 @@ public class ClientSession {
         requestIDMonitorMap.remove(requestID);
     }
 
+    public void RemoveMessage(long requestID) {
+        requestIDMessageMap.remove(requestID);
+    }
+
     public void RemovePortfolio(long requestID) {
         requestIDPortfolioMap.remove(requestID);
     }
 
     public MarketParticipantPortfolio GetPortfolio(long requestID) {
         return requestIDPortfolioMap.get(requestID);
+    }
+
+    public Pair<MessageType, String> GetMessage(long requestID) {
+        return requestIDMessageMap.get(requestID);
     }
 }

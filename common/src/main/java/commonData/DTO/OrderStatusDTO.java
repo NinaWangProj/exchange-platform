@@ -1,23 +1,23 @@
 package commonData.DTO;
 
-import commonData.DataType.MessageType;
 import commonData.DataType.OrderStatusType;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
-public class MessageDTO implements Transferable{
+public class OrderStatusDTO implements Transferable
+{
     private final DTOType dtoType;
     private final String message;
-    private final MessageType msgType;
+    private final OrderStatusType statusType;
     private final long clientRequestID;
 
-    public MessageDTO(long requestID, MessageType msgType, String message)
+    public OrderStatusDTO(long requestID, OrderStatusType statusType, String message)
     {
         this.message = message;
         dtoType = DTOType.OrderStatus;
-        this.msgType = msgType;
+        this.statusType = statusType;
         clientRequestID = requestID;
     }
 
@@ -32,7 +32,7 @@ public class MessageDTO implements Transferable{
             byte[] requestIDByteArray = ByteBuffer.allocate(8).putLong(clientRequestID).array();
 
             outputStream.write(requestIDByteArray);
-            outputStream.write(msgType.getByteValue());
+            outputStream.write(statusType.getByteValue());
             outputStream.write(msgByteSize);
             outputStream.write(msgByteArray);
             msgDTOByteArray = outputStream.toByteArray();
@@ -68,8 +68,8 @@ public class MessageDTO implements Transferable{
         return message;
     }
 
-    public MessageType getMsgType() {
-        return msgType;
+    public OrderStatusType getStatusType() {
+        return statusType;
     }
 
     public long getClientRequestID() {

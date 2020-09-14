@@ -1,6 +1,8 @@
 package common.utility;
 
-import commonData.DataType.OrderStatusType;
+import commonData.DTO.DTOType;
+import commonData.DTO.Transferable;
+import commonData.DataType.MessageType;
 import commonData.Order.Info;
 import common.OrderStatus;
 import common.TradingOutput;
@@ -14,29 +16,29 @@ public class MessageGenerator {
         HashMap<Integer, OrderStatus> userOrderStatusMap = new HashMap<Integer, OrderStatus>();
 
         if (tradingOutput.Transactions.size() >0 ) {
-            GenerateMessagesPerOutputType(userOrderStatusMap, MessageType.TransactionMessage, tradingOutput.Transactions);
+            GenerateMessagesPerOutputType(userOrderStatusMap, OrderStatusType.TransactionMessage, tradingOutput.Transactions);
         }
         if (tradingOutput.PendingOrders.size() > 0 ) {
-            GenerateMessagesPerOutputType(userOrderStatusMap, MessageType.PendingOrderMessage, tradingOutput.Transactions);
+            GenerateMessagesPerOutputType(userOrderStatusMap, OrderStatusType.PendingOrderMessage, tradingOutput.Transactions);
         }
         if(tradingOutput.UnfilledOrders.size() > 0 ) {
-            GenerateMessagesPerOutputType(userOrderStatusMap, MessageType.UnfilledOrderMessage, tradingOutput.Transactions);
+            GenerateMessagesPerOutputType(userOrderStatusMap, OrderStatusType.UnfilledOrderMessage, tradingOutput.Transactions);
         }
 
         return userOrderStatusMap;
     }
 
-    public static void GenerateMessagesPerOutputType (HashMap<Integer, OrderStatus> userOrderStatusMap, MessageType messageType, ArrayList<? extends Info> TradingOutputs) {
-        OrderStatusType orderStatusType = null;
+    public static void GenerateMessagesPerOutputType (HashMap<Integer, OrderStatus> userOrderStatusMap, OrderStatusType messageType, ArrayList<? extends Info> TradingOutputs) {
+        commonData.DataType.OrderStatusType orderStatusType = null;
         switch (messageType) {
             case TransactionMessage:
-                orderStatusType = OrderStatusType.PartiallyFilled;
+                orderStatusType = commonData.DataType.OrderStatusType.PartiallyFilled;
                 break;
             case PendingOrderMessage:
-                orderStatusType = OrderStatusType.Pending;
+                orderStatusType = commonData.DataType.OrderStatusType.Pending;
                 break;
             case UnfilledOrderMessage:
-                orderStatusType = OrderStatusType.Unfilled;
+                orderStatusType = commonData.DataType.OrderStatusType.Unfilled;
                 break;
         }
 
@@ -45,12 +47,12 @@ public class MessageGenerator {
             if (!userOrderStatusMap.containsKey(sessionID)) {
                 userOrderStatusMap.put(sessionID, new OrderStatus(tradingOutput.getOrderID(), orderStatusType,new ArrayList<String>()));
             }
-            String statusMessage = GenerateMessage(messageType,tradingOutput);
+            String statusMessage = GenerateOrderStatusMessage(messageType,tradingOutput);
             userOrderStatusMap.get(sessionID).getStatusMessages().add(statusMessage);
         }
     }
 
-    public static String GenerateMessage(MessageType messageType, Info tradingOutputInfo) {
+    public static String GenerateOrderStatusMessage(OrderStatusType orderStatusType, Info tradingOutputInfo) {
         String message = "";
         String userName = tradingOutputInfo.getName();
         String orderID = String.valueOf(tradingOutputInfo.getOrderID());
@@ -58,7 +60,7 @@ public class MessageGenerator {
         String tradePrice = String.valueOf(tradingOutputInfo.getPrice());
         String reason = tradingOutputInfo.getReason();
 
-        switch (messageType) {
+        switch (orderStatusType) {
             case TransactionMessage:
                 message = "Congradulation!  " + userName + ", Your order with orderID: " + orderID
                         + " has been filled with: " + size + ", shares, @$" + tradePrice + " per share.";
@@ -75,4 +77,16 @@ public class MessageGenerator {
         return message;
     }
 
+    public static String GenerateStatusMessage(MessageType messageType, DTOType dtoType) {
+        String message = "";
+        switch (messageType) {
+            case SuccessMessage:
+                message = dtoType + " completed successfully.";
+                break;
+            case ErrorMessage:
+                message = dtoType + " failed.";
+                break;
+        }
+        return message;
+    }
 }

@@ -25,8 +25,8 @@ public class ServerResponseProcessor implements Runnable{
             inputStream.read(DTOByteArray, 0, byteSizeOfDTO);
 
             switch (dtoType) {
-                case Message:
-                    DTO = MessageDTO.Deserialize(DTOByteArray);
+                case OrderStatus:
+                    DTO = OrderStatusDTO.Deserialize(DTOByteArray);
                     break;
                 case MarketData:
                     DTO = MarketDataDTO.Deserialize(DTOByteArray);

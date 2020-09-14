@@ -84,26 +84,26 @@ public class SampleDTOFactory {
         return sampleDTO;
     }
 
-    private static MessageDTO ProduceSampleMessage_UnfilledDTO() {
-        MessageDTO dto = new MessageDTO(101, OrderStatusType.Unfilled,
+    private static OrderStatusDTO ProduceSampleMessage_UnfilledDTO() {
+        OrderStatusDTO dto = new OrderStatusDTO(101, OrderStatusType.Unfilled,
                 "The order is not being filled");
         return dto;
     }
 
-    private static MessageDTO ProduceSampleMessage_PartiallyFilled_1DTO() {
-        MessageDTO dto = new MessageDTO(108, OrderStatusType.PartiallyFilled,
+    private static OrderStatusDTO ProduceSampleMessage_PartiallyFilled_1DTO() {
+        OrderStatusDTO dto = new OrderStatusDTO(108, OrderStatusType.PartiallyFilled,
                 "200 share of GOOG has being filled at $1576.25.");
         return dto;
     }
 
-    private static MessageDTO ProduceSampleMessage_PartiallyFilled_2DTO() {
-        MessageDTO dto = new MessageDTO(102, OrderStatusType.PartiallyFilled,
+    private static OrderStatusDTO ProduceSampleMessage_PartiallyFilled_2DTO() {
+        OrderStatusDTO dto = new OrderStatusDTO(102, OrderStatusType.PartiallyFilled,
                 "200 share of AAPL has being filled at $267.34.");
         return dto;
     }
 
-    private static MessageDTO ProduceSampleMessage_PartiallyFilled_3DTO() {
-        MessageDTO dto = new MessageDTO(1029, OrderStatusType.PartiallyFilled,
+    private static OrderStatusDTO ProduceSampleMessage_PartiallyFilled_3DTO() {
+        OrderStatusDTO dto = new OrderStatusDTO(1029, OrderStatusType.PartiallyFilled,
                 "200 share of TSLA has being filled at $2000.23");
         return dto;
     }

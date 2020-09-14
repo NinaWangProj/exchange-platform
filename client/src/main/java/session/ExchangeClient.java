@@ -1,7 +1,9 @@
 package session;
 
 
+import commonData.DataType.MessageType;
 import commonData.clearing.MarketParticipantPortfolio;
+import javafx.util.Pair;
 import marketData.MarketData;
 import marketData.MarketDataWareHouse;
 import commonData.DTO.*;
@@ -52,16 +54,16 @@ public class ExchangeClient {
         Long requestID = clientRequestID.incrementAndGet();
 
         OrderDTO marketOrder = new OrderDTO(requestID, direction, OrderType.MARKETORDER,tickerSymbol,size,-1,orderDuration);
-        TransmitOrderDTO(marketOrder);
+        TransmitRequestDTOToServer(marketOrder);
 
         return requestID;
     }
 
     public Long SubmitLimitOrder(Direction direction, String tickerSymbol, int size, double price,
-                                 OrderDuration orderDuration) {
+                                 OrderDuration orderDuration) throws Exception {
         Long requestID = clientRequestID.incrementAndGet();
         OrderDTO limitOrder = new OrderDTO(requestID,direction,OrderType.LIMITORDER,tickerSymbol,size,price,orderDuration);
-        TransmitOrderDTO(limitOrder);
+        TransmitRequestDTOToServer(limitOrder);
 
         return requestID;
     }
@@ -74,19 +76,20 @@ public class ExchangeClient {
             Long requestID = clientRequestID.incrementAndGet();
 
             clientSession.AttachMonitor(requestID,sharedMonitor);
+            MarketDataRequestDTO marketDataRequestDTO = null;
 
             switch (dataType) {
                 case Level1:
-                    MarketDataRequestDTO level1DTO = new MarketDataRequestDTO(requestID,tickerSymbol,
+                    marketDataRequestDTO = new MarketDataRequestDTO(requestID,tickerSymbol,
                             MarketDataType.Level1);
-                    TransmitMarketDataRequest(level1DTO);
+
                     break;
                 case Level3:
-                    MarketDataRequestDTO level3DTO = new MarketDataRequestDTO(requestID,tickerSymbol,
+                    marketDataRequestDTO = new MarketDataRequestDTO(requestID,tickerSymbol,
                             MarketDataType.Level3);
-                    TransmitMarketDataRequest(level3DTO);
                     break;
             }
+            TransmitRequestDTOToServer(marketDataRequestDTO);
 
             synchronized (sharedMonitor) {
                 sharedMonitor.wait();
@@ -102,7 +105,7 @@ public class ExchangeClient {
     public String SubmitContinuousMarketDataRequest(String tickerSymbol) throws Exception {
         Long requestID = clientRequestID.incrementAndGet();
         MarketDataRequestDTO requestDTO = new MarketDataRequestDTO(requestID,tickerSymbol,MarketDataType.ContinuousLevel3);
-        TransmitMarketDataRequest(requestDTO);
+        TransmitRequestDTOToServer(requestDTO);
 
         return "Countinous level 3 market data request successfully submitted";
     }
@@ -114,7 +117,7 @@ public class ExchangeClient {
         clientSession.AttachMonitor(requestID,sharedMonitor);
 
         PortfolioRequestDTO reqeustDTO = new PortfolioRequestDTO(requestID);
-        TransmitPortfolioDataRequestDTO(reqeustDTO);
+        TransmitRequestDTOToServer(reqeustDTO);
 
         synchronized (sharedMonitor) {
             sharedMonitor.wait();
@@ -127,37 +130,87 @@ public class ExchangeClient {
         return portfolio;
     }
 
-    private void TransmitMarketDataRequest(MarketDataRequestDTO dataRequestDTO) throws Exception {
-        byte[] dataRequestDTOByteArray = dataRequestDTO.Serialize();
+    public Boolean SubmitLoginRequest(String userName, String password) throws Exception {
+        //synchronous method
+        Boolean loginSuccessful = false;
+        Object sharedMonitor = new Object();
+        Long requestID = clientRequestID.incrementAndGet();
+        clientSession.AttachMonitor(requestID,sharedMonitor);
 
-        OutputStream outputStream = clientSocket.getOutputStream();
-        DTOType type = DTOType.MarketDataRequest;
-        outputStream.write(type.getByteValue());
-        outputStream.write((byte)dataRequestDTOByteArray.length);
-        outputStream.write(dataRequestDTOByteArray);
+        LoginDTO loginDTO = new LoginDTO(requestID,userName,password);
+        TransmitRequestDTOToServer(loginDTO);
+
+        synchronized (sharedMonitor) {
+            sharedMonitor.wait();
+        }
+
+        Pair<MessageType, String> message = clientSession.GetMessage(requestID);
+        MessageType msgType = message.getKey();
+        String msg = message.getValue();
+
+        switch (msgType) {
+            case SuccessMessage:
+                loginSuccessful = true;
+                clientSession.RemoveMessage(requestID);
+                clientSession.RemoveMonitor(requestID);
+                break;
+
+            case ErrorMessage:
+                clientSession.RemoveMessage(requestID);
+                clientSession.RemoveMonitor(requestID);
+                throw new Exception(msg);
+        }
+
+        return loginSuccessful;
     }
 
-    private void TransmitOrderDTO (OrderDTO orderDTO) {
-        byte[] orderDTOByteArray = orderDTO.Serialize();
+    public Boolean SubmitOpenAcctRequest(String userName, String password) throws Exception {
+        //synchronous method
+        Boolean successful = false;
+        Object sharedMonitor = new Object();
+        Long requestID = clientRequestID.incrementAndGet();
+        clientSession.AttachMonitor(requestID,sharedMonitor);
+
+        OpenAcctDTO openAcctDTO = new OpenAcctDTO(requestID,userName,password);
+        TransmitRequestDTOToServer(openAcctDTO);
+
+        synchronized (sharedMonitor) {
+            sharedMonitor.wait();
+        }
+
+        Pair<MessageType, String> message = clientSession.GetMessage(requestID);
+        MessageType msgType = message.getKey();
+        String msg = message.getValue();
+
+        switch (msgType) {
+            case SuccessMessage:
+                successful = true;
+                clientSession.RemoveMessage(requestID);
+                clientSession.RemoveMonitor(requestID);
+                break;
+
+            case ErrorMessage:
+                clientSession.RemoveMessage(requestID);
+                clientSession.RemoveMonitor(requestID);
+                throw new Exception(msg);
+        }
+
+        return successful;
+    }
+
+    private void TransmitRequestDTOToServer(Transferable DTO) throws Exception {
+        byte[] orderDTOByteArray = DTO.Serialize();
+
         try {
             OutputStream outputStream = clientSocket.getOutputStream();
             //write header for the DTO: DTO type(1 byte); DTO size (1 byte);
-            DTOType type = DTOType.Order;
+            DTOType type = DTO.getDtoType();
             outputStream.write(type.getByteValue());
             outputStream.write((byte)orderDTOByteArray.length);
             outputStream.write(orderDTOByteArray);
         } catch(IOException E) {
         }
-    }
 
-    private void TransmitPortfolioDataRequestDTO(PortfolioRequestDTO portfolioRequestDTO) throws Exception {
-        byte[] portfolioRequestDTOByteArray = portfolioRequestDTO.Serialize();
-
-        OutputStream outputStream = clientSocket.getOutputStream();
-        DTOType type = DTOType.PortfolioRequest;
-        outputStream.write(type.getByteValue());
-        outputStream.write((byte)portfolioRequestDTOByteArray.length);
-        outputStream.write(portfolioRequestDTOByteArray);
     }
 
     public Socket getClientSocket() {

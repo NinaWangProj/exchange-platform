@@ -68,4 +68,8 @@ public class LoginDTO implements Transferable {
     public DTOType getDtoType() {
         return dtoType;
     }
+
+    public Long getClientRequestID() {
+        return clientRequestID;
+    }
 }

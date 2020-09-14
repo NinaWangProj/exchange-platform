@@ -91,13 +91,13 @@ public class DTOTest {
         String message = "Congradulation!  " + "Nina" + ", Your order with orderID: " + "1002"
                 + " has been filled with: " + "100" + ", shares, @$" + "500.3" + " per share.";
 
-        MessageDTO messageDTO = new MessageDTO(clientRequestID,type,message);
+        OrderStatusDTO orderStatusDTO = new OrderStatusDTO(clientRequestID,type,message);
 
-        byte[] messageDTOByteArray = messageDTO.Serialize();
+        byte[] messageDTOByteArray = orderStatusDTO.Serialize();
 
-        MessageDTO deserializedDTO = MessageDTO.Deserialize(messageDTOByteArray);
+        OrderStatusDTO deserializedDTO = OrderStatusDTO.Deserialize(messageDTOByteArray);
 
-        Assertions.assertThat(deserializedDTO).usingRecursiveComparison().isEqualTo(messageDTO);
+        Assertions.assertThat(deserializedDTO).usingRecursiveComparison().isEqualTo(orderStatusDTO);
     }
 
     @Test

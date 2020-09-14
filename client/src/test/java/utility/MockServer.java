@@ -50,7 +50,7 @@ public class MockServer implements Runnable{
         switch (type) {
             case Order:
                 OrderDTO orderDTO = (OrderDTO) ReceivedDTO;
-                ResponseDTO = new MessageDTO(orderDTO.getClientRequestID(), OrderStatusType.PartiallyFilled,
+                ResponseDTO = new OrderStatusDTO(orderDTO.getClientRequestID(), OrderStatusType.PartiallyFilled,
                         "Your market Order has been filled with 100 shares @ $300");
                 break;
             case MarketDataRequest:

@@ -1,33 +1,25 @@
 package session;
 
-import commonData.DTO.MarketDataItemDTO;
-import commonData.DTO.MessageDTO;
-import commonData.DTO.OrderDTO;
+import commonData.DTO.OrderStatusDTO;
 import commonData.DTO.Transferable;
 import commonData.DataType.OrderStatusType;
-import commonData.Order.Direction;
-import commonData.Order.OrderDuration;
-import commonData.Order.OrderType;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class ServerResponseProcessorTest {
 
     @Test
     void readMessageFromServerTest() throws Exception{
 
-        MessageDTO messageDTO = new MessageDTO(113, OrderStatusType.PartiallyFilled,
+        OrderStatusDTO orderStatusDTO = new OrderStatusDTO(113, OrderStatusType.PartiallyFilled,
                 "200 share of AAPL has been filled");
-        byte[] messageDTOByteArray = messageDTO.Serialize();
+        byte[] messageDTOByteArray = orderStatusDTO.Serialize();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(messageDTO.getDtoType().getByteValue());
+        outputStream.write(orderStatusDTO.getDtoType().getByteValue());
         outputStream.write((byte)messageDTOByteArray.length);
         outputStream.write(messageDTOByteArray);
         byte[] dtoByteArray = outputStream.toByteArray();
@@ -38,6 +30,6 @@ class ServerResponseProcessorTest {
         ServerResponseProcessor DTOreader = new ServerResponseProcessor(inputStream);
         Transferable messageDTOT = DTOreader.ReadMessageFromServer().getKey();
 
-        Assertions.assertThat(messageDTOT).usingRecursiveComparison().isEqualTo(messageDTO);
+        Assertions.assertThat(messageDTOT).usingRecursiveComparison().isEqualTo(orderStatusDTO);
     }
 }
