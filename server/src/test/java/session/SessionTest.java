@@ -4,7 +4,9 @@ import clearing.data.CredentialWareHouse;
 import common.LimitOrderBookWareHouse;
 import common.ServerQueue;
 import common.SortedOrderList;
+import common.utility.MessageGenerator;
 import commonData.DTO.*;
+import commonData.DataType.MessageType;
 import commonData.Order.Direction;
 import commonData.Order.MarketParticipantOrder;
 import commonData.Order.OrderDuration;
@@ -53,8 +55,18 @@ public class SessionTest {
         OpenAcctDTO expectedOpenAcctDTO = (OpenAcctDTO)dtoFactory.ProduceSampleDTO(DTOTestType.OpenAcctRequest_user1);
         Integer expectedUserID = 1;
         MarketParticipantPortfolio expectedPortfolio = new MarketParticipantPortfolio();
+        MessageDTO expectedMsgDTO = new MessageDTO((long)1, MessageType.SuccessMessage,
+                MessageGenerator.GenerateStatusMessage(MessageType.SuccessMessage, DTOType.OpenAcctRequest));
 
         Thread.sleep(1000);
+
+        //retrieve response MessageDTO
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        DTOType dtoType = DTOType.valueOf(inputStream.read());
+        int byteSizeOfDTO = inputStream.read();
+        byte[] DTOByteArray = new byte[byteSizeOfDTO];
+        inputStream.read(DTOByteArray, 0, byteSizeOfDTO);
+        MessageDTO msgDTO = MessageDTO.Deserialize(DTOByteArray);
 
         //compare username
         String userName = credentialWareHouse.getLoginCredentialMap().keySet().iterator().next();
@@ -64,6 +76,8 @@ public class SessionTest {
         Assertions.assertThat(expectedUserID).isEqualTo(userID);
         Assertions.assertThat(expectedPortfolio).
                 usingRecursiveComparison().isEqualTo(session.getPortfolioHashMap().get(1));
+        Assertions.assertThat(expectedMsgDTO).
+                usingRecursiveComparison().isEqualTo(msgDTO);
     }
 
     @Test
@@ -74,13 +88,48 @@ public class SessionTest {
 
         //Baseline
         SampleDTOFactory dtoFactory = new SampleDTOFactory();
-        LoginDTO expectedLoginRequest = (LoginDTO)dtoFactory.ProduceSampleDTO(DTOTestType.LoginRequest);
-
+        LoginDTO expectedLoginRequest = (LoginDTO)dtoFactory.ProduceSampleDTO(DTOTestType.LoginRequest_user1);
+        MessageDTO expectedMsgDTO = new MessageDTO((long)101, MessageType.SuccessMessage,
+                MessageGenerator.GenerateStatusMessage(MessageType.SuccessMessage, DTOType.LoginRequest));
 
         Thread.sleep(1000);
 
+        //retrieve response MessageDTO
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        DTOType dtoType = DTOType.valueOf(inputStream.read());
+        int byteSizeOfDTO = inputStream.read();
+        byte[] DTOByteArray = new byte[byteSizeOfDTO];
+        inputStream.read(DTOByteArray, 0, byteSizeOfDTO);
+        MessageDTO msgDTO = MessageDTO.Deserialize(DTOByteArray);
+
         Assertions.assertThat(expectedLoginRequest.getUserName()).isEqualTo(session.getClientUserName());
         Assertions.assertThat(1).isEqualTo(session.getClientUserID());
+        Assertions.assertThat(expectedMsgDTO).
+                usingRecursiveComparison().isEqualTo(msgDTO);
+    }
+
+    @Test
+    public void On_ReceivingLoginRequest_WrongLogin_Test() throws Exception {
+        //prepare unit test: set up session and returns session object
+        Session session = Prepare(ByteArrayType.LoginRequest_user2);
+        session.RunCurrentSession();
+
+        //Baseline
+        MessageDTO expectedMsgDTO = new MessageDTO((long)101, MessageType.ErrorMessage,
+                MessageGenerator.GenerateStatusMessage(MessageType.ErrorMessage, DTOType.LoginRequest));
+
+        Thread.sleep(2000);
+
+        //retrieve response MessageDTO
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+        DTOType dtoType = DTOType.valueOf(inputStream.read());
+        int byteSizeOfDTO = inputStream.read();
+        byte[] DTOByteArray = new byte[byteSizeOfDTO];
+        inputStream.read(DTOByteArray, 0, byteSizeOfDTO);
+        MessageDTO msgDTO = MessageDTO.Deserialize(DTOByteArray);
+
+        Assertions.assertThat(expectedMsgDTO).
+                usingRecursiveComparison().isEqualTo(msgDTO);
     }
 
     @Test
@@ -119,9 +168,14 @@ public class SessionTest {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
         DTOType dtoType = DTOType.valueOf(inputStream.read());
         int byteSizeOfDTO = inputStream.read();
-        byte[] DTOByteArray = new byte[byteSizeOfDTO];
-        inputStream.read(DTOByteArray, 0, byteSizeOfDTO);
-        PortfolioDTO DTO = PortfolioDTO.Deserialize(DTOByteArray);
+        byte[] msgDTOByteArray = new byte[byteSizeOfDTO];
+        inputStream.read(msgDTOByteArray, 0, byteSizeOfDTO);
+        dtoType = DTOType.valueOf(inputStream.read());
+        byteSizeOfDTO = inputStream.read();
+        byte[] portfolioDTOByteArray = new byte[byteSizeOfDTO];
+        inputStream.read(portfolioDTOByteArray, 0, byteSizeOfDTO);
+
+        PortfolioDTO DTO = PortfolioDTO.Deserialize(portfolioDTOByteArray);
 
         //Compare
         Assertions.assertThat(expectedPortfolioDTO).
@@ -148,9 +202,13 @@ public class SessionTest {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
         DTOType dtoType = DTOType.valueOf(inputStream.read());
         int byteSizeOfDTO = inputStream.read();
-        byte[] DTOByteArray = new byte[byteSizeOfDTO];
-        inputStream.read(DTOByteArray, 0, byteSizeOfDTO);
-        MarketDataDTO DTO = MarketDataDTO.Deserialize(DTOByteArray);
+        byte[] msgDTOByteArray = new byte[byteSizeOfDTO];
+        inputStream.read(msgDTOByteArray, 0, byteSizeOfDTO);
+        dtoType = DTOType.valueOf(inputStream.read());
+        byteSizeOfDTO = inputStream.read();
+        byte[] marketDataDTOByteArray = new byte[byteSizeOfDTO];
+        inputStream.read(marketDataDTOByteArray, 0, byteSizeOfDTO);
+        MarketDataDTO DTO = MarketDataDTO.Deserialize(marketDataDTOByteArray);
 
         //Compare
         Assertions.assertThat(expectedDTO).
@@ -184,9 +242,13 @@ public class SessionTest {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
         DTOType dtoType = DTOType.valueOf(inputStream.read());
         int byteSizeOfDTO = inputStream.read();
-        byte[] DTOByteArray = new byte[byteSizeOfDTO];
-        inputStream.read(DTOByteArray, 0, byteSizeOfDTO);
-        MarketDataDTO DTO = MarketDataDTO.Deserialize(DTOByteArray);
+        byte[] msgDTOByteArray = new byte[byteSizeOfDTO];
+        inputStream.read(msgDTOByteArray, 0, byteSizeOfDTO);
+        dtoType = DTOType.valueOf(inputStream.read());
+        byteSizeOfDTO = inputStream.read();
+        byte[] marketDataDTOByteArray = new byte[byteSizeOfDTO];
+        inputStream.read(marketDataDTOByteArray, 0, byteSizeOfDTO);
+        MarketDataDTO DTO = MarketDataDTO.Deserialize(marketDataDTOByteArray);
 
         //Compare
         Assertions.assertThat(expectedDTO).
@@ -263,7 +325,9 @@ public class SessionTest {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         //create login request accordingly
-        if(type != ByteArrayType.OpenAcctRequest && type != ByteArrayType.LoginRequest_user1)
+
+        if(type != ByteArrayType.OpenAcctRequest &&
+                type != ByteArrayType.LoginRequest_user1 && type != ByteArrayType.LoginRequest_user2)
         {
             byte[] loginByteArray = SampleDTOByteArrayFactory.produceSampleDTOByteArray
                     (ByteArrayType.LoginRequest_user1);

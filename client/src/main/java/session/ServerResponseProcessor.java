@@ -37,6 +37,9 @@ public class ServerResponseProcessor implements Runnable{
                 case Portfolio:
                     DTO = PortfolioDTO.Deserialize(DTOByteArray);
                     break;
+                case Message:
+                    DTO = MessageDTO.Deserialize(DTOByteArray);
+                    break;
                 }
         } else {
             endOfStream = true;

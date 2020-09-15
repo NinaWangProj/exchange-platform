@@ -26,6 +26,9 @@ public class SampleDTOByteArrayFactory {
             case LoginRequest_user1:
                 byteArray = ProduceLoginRequestDTO_user1();
                 break;
+            case LoginRequest_user2:
+                byteArray = ProduceLoginRequestDTO_user2();
+                break;
             case PortfolioRequest:
                 byteArray = ProducePortfolioRequestDTO();
                 break;
@@ -129,7 +132,7 @@ public class SampleDTOByteArrayFactory {
     }
 
     private static byte[] ProduceLoginRequestDTO_user1() throws Exception {
-        Transferable loginRequestDTO = SampleDTOFactory.ProduceSampleDTO(DTOTestType.LoginRequest);
+        Transferable loginRequestDTO = SampleDTOFactory.ProduceSampleDTO(DTOTestType.LoginRequest_user1);
         byte[] DTOByteArray = loginRequestDTO.Serialize();
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -139,6 +142,19 @@ public class SampleDTOByteArrayFactory {
 
         return outputStream.toByteArray();
     }
+
+    private static byte[] ProduceLoginRequestDTO_user2() throws Exception {
+        Transferable loginRequestDTO = SampleDTOFactory.ProduceSampleDTO(DTOTestType.LoginRequest_user2);
+        byte[] DTOByteArray = loginRequestDTO.Serialize();
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        outputStream.write(loginRequestDTO.getDtoType().getByteValue());
+        outputStream.write((byte)DTOByteArray.length);
+        outputStream.write(DTOByteArray);
+
+        return outputStream.toByteArray();
+    }
+
 
     private static byte[] ProducePortfolioRequestDTO() throws Exception {
         Transferable portfolioRequestDTO = SampleDTOFactory.ProduceSampleDTO(DTOTestType.PortfolioRequest);

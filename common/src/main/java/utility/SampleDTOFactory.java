@@ -77,8 +77,11 @@ public class SampleDTOFactory {
             case OpenAcctRequest_user1:
                 sampleDTO = ProduceOpenAcctRequestDTO();
                 break;
-            case LoginRequest:
-                sampleDTO = ProduceLoginRequestDTO();
+            case LoginRequest_user1:
+                sampleDTO = ProduceLoginRequestDTO_user1();
+                break;
+            case LoginRequest_user2:
+                sampleDTO = ProduceLoginRequestDTO_user2();
                 break;
         }
         return sampleDTO;
@@ -258,12 +261,18 @@ public class SampleDTOFactory {
     }
 
     private static OpenAcctDTO ProduceOpenAcctRequestDTO() {
-        OpenAcctDTO openAcctDTO = new OpenAcctDTO("user1","user1Password$1");
+        OpenAcctDTO openAcctDTO = new OpenAcctDTO(
+                (long)1,"user1","user1Password$1");
         return openAcctDTO;
     }
 
-    private static LoginDTO ProduceLoginRequestDTO() {
+    private static LoginDTO ProduceLoginRequestDTO_user1() {
         LoginDTO loginDTO = new LoginDTO((long)101,"user1","user1Password$1");
+        return loginDTO;
+    }
+
+    private static LoginDTO ProduceLoginRequestDTO_user2() {
+        LoginDTO loginDTO = new LoginDTO((long)101,"user2","user1Password$2");
         return loginDTO;
     }
 }

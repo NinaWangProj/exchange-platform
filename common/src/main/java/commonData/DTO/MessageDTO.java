@@ -16,7 +16,7 @@ public class MessageDTO implements Transferable{
     public MessageDTO(long requestID, MessageType msgType, String message)
     {
         this.message = message;
-        dtoType = DTOType.OrderStatus;
+        dtoType = DTOType.Message;
         this.msgType = msgType;
         clientRequestID = requestID;
     }
@@ -43,20 +43,20 @@ public class MessageDTO implements Transferable{
         return msgDTOByteArray;
     }
 
-    public static OrderStatusDTO Deserialize(byte[] DTOByteArray) {
+    public static MessageDTO Deserialize(byte[] DTOByteArray) {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
 
         byte[] requestIDBuffer = new byte[8];
         inputStream.read(requestIDBuffer, 0, 8);
         Long requestIDT = ByteBuffer.wrap(requestIDBuffer).getLong();
 
-        OrderStatusType msgTypeT = OrderStatusType.valueOf(inputStream.read());
+        MessageType msgTypeT = MessageType.valueOf(inputStream.read());
         int msgLength = inputStream.read();
         byte[] msgBuffer = new byte[msgLength];
         inputStream.read(msgBuffer, 0, msgLength);
         String msgT = new String(msgBuffer);
 
-        OrderStatusDTO DTO = new OrderStatusDTO(requestIDT,msgTypeT,msgT);
+        MessageDTO DTO = new MessageDTO(requestIDT,msgTypeT,msgT);
         return DTO;
     }
 
