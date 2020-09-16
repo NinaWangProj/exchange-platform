@@ -91,8 +91,7 @@ public class TradingEngine{
                                     ArrayList<UnfilledOrder> unfilledOrders) throws Exception {
         boolean active;
 
-        if(counterPartyLimitOrderBook == null  || counterPartyLimitOrderBook.size() == 0
-                ||!CheckTradeViability(order, counterPartyLimitOrderBook.get(0))) {
+        if(counterPartyLimitOrderBook == null  || counterPartyLimitOrderBook.size() == 0) {
             UnfilledOrder unfilled = new UnfilledOrder(order, "Could not match market order price");
             unfilledOrders.add(unfilled);
             active = false;
