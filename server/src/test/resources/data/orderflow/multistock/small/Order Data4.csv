@@ -1,0 +1,27 @@
+sessionID,userID,name,orderID,time,direction,tickerSymbol,size,price,orderType,orderDuration
+4,4,Default Name,0,2020-08-31 09:30:00.006000,Direction.BUY,MSFT,23,199.66,OrderType.LIMITORDER,OrderDuration.DAY
+4,4,Default Name,1,2020-08-31 09:30:00.011000,Direction.BUY,MSFT,17,205.97,OrderType.LIMITORDER,OrderDuration.DAY
+0,0,Default Name,2,2020-08-31 09:30:00.020000,Direction.SELL,AAPL,14,-1,OrderType.MARKETORDER,OrderDuration.DAY
+1,1,Default Name,3,2020-08-31 09:30:00.020000,Direction.SELL,MSFT,7,-1,OrderType.MARKETORDER,OrderDuration.DAY
+1,1,Default Name,4,2020-08-31 09:30:00.025000,Direction.BUY,ZM,10,305.57,OrderType.LIMITORDER,OrderDuration.DAY
+0,0,Default Name,5,2020-08-31 09:30:00.026000,Direction.SELL,MSFT,14,-1,OrderType.MARKETORDER,OrderDuration.DAY
+3,3,Default Name,6,2020-08-31 09:30:00.031000,Direction.BUY,MSFT,3,-1,OrderType.MARKETORDER,OrderDuration.DAY
+4,4,Default Name,8,2020-08-31 09:30:00.039000,Direction.SELL,MSFT,14,204.56,OrderType.LIMITORDER,OrderDuration.DAY
+4,4,Default Name,9,2020-08-31 09:30:00.047000,Direction.BUY,MSFT,17,203.67,OrderType.LIMITORDER,OrderDuration.DAY
+2,2,Default Name,10,2020-08-31 09:30:00.056000,Direction.SELL,ZM,2,-1,OrderType.MARKETORDER,OrderDuration.DAY
+5,0,Default Name,11,2020-08-31 09:30:00.063000,Direction.BUY,AAPL,2,-1,OrderType.MARKETORDER,OrderDuration.DAY
+1,1,Default Name,13,2020-08-31 09:30:00.071000,Direction.SELL,AAPL,8,-1,OrderType.MARKETORDER,OrderDuration.DAY
+4,4,Default Name,14,2020-08-31 09:30:00.081000,Direction.SELL,MSFT,4,194.86,OrderType.LIMITORDER,OrderDuration.DAY
+0,0,Default Name,15,2020-08-31 09:30:00.088000,Direction.SELL,AAPL,16,-1,OrderType.MARKETORDER,OrderDuration.DAY
+5,0,Default Name,16,2020-08-31 09:30:00.089000,Direction.BUY,AAPL,11,-1,OrderType.MARKETORDER,OrderDuration.DAY
+0,0,Default Name,17,2020-08-31 09:30:00.092000,Direction.BUY,ZM,7,-1,OrderType.MARKETORDER,OrderDuration.DAY
+0,0,Default Name,18,2020-08-31 09:30:00.101000,Direction.BUY,MSFT,13,-1,OrderType.MARKETORDER,OrderDuration.DAY
+3,3,Default Name,19,2020-08-31 09:30:00.104000,Direction.BUY,ZM,24,308.61,OrderType.LIMITORDER,OrderDuration.DAY
+1,1,Default Name,20,2020-08-31 09:30:00.104000,Direction.BUY,ZM,2,-1,OrderType.MARKETORDER,OrderDuration.DAY
+1,1,Default Name,21,2020-08-31 09:30:00.114000,Direction.SELL,ZM,6,-1,OrderType.MARKETORDER,OrderDuration.DAY
+4,4,Default Name,23,2020-08-31 09:30:00.114000,Direction.BUY,MSFT,13,-1,OrderType.MARKETORDER,OrderDuration.DAY
+4,4,Default Name,24,2020-08-31 09:30:00.114000,Direction.BUY,AAPL,8,102.58,OrderType.LIMITORDER,OrderDuration.DAY
+3,3,Default Name,25,2020-08-31 09:30:00.114000,Direction.SELL,ZM,5,304.83,OrderType.LIMITORDER,OrderDuration.DAY
+0,0,Default Name,27,2020-08-31 09:30:00.122000,Direction.SELL,ZM,2,314.9,OrderType.LIMITORDER,OrderDuration.DAY
+1,1,Default Name,28,2020-08-31 09:30:00.126000,Direction.SELL,MSFT,7,-1,OrderType.MARKETORDER,OrderDuration.DAY
+3,3,Default Name,29,2020-08-31 09:30:00.132000,Direction.SELL,MSFT,1,-1,OrderType.MARKETORDER,OrderDuration.DAY
