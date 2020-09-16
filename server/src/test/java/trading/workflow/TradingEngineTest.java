@@ -85,9 +85,12 @@ public class TradingEngineTest {
         List<PendingOrder> expectedPendingOrders = GetRowsFromCSV(pendingDataFileName, PendingOrder.class);
         List<UnfilledOrder> expectedUnfilledOrders = GetRowsFromCSV(unfilledDataFileName, UnfilledOrder.class);
 
-        Assertions.assertThat(testResult.Transactions).usingRecursiveComparison().isEqualTo(expectedTransactions);
-        Assertions.assertThat(testResult.PendingOrders).usingRecursiveComparison().isEqualTo(expectedPendingOrders);
-        Assertions.assertThat(testResult.UnfilledOrders).usingRecursiveComparison().isEqualTo(expectedUnfilledOrders);
+        Assertions.assertThat(testResult.Transactions).usingRecursiveComparison()
+                .isEqualTo(expectedTransactions).ignoringFields("time");
+        Assertions.assertThat(testResult.PendingOrders).usingRecursiveComparison()
+                .isEqualTo(expectedPendingOrders).ignoringFields("time");
+        Assertions.assertThat(testResult.UnfilledOrders).usingRecursiveComparison()
+                .isEqualTo(expectedUnfilledOrders).ignoringFields("time");
     }
 
     private <T> List<T> GetRowsFromCSV(String resourcePath, Class<T> type)
