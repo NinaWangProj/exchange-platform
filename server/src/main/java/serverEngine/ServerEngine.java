@@ -41,7 +41,7 @@ public class ServerEngine {
         sessions.start();
 
         TradingEngineManager tradingEngineManager = new TradingEngineManager(systemServerQueue,
-                limitOrderBookWareHouse, OrderBooklocks);
+                limitOrderBookWareHouse);
         tradingEngineManager.Start();
 
         ClearingEngineManager clearingEngineManager = new ClearingEngineManager(systemServerQueue,DTCC);

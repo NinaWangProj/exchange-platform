@@ -28,15 +28,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class TradingEngineTest {
 
     @Test
-    public void SmallOrderBatchTest()
-    {
+    public void SmallOrderBatchTest() {
         String orderDataFileName = "data/orderflow/small/Order Data1.csv";
         String transactionDataFileName = "data/orderflow/small/Transactions Data1.csv";
         String pendingDataFileName = "data/orderflow/small/Pending Order Data1.csv";
         String unfilledDataFileName = "data/orderflow/small/Unfilled Order Data1.csv";
 
         RunTest(orderDataFileName, transactionDataFileName, pendingDataFileName, unfilledDataFileName);
-       }
+   }
 
     @Test
     public void MediumOrderBatchTest()

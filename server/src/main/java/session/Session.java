@@ -132,49 +132,16 @@ public class Session {
                 MarketDataRequestDTO marketDataRequestDTO = (MarketDataRequestDTO)DTO;
                 String tickerSymbol = marketDataRequestDTO.getTickerSymbol();
                 MarketDataType marketDataType = marketDataRequestDTO.getDataType();
-                boolean found = limitOrderBookWareHouse.ValidateRequest(tickerSymbol);
-                if(found) {
-                    Pair<SortedOrderList, SortedOrderList> limitOrderBook;
 
-                    ReadWriteLock lock = locks.get(tickerSymbol);
-                    lock.readLock().lock();
-                    try{
-                        limitOrderBook = limitOrderBookWareHouse.GetLimitOrderBook(tickerSymbol,marketDataType,this);
-                    } finally {
-                        lock.readLock().unlock();
-                    }
+                //Create market data dto and put into queue
+                Pair<ArrayList<MarketDataItem>,ArrayList<MarketDataItem>> marketData =
+                        limitOrderBookWareHouse.GetLimitOrderBookCopy(tickerSymbol,marketDataType,this);
 
-                    if(limitOrderBook.getKey().size() > 0 || limitOrderBook.getValue().size() > 0) {
-                        //Create market data dto and put into queue
-                        Pair<ArrayList<MarketDataItem>,ArrayList<MarketDataItem>> marketData =
-                                FormMarketDataFromOrderBook(limitOrderBook);
-                        MarketDataDTO marketDataDTO = new MarketDataDTO(marketDataRequestDTO.getClientRequestID(),
-                                tickerSymbol, marketData.getKey(),marketData.getValue());
-                        serverQueue.PutResponseDTO(sessionID,marketDataDTO);
-                    }
-                } else {
-                    //send message back to client, no market data for the request ticker symbol is found
-                }
+                MarketDataDTO marketDataDTO = new MarketDataDTO(marketDataRequestDTO.getClientRequestID(),
+                        tickerSymbol, marketData.getKey(),marketData.getValue());
+                serverQueue.PutResponseDTO(sessionID,marketDataDTO);
                 break;
         }
-    }
-
-    private Pair<ArrayList<MarketDataItem>,ArrayList<MarketDataItem>> FormMarketDataFromOrderBook(
-        Pair<SortedOrderList, SortedOrderList> limitOrderBook) {
-        ArrayList<MarketDataItem> bids = new ArrayList<MarketDataItem>();
-        ArrayList<MarketDataItem> asks = new ArrayList<MarketDataItem>();
-
-        for(MarketParticipantOrder order : limitOrderBook.getKey().getSortedList()) {
-            MarketDataItem item = new MarketDataItem(order.getTickerSymbol(),order.getSize(),order.getPrice());
-            bids.add(item);
-        }
-
-        for(MarketParticipantOrder order : limitOrderBook.getValue().getSortedList()) {
-            MarketDataItem item = new MarketDataItem(order.getTickerSymbol(),order.getSize(),order.getPrice());
-            asks.add(item);
-        }
-
-        return new Pair<>(bids,asks);
     }
 
     public void On_ReceivingLevel3DataChanges(BookChangeDTO bookChangeDTO) throws Exception {
