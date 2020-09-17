@@ -118,12 +118,12 @@ public class TradingEngine{
 
             Transaction counterPartyTransaction = new Transaction(topCounterLimitOrder.getSessionID(),topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), WrapperEngine.previousTransactionID +1, topCounterLimitOrder.getOrderID(), new Date(),
                     topCounterLimitOrder.getDirection(), topCounterLimitOrder.getTickerSymbol(), transactionSize, transactionPrice);
-            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +2, order.getOrderID(), new Date(),
+            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +1, order.getOrderID(), new Date(),
                     order.getDirection(), order.getTickerSymbol(), transactionSize, transactionPrice);
 
             transactions.add(currentOrderTransaction);
             transactions.add(counterPartyTransaction);
-            WrapperEngine.previousTransactionID += 2;
+            WrapperEngine.previousTransactionID += 1;
         }
         return active;
     }
@@ -168,12 +168,12 @@ public class TradingEngine{
 
             Transaction counterSideTransaction = new Transaction(topCounterLimitOrder.getSessionID(),topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), WrapperEngine.previousTransactionID +1, topCounterLimitOrder.getOrderID(), new Date(),
                     topCounterLimitOrder.getDirection(), topCounterLimitOrder.getTickerSymbol(), transactionSize, transactionPrice);
-            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +2, order.getOrderID(), new Date(),
+            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +1, order.getOrderID(), new Date(),
                     order.getDirection(), order.getTickerSymbol(), transactionSize, transactionPrice);
 
             transactions.add(currentOrderTransaction);
             transactions.add(counterSideTransaction);
-            WrapperEngine.previousTransactionID += 2;
+            WrapperEngine.previousTransactionID += 1;
         }
         return active;
     }

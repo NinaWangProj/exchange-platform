@@ -52,17 +52,17 @@ public class TradingEngineManagerTest {
 
         // get outputs
         ConcurrentMap<Integer, List<TradingOutput>> tradingOutputFromQueue = new ConcurrentHashMap<>();
-        List<Callable<Void>> mockClearingEngines = new ArrayList<>();
+        List<Callable<Void>> mockClearingEngineTasks = new ArrayList<>();
         for(int i= 0; i < numOutputQueues; i++){
-            mockClearingEngines.add(new MockClearingEngineTask(centralQueue, i, tradingOutputFromQueue));
+            mockClearingEngineTasks.add(new MockClearingEngineTask(centralQueue, i, tradingOutputFromQueue));
         }
 
         ExecutorService executorService = Executors.newFixedThreadPool(numOutputQueues);
-        List<Future<Void>> futureTradingOutputs = executorService.invokeAll(mockClearingEngines);
+        List<Future<Void>> tradingOutputResults = executorService.invokeAll(mockClearingEngineTasks);
 
         for(int i= 0; i < numOutputQueues; i++){
             try {
-                futureTradingOutputs.get(0).get(100, TimeUnit.MILLISECONDS);
+                tradingOutputResults.get(0).get(100, TimeUnit.MILLISECONDS);
             } catch(TimeoutException tex) {}
         }
 
