@@ -81,24 +81,8 @@ public class SortedOrderList {
             if(listSize == 0) {
                 lock.writeLock().lock();
                 try {
-                    sortedList.add(0, order);
-                    tracker.Add(new ChangeOperation(BookOperation.INSERT, 0, new MarketDataItem(order)));
-                } finally {
-                    lock.writeLock().unlock();
-                }
-                break;
-            } else if (listSize == 1) {
-                int compareIndicator = comparator.compare(order, sortedList.get(partition));
-                int index;
-                if (compareIndicator > 0) {
-                    index = partition;
-                } else {
-                    index = partition + 1;
-                }
-                lock.writeLock().lock();
-                try {
-                    sortedList.add(index, order);
-                    tracker.Add(new ChangeOperation(BookOperation.INSERT, index, new MarketDataItem(order)));
+                    sortedList.add(listStartIndex, order);
+                    tracker.Add(new ChangeOperation(BookOperation.INSERT, listStartIndex, new MarketDataItem(order)));
                 } finally {
                     lock.writeLock().unlock();
                 }

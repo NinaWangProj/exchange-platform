@@ -79,7 +79,6 @@ public class TradingEngineTest {
         }
         catch(Exception ex) {assert false: "Exception in Trading Engine";}
 
-        String test = System.getProperty("user.dir");
 
         // get expected outputs
         List<Transaction> expectedTransactions = GetRowsFromCSV(transactionDataFileName, Transaction.class);

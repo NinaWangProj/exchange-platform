@@ -42,12 +42,19 @@ public class TradingEngine{
     public TradingOutput ProcessBatch(ArrayList<MarketParticipantOrder> orders) throws Exception{
         TradingOutput finalTradingOutput = new TradingOutput();
 
-        for (MarketParticipantOrder order : orders) {
-            TradingOutput output = MatchOrder(order);
+        for (int i = 0; i< orders.size(); i++) {
+            TradingOutput output = MatchOrder(orders.get(i));
             finalTradingOutput.Transactions.addAll(output.Transactions);
             finalTradingOutput.UnfilledOrders.addAll(output.UnfilledOrders);
             finalTradingOutput.PendingOrders.addAll(output.PendingOrders);
         }
+
+        /*for (MarketParticipantOrder order : orders) {
+            TradingOutput output = MatchOrder(order);
+            finalTradingOutput.Transactions.addAll(output.Transactions);
+            finalTradingOutput.UnfilledOrders.addAll(output.UnfilledOrders);
+            finalTradingOutput.PendingOrders.addAll(output.PendingOrders);
+        }*/
         return finalTradingOutput;
     }
 
