@@ -88,6 +88,7 @@ public class DTOTest {
         long clientRequestID = 104;
         OrderStatusType type = OrderStatusType.PartiallyFilled;
 
+
         String message = "Congradulation!  " + "Nina" + ", Your order with orderID: " + "1002"
                 + " has been filled with: " + "100" + ", shares, @$" + "500.3" + " per share.";
 

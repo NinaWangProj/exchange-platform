@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class TradingEngineManagerTest {
     @Test
@@ -40,7 +41,8 @@ public class TradingEngineManagerTest {
 
         ServerQueue centralQueue = new ServerQueue(numInputOrderQueues, numOutputQueues);
         LimitOrderBookWareHouse orderBookWareHouse =  new LimitOrderBookWareHouse(OrderComparatorType.PriceTimePriority);
-        TradingEngineManager engineManager =  new TradingEngineManager(centralQueue, orderBookWareHouse);
+        TradingEngineManager engineManager =  new TradingEngineManager(centralQueue, orderBookWareHouse,
+                new AtomicLong(0));
         engineManager.Start();
 
         // get inputs

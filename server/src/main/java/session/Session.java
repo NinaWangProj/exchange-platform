@@ -169,8 +169,9 @@ public class Session {
         private void Process() throws Exception{
             OrderStatus orderStatus = serverQueue.TakeOrderStatus(sessionID);
             Long requestID = orderIDRequestIDMap.get(orderStatus.getOrderID());
-            for(String statusMessage : orderStatus.getStatusMessages()) {
-                MessageDTO messageDTO = new MessageDTO(requestID,orderStatus.getMsgType(),statusMessage);
+            for(int i = 0; i < orderStatus.getStatusMessages().size(); i ++) {
+                MessageDTO messageDTO = new MessageDTO(requestID,orderStatus.getMsgType().get(i),
+                        orderStatus.getStatusMessages().get(i));
                 serverQueue.PutResponseDTO(sessionID,messageDTO);
             }
         }

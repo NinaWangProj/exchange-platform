@@ -6,10 +6,10 @@ import java.util.ArrayList;
 
 public class OrderStatus {
     private final ArrayList<String> statusMessages;
-    private final OrderStatusType msgType;
+    private final ArrayList<OrderStatusType> msgType;
     private final int orderID;
 
-    public OrderStatus(int orderID, OrderStatusType msgType, ArrayList<String> statusMessages)
+    public OrderStatus(int orderID, ArrayList<OrderStatusType> msgType, ArrayList<String> statusMessages)
     {
         this.statusMessages = statusMessages;
         this.msgType = msgType;
@@ -20,7 +20,7 @@ public class OrderStatus {
         return statusMessages;
     }
 
-    public OrderStatusType getMsgType() {
+    public ArrayList<OrderStatusType> getMsgType() {
         return msgType;
     }
 

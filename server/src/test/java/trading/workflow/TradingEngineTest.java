@@ -1,9 +1,7 @@
 package trading.workflow;
 
-import common.SortedOrderList;
-import common.TradingOutput;
-import common.Transaction;
-import commonData.DTO.MarketDataRequestDTO;
+import clearing.data.DTCCWarehouse;
+import common.*;
 import commonData.Order.Direction;
 import commonData.Order.MarketParticipantOrder;
 import javafx.util.Pair;
@@ -13,8 +11,8 @@ import trading.data.PendingOrder;
 import trading.data.UnfilledOrder;
 import trading.limitOrderBook.AskPriceTimeComparator;
 import trading.limitOrderBook.BidPriceTimeComparator;
-import trading.limitOrderBook.OrderComparator;
 import com.opencsv.bean.CsvToBeanBuilder;
+import trading.limitOrderBook.OrderComparatorType;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -23,6 +21,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class TradingEngineTest {
@@ -67,9 +66,11 @@ public class TradingEngineTest {
                 new SortedOrderList(new BidPriceTimeComparator(), new ReentrantReadWriteLock(),testTicker, Direction.BUY),
                 new SortedOrderList(new AskPriceTimeComparator(), new ReentrantReadWriteLock(),testTicker, Direction.SELL));
 
+        TradingEngineManager tradingEngineManager = new TradingEngineManager(new ServerQueue(3,3),
+                new LimitOrderBookWareHouse(OrderComparatorType.PriceTimePriority),new AtomicLong(0));
         TradingEngine tradingEngine = new TradingEngine(testTicker,limitOrderBook);
 
-        // get inputs
+        // get input1
         List<MarketParticipantOrder> orderFlow = GetRowsFromCSV(orderDataFileName, MarketParticipantOrder.class);
 
         TradingOutput testResult = null;

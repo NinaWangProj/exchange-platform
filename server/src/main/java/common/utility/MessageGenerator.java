@@ -43,10 +43,12 @@ public class MessageGenerator {
         for (Info tradingOutput : TradingOutputs) {
             int sessionID = tradingOutput.getSessionID();
             if (!userOrderStatusMap.containsKey(sessionID)) {
-                userOrderStatusMap.put(sessionID, new OrderStatus(tradingOutput.getOrderID(), orderStatusType,new ArrayList<String>()));
+                ArrayList<OrderStatusType> orderStatusTypes = new ArrayList<>();
+                userOrderStatusMap.put(sessionID, new OrderStatus(tradingOutput.getOrderID(), orderStatusTypes,new ArrayList<String>()));
             }
             String statusMessage = GenerateMessage(messageType,tradingOutput);
             userOrderStatusMap.get(sessionID).getStatusMessages().add(statusMessage);
+            userOrderStatusMap.get(sessionID).getMsgType().add(orderStatusType);
         }
     }
 
