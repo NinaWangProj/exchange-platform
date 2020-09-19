@@ -52,6 +52,8 @@ public class TradingEngineManagerTest {
             centralQueue.PutOrder(order);
         }
 
+        Thread.sleep(3000);
+
         // get outputs
         ConcurrentMap<Integer, List<TradingOutput>> tradingOutputFromQueue = new ConcurrentHashMap<>();
         List<Callable<Void>> mockClearingEngineTasks = new ArrayList<>();
