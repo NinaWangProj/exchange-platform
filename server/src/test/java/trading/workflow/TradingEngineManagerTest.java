@@ -62,13 +62,15 @@ public class TradingEngineManagerTest {
         }
 
         ExecutorService executorService = Executors.newFixedThreadPool(numOutputQueues);
-        List<Future<Void>> tradingOutputResults = executorService.invokeAll(mockClearingEngineTasks);
+        executorService.invokeAll(mockClearingEngineTasks, 100, TimeUnit.MILLISECONDS);
 
-        for(int i= 0; i < numOutputQueues; i++){
-            try {
-                tradingOutputResults.get(0).get(100, TimeUnit.MILLISECONDS);
-            } catch(TimeoutException tex) {}
-        }
+        //List<Future<Void>> tradingOutputResults = executorService.invokeAll(mockClearingEngineTasks, 100, TimeUnit.MILLISECONDS);
+
+//        for(int i= 0; i < numOutputQueues; i++){
+//            try {
+//                tradingOutputResults.get(0).get(100, TimeUnit.MILLISECONDS);
+//            } catch(TimeoutException tex) {}
+//        }
 
         //AwaitTerminationAfterShutdown(executorService);
 
