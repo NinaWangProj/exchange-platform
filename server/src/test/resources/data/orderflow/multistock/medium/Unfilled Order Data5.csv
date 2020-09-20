@@ -1,0 +1,18 @@
+sessionID,userID,name,orderID,time,direction,tickerSymbol,size,price,orderType,orderDuration,reason
+0,0,Default Name,2,2020-08-31 09:30:00.020000,Direction.SELL,AAPL,14,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+0,0,Default Name,17,2020-08-31 09:30:00.078000,Direction.BUY,AAPL,48,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+0,0,Default Name,18,2020-08-31 09:30:00.087000,Direction.BUY,AAPL,60,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+1,1,Default Name,21,2020-08-31 09:30:00.100000,Direction.SELL,AAPL,5,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+3,3,Default Name,29,2020-08-31 09:30:00.113000,Direction.SELL,AAPL,1,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+5,0,Default Name,31,2020-08-31 09:30:00.128000,Direction.BUY,AAPL,4,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+0,0,Default Name,51,2020-08-31 09:30:00.181000,Direction.BUY,AAPL,1,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+0,0,Default Name,71,2020-08-31 09:30:00.266000,Direction.BUY,AAPL,22,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+2,2,Default Name,69,2020-08-31 09:30:00.266000,Direction.BUY,MSFT,22,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+4,4,Default Name,75,2020-08-31 09:30:00.296000,Direction.BUY,MSFT,5,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+1,1,Default Name,3,2020-08-31 09:30:00.020000,Direction.SELL,QCOM,7,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+3,3,Default Name,6,2020-08-31 09:30:00.031000,Direction.BUY,QCOM,3,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+5,0,Default Name,11,2020-08-31 09:30:00.064000,Direction.BUY,QCOM,1,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+5,0,Default Name,16,2020-08-31 09:30:00.075000,Direction.BUY,QCOM,4,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+1,1,Default Name,50,2020-08-31 09:30:00.178000,Direction.BUY,QCOM,1,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+1,1,Default Name,20,2020-08-31 09:30:00.090000,Direction.BUY,ZM,8,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price
+2,2,Default Name,34,2020-08-31 09:30:00.136000,Direction.BUY,ZM,20,-1,OrderType.MARKETORDER,OrderDuration.DAY,Could not match market order price

@@ -35,6 +35,30 @@ public class TradingEngineManagerTest {
         RunTest(numInputOrderQueues, numOutputQueues, orderDataFileName, transactionDataFileName, pendingDataFileName, unfilledDataFileName);
     }
 
+    @Test
+    public void MediumOrderFlowTest() throws Exception {
+        String orderDataFileName = "data/orderflow/multistock/medium/Order Data5.csv";
+        String transactionDataFileName = "data/orderflow/multistock/medium/Transactions Data5.csv";
+        String pendingDataFileName = "data/orderflow/multistock/medium/Pending Order Data5.csv";
+        String unfilledDataFileName = "data/orderflow/multistock/medium/Unfilled Order Data5.csv";
+
+        int numInputOrderQueues = 3;
+        int numOutputQueues = 3;
+        RunTest(numInputOrderQueues, numOutputQueues, orderDataFileName, transactionDataFileName, pendingDataFileName, unfilledDataFileName);
+    }
+
+    @Test
+    public void LargeOrderFlowTest() throws Exception {
+        String orderDataFileName = "data/orderflow/multistock/large/Order Data6.csv";
+        String transactionDataFileName = "data/orderflow/multistock/large/Transactions Data6.csv";
+        String pendingDataFileName = "data/orderflow/multistock/large/Pending Order Data6.csv";
+        String unfilledDataFileName = "data/orderflow/multistock/large/Unfilled Order Data6.csv";
+
+        int numInputOrderQueues = 3;
+        int numOutputQueues = 3;
+        RunTest(numInputOrderQueues, numOutputQueues, orderDataFileName, transactionDataFileName, pendingDataFileName, unfilledDataFileName);
+    }
+
 
     private void RunTest(int numInputOrderQueues, int numOutputQueues, String orderDataFileName, String transactionDataFileName,
                   String pendingDataFileName, String unfilledDataFileName) throws Exception {
@@ -62,17 +86,14 @@ public class TradingEngineManagerTest {
         }
 
         ExecutorService executorService = Executors.newFixedThreadPool(numOutputQueues);
-        executorService.invokeAll(mockClearingEngineTasks, 100, TimeUnit.MILLISECONDS);
+        List<Future<Void>> clearingTaskResultState = executorService.invokeAll(mockClearingEngineTasks, 100, TimeUnit.MILLISECONDS);
 
-        //List<Future<Void>> tradingOutputResults = executorService.invokeAll(mockClearingEngineTasks, 100, TimeUnit.MILLISECONDS);
-
-//        for(int i= 0; i < numOutputQueues; i++){
-//            try {
-//                tradingOutputResults.get(0).get(100, TimeUnit.MILLISECONDS);
-//            } catch(TimeoutException tex) {}
-//        }
-
-        //AwaitTerminationAfterShutdown(executorService);
+        for(int i= 0; i < numOutputQueues; i++){
+            try {
+                clearingTaskResultState.get(0).get(100, TimeUnit.MILLISECONDS);
+            } catch(TimeoutException tex) {}
+                catch(CancellationException csex){}
+        }
 
         List<Transaction> actualTransactions = GetAllTransactions(tradingOutputFromQueue);
         List<UnfilledOrder> actualUnfilledOrders= GetAllUnfilledOrders(tradingOutputFromQueue);
@@ -83,9 +104,15 @@ public class TradingEngineManagerTest {
         List<PendingOrder> expectedPendingOrders = CsvHelper.GetRowsFromCSV(pendingDataFileName, PendingOrder.class);
         List<UnfilledOrder> expectedUnfilledOrders = CsvHelper.GetRowsFromCSV(unfilledDataFileName, UnfilledOrder.class);
 
-        Assertions.assertThat(actualTransactions).containsExactlyInAnyOrderElementsOf(expectedTransactions);
-        Assertions.assertThat(actualUnfilledOrders).containsExactlyInAnyOrderElementsOf(expectedUnfilledOrders);
-        Assertions.assertThat(actualPendingOrders).containsExactlyInAnyOrderElementsOf(expectedPendingOrders);
+        Assertions.assertThat(actualTransactions).usingElementComparatorIgnoringFields("time", "transactionID")
+                .containsExactlyInAnyOrderElementsOf(expectedTransactions);
+
+        Assertions.assertThat(actualUnfilledOrders).usingElementComparatorIgnoringFields("time", "transactionID")
+                .containsExactlyInAnyOrderElementsOf(expectedUnfilledOrders);
+
+        Assertions.assertThat(actualPendingOrders).usingElementComparatorIgnoringFields("time", "transactionID")
+                .containsExactlyInAnyOrderElementsOf(expectedPendingOrders);
+
     }
 
     private List<Transaction> GetAllTransactions(Map<Integer, List<TradingOutput>> tradingOutput){
