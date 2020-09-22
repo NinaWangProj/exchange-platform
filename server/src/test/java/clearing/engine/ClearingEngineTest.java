@@ -76,8 +76,4 @@ public class ClearingEngineTest {
 
         Assertions.assertThat(dtccWarehouse).usingRecursiveComparison().isEqualTo(expectedFinalWarehouse);
     }
-
-
-
-
 }

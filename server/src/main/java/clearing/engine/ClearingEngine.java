@@ -44,11 +44,11 @@ public class ClearingEngine {
                     SecurityCertificate certificate = new SecurityCertificate(transaction.getName(), transaction.getTickerSymbol(), transaction.getSize(), new Date());
                     portfolio.getSecurities().put(transaction.getTickerSymbol(), certificate);
                 }
-                portfolio.DepositCash(-transaction.getPrice());
+                portfolio.DepositCash(-transaction.getPrice() * transaction.getSize());
                 break;
             case SELL:
                 portfolio.getSecurities().get(transaction.getTickerSymbol()).quantity -= transaction.getSize();
-                portfolio.DepositCash(transaction.getPrice());
+                portfolio.DepositCash(transaction.getPrice() * transaction.getSize());
                 break;
         }
     }
