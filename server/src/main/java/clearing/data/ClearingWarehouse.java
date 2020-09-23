@@ -1,7 +1,7 @@
 package clearing.data;
 
 import clearing.engine.ClearingEngine;
-import trading.data.Transaction;
+import common.Transaction;
 
 
 import java.util.ArrayList;

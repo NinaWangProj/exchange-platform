@@ -10,7 +10,7 @@ public enum Direction {
     private final byte byteValue;
     private static final HashMap<Integer,Direction> map = new HashMap<Integer,Direction>();
 
-    private Direction(int value) {
+    Direction(int value) {
         this.value = value;
         this.byteValue = (byte)value;
     }

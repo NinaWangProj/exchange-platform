@@ -11,7 +11,6 @@ public class MarketDataItemDTO {
     private final String tickerSymbol;
     private int size;
     private final double price;
-    public byte[] orderDTOByteArray;
 
     //constructor
     public MarketDataItemDTO(String tickerSymbol, int size, double price)
@@ -36,6 +35,7 @@ public class MarketDataItemDTO {
 
     public byte[] Serialize()
     {
+        byte[] orderDTOByteArray = null;
         try {
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -47,9 +47,8 @@ public class MarketDataItemDTO {
             byte[] sizeByte = ByteBuffer.allocate(4).putInt(getSize()).array();
             outputStream.write(sizeByte);
 
-            byte[] priceByte = ByteBuffer.allocate(8).order(ByteOrder.nativeOrder()).putDouble(getPrice()).array();
+            byte[] priceByte = ByteBuffer.allocate(8).putDouble(getPrice()).array();
             outputStream.write(priceByte);
-
 
             orderDTOByteArray = outputStream.toByteArray();
 

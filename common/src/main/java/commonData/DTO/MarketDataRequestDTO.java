@@ -15,7 +15,7 @@ public class MarketDataRequestDTO implements Transferable {
     public MarketDataRequestDTO(Long clientRequestID, String tickerSymbol, MarketDataType dataType) {
         this.tickerSymbol = tickerSymbol;
         this.dataType = dataType;
-        dtoType = DTOType.MareketDataRequest;
+        dtoType = DTOType.MarketDataRequest;
         this.clientRequestID = clientRequestID;
     }
 
@@ -36,7 +36,7 @@ public class MarketDataRequestDTO implements Transferable {
         return outputStream.toByteArray();
     }
 
-    public static Transferable Deserialize(byte[] marketDataRequestBytes) throws Exception{
+    public static MarketDataRequestDTO Deserialize(byte[] marketDataRequestBytes) throws Exception{
         ByteArrayInputStream inputStream = new ByteArrayInputStream(marketDataRequestBytes);
 
         byte[] requestIDBuffer = new byte[8];

@@ -4,7 +4,8 @@ import java.util.HashMap;
 
 public enum BookOperation {
     REMOVE(1),
-    INSERT(2);
+    INSERT(2),
+    MODIFY(3);
 
     private final int value;
     private final byte byteValue;

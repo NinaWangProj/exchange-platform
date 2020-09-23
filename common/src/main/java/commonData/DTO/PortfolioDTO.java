@@ -1,12 +1,11 @@
 package commonData.DTO;
 
-
-
 import commonData.clearing.SecurityCertificate;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -15,6 +14,7 @@ import java.util.Map;
 public class PortfolioDTO implements Transferable{
     private final Long clientRequestID;
     private final DTOType dtoType;
+    //HashMap<tickerSymbol,SecurityCertificate>
     private final HashMap<String, SecurityCertificate> securities;
     private final double cash;
 
@@ -28,7 +28,10 @@ public class PortfolioDTO implements Transferable{
     public byte[] Serialize() throws Exception {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
-        byte[] cashAmtByte = ByteBuffer.allocate(8).order(ByteOrder.nativeOrder()).putDouble(cash).array();
+        byte[] requestIDByteArray = ByteBuffer.allocate(8).putLong(clientRequestID).array();
+        outputStream.write(requestIDByteArray);
+
+        byte[] cashAmtByte = ByteBuffer.allocate(8).putDouble(cash).array();
         outputStream.write(cashAmtByte);
 
         int numOfSecurities = securities.size();
@@ -53,8 +56,10 @@ public class PortfolioDTO implements Transferable{
             outputStream.write(quantityByteArray);
 
             //issued Date
-            byte[] issuedDateStringByteArray = entry.getValue().issuedDate.toString().getBytes();
-            byte issuedDateStringByteSize = (byte) tickerSymbolByte.length;
+            DateFormat formater = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSSZ");
+            String formattedIssuedDate = formater.format(entry.getValue().issuedDate);
+            byte[] issuedDateStringByteArray = formattedIssuedDate.getBytes();
+            byte issuedDateStringByteSize = (byte) issuedDateStringByteArray.length;
             outputStream.write(issuedDateStringByteSize);
             outputStream.write(issuedDateStringByteArray);
         }
@@ -77,9 +82,9 @@ public class PortfolioDTO implements Transferable{
         inputStream.read(cashAmtBuffer, 0, 8);
         double cashAmtT = ByteBuffer.wrap(cashAmtBuffer).getDouble();
 
-        byte[] numOfSecuritiesBuffer = new byte[8];
-        inputStream.read(numOfSecuritiesBuffer, 0, 8);
-        double numOfSecuritiesBufferT = ByteBuffer.wrap(numOfSecuritiesBuffer).getDouble();
+        byte[] numOfSecuritiesBuffer = new byte[4];
+        inputStream.read(numOfSecuritiesBuffer, 0, 4);
+        double numOfSecuritiesBufferT = ByteBuffer.wrap(numOfSecuritiesBuffer).getInt();
 
         for(int i = 0; i < numOfSecuritiesBufferT; i++) {
 
@@ -105,7 +110,7 @@ public class PortfolioDTO implements Transferable{
             byte[] issuedDateStringBuffer = new byte[issuedDateStringSize];
             inputStream.read(issuedDateStringBuffer, 0, issuedDateStringSize);
             String issuedDateStringT = new String(issuedDateStringBuffer);
-            Date issuedDate = new SimpleDateFormat("dd/MM/yyyy").parse(issuedDateStringT);
+            Date issuedDate = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss.SSSZ").parse(issuedDateStringT);
 
             securities.put(tickerSymbolT, new SecurityCertificate(shareHolderNameT,tickerSymbolT,quantityT,issuedDate));
         }

@@ -42,11 +42,10 @@ public class ExchangeClient {
         return connected;
     }
 
-    public void SetupClient(OrderStatusEventHandler orderStatusObserver) {
+    public void SetupClient(OrderStatusEventHandler orderStatusObserver) throws Exception {
         //set up session to start reading from inputStream and process responses sent from server
-        clientSession = new ClientSession(clientSocket, orderStatusObserver);
-        Thread sessionThread = new Thread(clientSession);
-        sessionThread.start();
+        clientSession = new ClientSession(clientSocket, orderStatusObserver,marketDataWareHouse);
+        clientSession.Start();
     }
 
     public Long SubmitMarketOrder(Direction direction, String tickerSymbol, int size, OrderDuration orderDuration) throws Exception{
@@ -81,13 +80,18 @@ public class ExchangeClient {
                     MarketDataRequestDTO level1DTO = new MarketDataRequestDTO(requestID,tickerSymbol,
                             MarketDataType.Level1);
                     TransmitMarketDataRequest(level1DTO);
+                    break;
                 case Level3:
                     MarketDataRequestDTO level3DTO = new MarketDataRequestDTO(requestID,tickerSymbol,
                             MarketDataType.Level3);
                     TransmitMarketDataRequest(level3DTO);
+                    break;
             }
 
-            sharedMonitor.wait();
+            synchronized (sharedMonitor) {
+                sharedMonitor.wait();
+            }
+
             marketData = marketDataWareHouse.getMarketData(tickerSymbol);
             clientSession.RemoveMonitor(requestID);
         }
@@ -112,12 +116,13 @@ public class ExchangeClient {
         PortfolioRequestDTO reqeustDTO = new PortfolioRequestDTO(requestID);
         TransmitPortfolioDataRequestDTO(reqeustDTO);
 
-        sharedMonitor.wait();
-        PortfolioDTO portfolioDTO = clientSession.GetPortfolio(requestID);
+        synchronized (sharedMonitor) {
+            sharedMonitor.wait();
+        }
+
+        MarketParticipantPortfolio portfolio = clientSession.GetPortfolio(requestID);
         clientSession.RemovePortfolio(requestID);
         clientSession.RemoveMonitor(requestID);
-
-        MarketParticipantPortfolio portfolio = new MarketParticipantPortfolio(portfolioDTO.getSecurities(),portfolioDTO.getCash());
 
         return portfolio;
     }
@@ -126,7 +131,7 @@ public class ExchangeClient {
         byte[] dataRequestDTOByteArray = dataRequestDTO.Serialize();
 
         OutputStream outputStream = clientSocket.getOutputStream();
-        DTOType type = DTOType.MareketDataRequest;
+        DTOType type = DTOType.MarketDataRequest;
         outputStream.write(type.getByteValue());
         outputStream.write((byte)dataRequestDTOByteArray.length);
         outputStream.write(dataRequestDTOByteArray);
@@ -155,4 +160,11 @@ public class ExchangeClient {
         outputStream.write(portfolioRequestDTOByteArray);
     }
 
+    public Socket getClientSocket() {
+        return clientSocket;
+    }
+
+    public AtomicLong getClientRequestID() {
+        return clientRequestID;
+    }
 }

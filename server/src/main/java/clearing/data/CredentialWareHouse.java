@@ -27,7 +27,7 @@ public class CredentialWareHouse {
 
     private boolean ValidateNewAcctInfo(String userName, String password) {
         boolean success = false;
-        if(LoginCredentialMap.containsKey(userName)) {
+        if(!LoginCredentialMap.containsKey(userName)) {
             success = true;
         }
 
@@ -38,7 +38,7 @@ public class CredentialWareHouse {
     public boolean ValidateLogin(String userName, String password) {
         boolean pass = false;
         if(LoginCredentialMap.containsKey(userName)) {
-            if(password == LoginCredentialMap.get(userName).getKey()) {
+            if(password.equals(LoginCredentialMap.get(userName).getKey())) {
                 pass = true;
             }
         }
@@ -48,5 +48,9 @@ public class CredentialWareHouse {
     public int GetUserID(String userName) {
         int userID = LoginCredentialMap.get(userName).getValue();
         return userID;
+    }
+
+    public HashMap<String, Pair<String, Integer>> getLoginCredentialMap() {
+        return LoginCredentialMap;
     }
 }

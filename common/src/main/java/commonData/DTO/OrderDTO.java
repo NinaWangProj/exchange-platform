@@ -21,7 +21,6 @@ public class OrderDTO implements Transferable {
     private final double price;
     private final OrderDuration orderDuration;
     private final OrderType orderType;
-    public byte[] orderDTOByteArray;
     //constructor
     //this constructor is used for limit order data transfer object
     public OrderDTO(long clientRequestID, Direction direction, OrderType orderType, String tickerSymbol, int size, double price, OrderDuration orderDuration)
@@ -38,6 +37,7 @@ public class OrderDTO implements Transferable {
 
     public byte[] Serialize()
     {
+        byte[] orderDTOByteArray = null;
         try {
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
@@ -56,10 +56,8 @@ public class OrderDTO implements Transferable {
                 byte[] sizeByte = ByteBuffer.allocate(4).putInt(getSize()).array();
                 outputStream.write(sizeByte);
 
-
-                byte[] priceByte = ByteBuffer.allocate(8).order(ByteOrder.nativeOrder()).putDouble(getPrice()).array();
+                byte[] priceByte = ByteBuffer.allocate(8).putDouble(getPrice()).array();
                 outputStream.write(priceByte);
-
 
                 outputStream.write(getOrderDuration().getByteValue());
 

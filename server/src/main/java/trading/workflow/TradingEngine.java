@@ -1,11 +1,12 @@
 package trading.workflow;
 
 
+import common.TradingOutput;
+import common.Transaction;
 import commonData.Order.MarketParticipantOrder;
 import javafx.util.Pair;
 import commonData.Order.Direction;
-import serverEngine.workflow.WrapperEngine;
-import trading.limitOrderBook.sortedOrderList;
+import common.SortedOrderList;
 import trading.data.*;
 
 
@@ -15,12 +16,12 @@ import java.util.Date;
 public class TradingEngine{
     //fields
     public final String tickerSymbol;
-    private sortedOrderList bids;
-    private sortedOrderList asks;
+    private SortedOrderList bids;
+    private SortedOrderList asks;
 
 
     //constructor
-    public TradingEngine(String tickerSymbol, Pair<sortedOrderList, sortedOrderList> limitOrderBook) {
+    public TradingEngine(String tickerSymbol, Pair<SortedOrderList, SortedOrderList> limitOrderBook) {
         this.tickerSymbol = tickerSymbol;
         this.bids = limitOrderBook.getKey();
         this.asks = limitOrderBook.getValue();
@@ -41,12 +42,19 @@ public class TradingEngine{
     public TradingOutput ProcessBatch(ArrayList<MarketParticipantOrder> orders) throws Exception{
         TradingOutput finalTradingOutput = new TradingOutput();
 
-        for (MarketParticipantOrder order : orders) {
-            TradingOutput output = MatchOrder(order);
+        for (int i = 0; i< orders.size(); i++) {
+            TradingOutput output = MatchOrder(orders.get(i));
             finalTradingOutput.Transactions.addAll(output.Transactions);
             finalTradingOutput.UnfilledOrders.addAll(output.UnfilledOrders);
             finalTradingOutput.PendingOrders.addAll(output.PendingOrders);
         }
+
+        /*for (MarketParticipantOrder order : orders) {
+            TradingOutput output = MatchOrder(order);
+            finalTradingOutput.Transactions.addAll(output.Transactions);
+            finalTradingOutput.UnfilledOrders.addAll(output.UnfilledOrders);
+            finalTradingOutput.PendingOrders.addAll(output.PendingOrders);
+        }*/
         return finalTradingOutput;
     }
 
@@ -56,8 +64,8 @@ public class TradingEngine{
         ArrayList<Transaction> transactions = new ArrayList<Transaction>();
         ArrayList<UnfilledOrder> unfilledOrders = new ArrayList<UnfilledOrder>();
         ArrayList<PendingOrder> pendingOrders = new ArrayList<PendingOrder>();
-        sortedOrderList counterPartyLimitOrderBook;
-        sortedOrderList currentLimitOrderBook ;
+        SortedOrderList counterPartyLimitOrderBook;
+        SortedOrderList currentLimitOrderBook ;
 
         switch (order.getDirection()) {
             case BUY:
@@ -79,16 +87,17 @@ public class TradingEngine{
                     break;
                 case LIMITORDER:
                     valid = FillLimitOrder(order, currentLimitOrderBook, counterPartyLimitOrderBook, transactions, unfilledOrders, pendingOrders);
+                    break;
             }
         }
         return new TradingOutput(order.getOrderID(), transactions, unfilledOrders,pendingOrders);
     }
 
-    private boolean FillMarketOrder(MarketParticipantOrder order, sortedOrderList counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
+    private boolean FillMarketOrder(MarketParticipantOrder order, SortedOrderList counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
                                     ArrayList<UnfilledOrder> unfilledOrders) throws Exception {
         boolean active;
 
-        if(counterPartyLimitOrderBook == null  || !CheckTradeViability(order, counterPartyLimitOrderBook.get(0))) {
+        if(counterPartyLimitOrderBook == null  || counterPartyLimitOrderBook.size() == 0) {
             UnfilledOrder unfilled = new UnfilledOrder(order, "Could not match market order price");
             unfilledOrders.add(unfilled);
             active = false;
@@ -105,6 +114,7 @@ public class TradingEngine{
                 active = false;
             } else if (order.getSize() < topCounterLimitOrder.getSize()) {
                 transactionSize = order.getSize();
+                topCounterLimitOrder.setSize(topCounterLimitOrder.getSize() - transactionSize);
                 active = false;
             } else {
                 transactionSize = topCounterLimitOrder.getSize();
@@ -113,24 +123,25 @@ public class TradingEngine{
                 active = true;
             }
 
-            Transaction counterPartyTransaction = new Transaction(topCounterLimitOrder.getSessionID(),topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), WrapperEngine.previousTransactionID +1, topCounterLimitOrder.getOrderID(), new Date(),
+            Transaction counterPartyTransaction = new Transaction(topCounterLimitOrder.getSessionID(),topCounterLimitOrder.getUserID(),
+                    topCounterLimitOrder.getName(), TradingEngineManager.getNewTransactionID(), topCounterLimitOrder.getOrderID(), new Date(),
                     topCounterLimitOrder.getDirection(), topCounterLimitOrder.getTickerSymbol(), transactionSize, transactionPrice);
-            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +2, order.getOrderID(), new Date(),
+            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), TradingEngineManager.getTransactionID(), order.getOrderID(), new Date(),
                     order.getDirection(), order.getTickerSymbol(), transactionSize, transactionPrice);
 
             transactions.add(currentOrderTransaction);
             transactions.add(counterPartyTransaction);
-            WrapperEngine.previousTransactionID += 2;
         }
         return active;
     }
 
-    private boolean FillLimitOrder(MarketParticipantOrder order, sortedOrderList currentLimitOrderBook, sortedOrderList counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
+    private boolean FillLimitOrder(MarketParticipantOrder order, SortedOrderList currentLimitOrderBook, SortedOrderList counterPartyLimitOrderBook, ArrayList<Transaction> transactions,
                                    ArrayList<UnfilledOrder> unfilledOrders, ArrayList<PendingOrder> pendingOrders) throws Exception{
         boolean active;
 
         //If no match is found, add order to limit order book, return pending message to participant
-        if(counterPartyLimitOrderBook == null  || !CheckTradeViability(order, counterPartyLimitOrderBook.get(0))) {
+        if(counterPartyLimitOrderBook == null  || counterPartyLimitOrderBook.size() == 0 ||
+                !CheckTradeViability(order, counterPartyLimitOrderBook.get(0))) {
             //add limit order to limit order book:
             currentLimitOrderBook.add(order);
             //Collections.sort(currentLimitOrderBook);
@@ -143,30 +154,32 @@ public class TradingEngine{
             //If there is a match, match order, put remaining in limit order book if possible
             MarketParticipantOrder topCounterLimitOrder = counterPartyLimitOrderBook.get(0);
             double transactionPrice = topCounterLimitOrder.getPrice();
+            int counterOrderSize = topCounterLimitOrder.getSize();
             int transactionSize;
 
             if(order.getSize() == topCounterLimitOrder.getSize()) {
                 transactionSize = order.getSize();
                 counterPartyLimitOrderBook.remove(0);
                 active = false;
-            } else if (order.getSize() < topCounterLimitOrder.getSize()) {
+            } else if (order.getSize() < counterOrderSize) {
                 transactionSize = order.getSize();
+                int updatedCounterOrderSize = counterOrderSize-transactionSize;
+                counterPartyLimitOrderBook.modify(0,"size",updatedCounterOrderSize);
                 active = false;
             } else {
-                transactionSize = topCounterLimitOrder.getSize();
+                transactionSize = counterOrderSize;
                 order.setSize(order.getSize() - transactionSize);
                 counterPartyLimitOrderBook.remove(0);
                 active = true;
             }
 
-            Transaction counterSideTransaction = new Transaction(topCounterLimitOrder.getSessionID(),topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), WrapperEngine.previousTransactionID +1, topCounterLimitOrder.getOrderID(), new Date(),
+            Transaction counterSideTransaction = new Transaction(topCounterLimitOrder.getSessionID(),topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), TradingEngineManager.getNewTransactionID(), topCounterLimitOrder.getOrderID(), new Date(),
                     topCounterLimitOrder.getDirection(), topCounterLimitOrder.getTickerSymbol(), transactionSize, transactionPrice);
-            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +2, order.getOrderID(), new Date(),
+            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), TradingEngineManager.getTransactionID(), order.getOrderID(), new Date(),
                     order.getDirection(), order.getTickerSymbol(), transactionSize, transactionPrice);
 
             transactions.add(currentOrderTransaction);
             transactions.add(counterSideTransaction);
-            WrapperEngine.previousTransactionID += 2;
         }
         return active;
     }

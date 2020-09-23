@@ -2,20 +2,26 @@ package commonData.DTO;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.nio.ByteBuffer;
 
 public class LoginDTO implements Transferable {
     private final DTOType dtoType;
     private final String userName;
     private final String password;
+    private final Long clientRequestID;
 
-    public LoginDTO(String userName,String password) {
+    public LoginDTO(Long clientRequestID, String userName,String password) {
         this.userName = userName;
         this.password = password;
         dtoType = DTOType.LoginRequest;
+        this.clientRequestID = clientRequestID;
     }
 
     public byte[] Serialize() throws Exception{
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        byte[] requestIDByteArray = ByteBuffer.allocate(8).putLong(clientRequestID).array();
+        outputStream.write(requestIDByteArray);
 
         byte[] userNameBytes = userName.getBytes();
         byte userNameSize = (byte)userNameBytes.length;
@@ -30,8 +36,12 @@ public class LoginDTO implements Transferable {
         return outputStream.toByteArray();
     }
 
-    public static Transferable Deserialize(byte[] LoginDTOBytes) throws Exception{
+    public static LoginDTO Deserialize(byte[] LoginDTOBytes) throws Exception{
         ByteArrayInputStream inputStream = new ByteArrayInputStream(LoginDTOBytes);
+
+        byte[] requestIDBuffer = new byte[8];
+        inputStream.read(requestIDBuffer, 0, 8);
+        Long requestIDT = ByteBuffer.wrap(requestIDBuffer).getLong();
 
         int userNameLength = inputStream.read();
         byte[] userNameBuffer = new byte[userNameLength];
@@ -43,7 +53,7 @@ public class LoginDTO implements Transferable {
         inputStream.read(passwordBuffer, 0, passwordLength);
         String passwordT = new String(passwordBuffer);
 
-        LoginDTO DTO = new LoginDTO(userNameT,passwordT);
+        LoginDTO DTO = new LoginDTO(requestIDT,userNameT,passwordT);
         return DTO;
     }
 

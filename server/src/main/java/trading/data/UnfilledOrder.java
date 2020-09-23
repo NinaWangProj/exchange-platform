@@ -4,11 +4,13 @@ import commonData.Order.MarketParticipantOrder;
 import commonData.Order.Direction;
 import commonData.Order.OrderDuration;
 import commonData.Order.OrderType;
+import com.opencsv.bean.CsvBindByName;
 
 import java.util.Date;
 
 public class UnfilledOrder extends MarketParticipantOrder {
     //fields
+    @CsvBindByName
     public final String reason;
 
     //constructor
@@ -24,7 +26,19 @@ public class UnfilledOrder extends MarketParticipantOrder {
         this.reason = reason;
     }
 
+    public UnfilledOrder() {
+        super();
+        this.reason = "Default Reason";
+    }
+
     public String getReason() {
         return reason;
+    }
+
+    @Override
+    public String toString() {
+        String result = super.toString() + "," +
+                        getReason();
+        return result;
     }
 }

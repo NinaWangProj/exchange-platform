@@ -8,7 +8,7 @@ public enum DTOType {
     Message(3),
     OpenAcctRequest(4),
     LoginRequest(5),
-    MareketDataRequest(6),
+    MarketDataRequest(6),
     MarketData(7),
     BookChanges(8),
     MarketDataItem(9),

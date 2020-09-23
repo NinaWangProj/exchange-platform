@@ -4,7 +4,7 @@ import clearing.data.ClearingStatus;
 import clearing.data.DTCCWarehouse;
 import commonData.clearing.MarketParticipantPortfolio;
 import commonData.clearing.SecurityCertificate;
-import trading.data.Transaction;
+import common.Transaction;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -44,10 +44,12 @@ public class ClearingEngine {
                     SecurityCertificate certificate = new SecurityCertificate(transaction.getName(), transaction.getTickerSymbol(), transaction.getSize(), new Date());
                     portfolio.getSecurities().put(transaction.getTickerSymbol(), certificate);
                 }
-                portfolio.DepositCash(-transaction.getPrice());
+                portfolio.DepositCash(-transaction.getPrice() * transaction.getSize());
+                break;
             case SELL:
                 portfolio.getSecurities().get(transaction.getTickerSymbol()).quantity -= transaction.getSize();
-                portfolio.DepositCash(transaction.getPrice());
+                portfolio.DepositCash(transaction.getPrice() * transaction.getSize());
+                break;
         }
     }
 
@@ -66,12 +68,13 @@ public class ClearingEngine {
                     final SecurityCertificate certificate = new SecurityCertificate(transaction.getName(), transaction.getTickerSymbol(), transaction.getSize(), new Date());
                     certificatesMap.put(transaction.getTickerSymbol(), new HashMap<Integer,SecurityCertificate>(){{put(transaction.getUserID(),certificate);}});
                 }
-
+                break;
             case SELL:
                 //locate previous certificate for the seller
                 SecurityCertificate certificate =  certificatesMap.get(transaction.getTickerSymbol()).get(transaction.getUserID());
                 //modify certificate to reflect the new transaction
                 certificate.quantity -= transaction.getSize();
+                break;
         }
     }
 

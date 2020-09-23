@@ -1,0 +1,10 @@
+sessionID,userID,name,orderID,time,direction,tickerSymbol,size,price,orderType,orderDuration
+4,4,Default Name,0,2020-08-31 09:30:00.006000,Direction.BUY,AAPL,7,99.66,OrderType.LIMITORDER,OrderDuration.DAY
+4,4,Default Name,1,2020-08-31 09:30:00.011000,Direction.BUY,AAPL,5,105.97,OrderType.LIMITORDER,OrderDuration.DAY
+0,0,Default Name,2,2020-08-31 09:30:00.020000,Direction.SELL,AAPL,14,-1,OrderType.MARKETORDER,OrderDuration.DAY
+1,1,Default Name,3,2020-08-31 09:30:00.020000,Direction.SELL,AAPL,7,-1,OrderType.MARKETORDER,OrderDuration.DAY
+1,1,Default Name,4,2020-08-31 09:30:00.025000,Direction.BUY,AAPL,3,105.23,OrderType.LIMITORDER,OrderDuration.DAY
+0,0,Default Name,5,2020-08-31 09:30:00.026000,Direction.SELL,AAPL,5,-1,OrderType.MARKETORDER,OrderDuration.DAY
+4,4,Default Name,7,2020-08-31 09:30:00.029000,Direction.BUY,AAPL,5,-1,OrderType.MARKETORDER,OrderDuration.DAY
+4,4,Default Name,8,2020-08-31 09:30:00.036000,Direction.BUY,AAPL,3,109.07,OrderType.LIMITORDER,OrderDuration.DAY
+5,0,Default Name,9,2020-08-31 09:30:00.037000,Direction.SELL,AAPL,4,-1,OrderType.MARKETORDER,OrderDuration.DAY

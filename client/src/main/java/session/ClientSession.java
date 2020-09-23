@@ -1,8 +1,9 @@
 package session;
 
 import commonData.DTO.*;
-import commonData.limitOrderBook.BookOperation;
-import javafx.util.Pair;
+import commonData.Order.Direction;
+import commonData.clearing.MarketParticipantPortfolio;
+import commonData.limitOrderBook.ChangeOperation;
 import marketData.MarketDataWareHouse;
 import commonData.DataType.OrderStatusType;
 
@@ -10,17 +11,19 @@ import java.net.Socket;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ClientSession implements Runnable {
+public class ClientSession {
     private Socket clientSocket;
     private MarketDataWareHouse marketDataWareHouse;
     private OrderStatusEventHandler orderStatusObserver;
     private ConcurrentHashMap<Long,Object> requestIDMonitorMap;
-    private ConcurrentHashMap<Long,PortfolioDTO> requestIDPortfolioMap;
+    private ConcurrentHashMap<Long,MarketParticipantPortfolio> requestIDPortfolioMap;
 
-    public ClientSession(Socket clientSocket, OrderStatusEventHandler orderStatusObserver) {
+    public ClientSession(Socket clientSocket, OrderStatusEventHandler orderStatusObserver,MarketDataWareHouse marketDataWareHouse) {
         this.clientSocket = clientSocket;
         this.orderStatusObserver = orderStatusObserver;
+        this.marketDataWareHouse = marketDataWareHouse;
         requestIDMonitorMap = new ConcurrentHashMap<Long,Object>();
+        requestIDPortfolioMap = new ConcurrentHashMap<>();
     }
 
     public void Start() throws Exception{
@@ -38,22 +41,41 @@ public class ClientSession implements Runnable {
                 MarketDataDTO marketDataDTO = (MarketDataDTO) DTO;
                 String marketDataTickerSymbol = marketDataDTO.getTickerSymbol();
                 marketDataWareHouse.setMarketData(marketDataTickerSymbol, marketDataDTO.getBids(), marketDataDTO.getAsks());
+
                 Object monitor = requestIDMonitorMap.get(marketDataDTO.getClientRequestID());
-                monitor.notifyAll();
+                if (monitor != null) {
+                    synchronized (monitor) {
+                        monitor.notifyAll();
+                    }
+                }
+                break;
 
             case BookChanges:
                 BookChangeDTO bookChangeDTO = (BookChangeDTO) DTO;
-                String bookChangeTickerSymbol = bookChangeDTO.getTickerSymbol();
-                List<Pair<BookOperation, Object[]>> bookChanges = bookChangeDTO.getBookChanges();
-                marketDataWareHouse.applyBookChanges(bookChangeTickerSymbol, bookChanges);
-
+                String tickerSymbol = bookChangeDTO.getTickerSymbol();
+                List<ChangeOperation> bookChanges = bookChangeDTO.getBookChanges();
+                Direction direction = bookChangeDTO.getDirection();
+                marketDataWareHouse.applyBookChanges(tickerSymbol, direction, bookChanges);
+                break;
             case Message:
                 MessageDTO messageDTO = (MessageDTO) DTO;
                 String message = messageDTO.getMessage();
                 OrderStatusType msgType = messageDTO.getMsgType();
                 long requestID = messageDTO.getClientRequestID();
-
                 orderStatusObserver.On_ReceiveOrderStatusChange(requestID, msgType, message);
+                break;
+            case Portfolio:
+                PortfolioDTO portfolioDTO = (PortfolioDTO) DTO;
+                MarketParticipantPortfolio portfolio = new MarketParticipantPortfolio(portfolioDTO.getSecurities(),
+                        portfolioDTO.getCash());
+                requestIDPortfolioMap.put(portfolioDTO.getClientRequestID(),portfolio);
+                Object monitorForPortfolioRequest = requestIDMonitorMap.get(portfolioDTO.getClientRequestID());
+
+                synchronized (monitorForPortfolioRequest) {
+                    if (monitorForPortfolioRequest != null)
+                        monitorForPortfolioRequest.notifyAll();
+                }
+                break;
         }
     }
 
@@ -69,14 +91,7 @@ public class ClientSession implements Runnable {
         requestIDPortfolioMap.remove(requestID);
     }
 
-    public PortfolioDTO GetPortfolio(long requestID) {
+    public MarketParticipantPortfolio GetPortfolio(long requestID) {
         return requestIDPortfolioMap.get(requestID);
-    }
-
-    public void run() {
-        try {
-            Start();
-        } catch (Exception e) {
-        }
     }
 }

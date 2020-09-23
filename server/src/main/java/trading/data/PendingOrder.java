@@ -4,10 +4,12 @@ import commonData.Order.MarketParticipantOrder;
 import commonData.Order.Direction;
 import commonData.Order.OrderDuration;
 import commonData.Order.OrderType;
+import com.opencsv.bean.CsvBindByName;
 
 import java.util.Date;
 
 public class PendingOrder extends MarketParticipantOrder {
+    @CsvBindByName
     public String pendingMessage;
 
     public PendingOrder(MarketParticipantOrder order, String pendingMessage) {
@@ -22,7 +24,19 @@ public class PendingOrder extends MarketParticipantOrder {
         this.pendingMessage = pendingMessage;
     }
 
+    public PendingOrder() {
+        super();
+        this.pendingMessage = "Default Message";
+    }
+
     public String getReason() {
         return pendingMessage;
+    }
+
+    @Override
+    public String toString() {
+        String result = super.toString() + "," +
+                        getReason();
+        return result;
     }
 }

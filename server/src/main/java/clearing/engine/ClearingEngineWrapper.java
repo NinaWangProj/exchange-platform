@@ -1,10 +1,10 @@
 package clearing.engine;
 
 import clearing.data.DTCCWarehouse;
-import trading.data.OrderStatus;
-import trading.data.TradingOutput;
-import utility.MessageGenerator;
-import serverEngine.data.ServerQueue;
+import common.OrderStatus;
+import common.TradingOutput;
+import common.utility.MessageGenerator;
+import common.ServerQueue;
 
 
 import java.util.HashMap;
@@ -22,15 +22,17 @@ public class ClearingEngineWrapper implements Runnable {
     }
 
     public void Start() throws Exception {
-        ClearingEngine clearingEngine = new ClearingEngine(DTCC);
-        TradingOutput output = systemServerQueue.TakeTradingOutput(clearingEngineWrapperIndex);
+        while(true) {
+            ClearingEngine clearingEngine = new ClearingEngine(DTCC);
+            TradingOutput output = systemServerQueue.TakeTradingOutput(clearingEngineWrapperIndex);
 
-        clearingEngine.ClearTrade(output.Transactions);
+            clearingEngine.ClearTrade(output.Transactions);
 
-        HashMap<Integer, OrderStatus> userMessagesMap = MessageGenerator.GenerateMessages(output);
+            HashMap<Integer, OrderStatus> userMessagesMap = MessageGenerator.GenerateMessages(output);
 
-        for(Map.Entry<Integer, OrderStatus> pair: userMessagesMap.entrySet()) {
-            systemServerQueue.PutOrderStatus(pair.getKey(),pair.getValue());
+            for (Map.Entry<Integer, OrderStatus> pair : userMessagesMap.entrySet()) {
+                systemServerQueue.PutOrderStatus(pair.getKey(), pair.getValue());
+            }
         }
     }
 

@@ -1,0 +1,15 @@
+sessionID,userID,name,transactionID,orderID,time,direction,tickerSymbol,size,price
+0,0,Default Name,1,2,2020-09-16 17:06:15.845314,Direction.SELL,AAPL,5,105.97
+4,4,Default Name,1,1,2020-09-16 17:06:15.845314,Direction.BUY,AAPL,5,105.97
+0,0,Default Name,2,2,2020-09-16 17:06:15.845314,Direction.SELL,AAPL,7,99.66
+4,4,Default Name,2,0,2020-09-16 17:06:15.845314,Direction.BUY,AAPL,7,99.66
+0,0,Default Name,3,5,2020-09-16 17:06:15.845314,Direction.SELL,AAPL,3,105.23
+1,1,Default Name,3,4,2020-09-16 17:06:15.845314,Direction.BUY,AAPL,3,105.23
+5,0,Default Name,4,9,2020-09-16 17:06:15.845314,Direction.SELL,AAPL,3,109.07
+4,4,Default Name,4,8,2020-09-16 17:06:15.845314,Direction.BUY,AAPL,3,109.07
+2,2,Default Name,5,14,2020-09-16 17:06:15.845314,Direction.BUY,AAPL,6,109.07
+4,4,Default Name,5,13,2020-09-16 17:06:15.845314,Direction.SELL,AAPL,6,109.07
+3,3,Default Name,6,17,2020-09-16 17:06:15.845314,Direction.BUY,AAPL,5,109.07
+4,4,Default Name,6,13,2020-09-16 17:06:15.845314,Direction.SELL,AAPL,5,109.07
+0,0,Default Name,7,18,2020-09-16 17:06:15.845314,Direction.BUY,AAPL,1,109.07
+4,4,Default Name,7,13,2020-09-16 17:06:15.845314,Direction.SELL,AAPL,1,109.07
