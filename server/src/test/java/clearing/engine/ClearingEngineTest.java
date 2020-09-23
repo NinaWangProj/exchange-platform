@@ -5,7 +5,9 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import common.SortedOrderList;
 import common.TradingOutput;
 import common.Transaction;
+import common.csv.CsvHelper;
 import common.csv.MarketParticipantPortfolioRow;
+import common.csv.DtccFromCsv;
 import commonData.Order.Direction;
 import commonData.Order.MarketParticipantOrder;
 import commonData.clearing.MarketParticipantPortfolio;
@@ -61,69 +63,17 @@ public class ClearingEngineTest {
     private void RunTest(String initialPortfoliosFileName, String transactionDataFileName, String finalPortfoliosFileName)
     {
         String testTicker = "AAPL";
-
-        List<MarketParticipantPortfolioRow> portfolioRows = GetRowsFromCSV(initialPortfoliosFileName, MarketParticipantPortfolioRow.class);
-        DTCCWarehouse dtccWarehouse = GetDTCC(portfolioRows);
+        DTCCWarehouse dtccWarehouse  = DtccFromCsv.Get(initialPortfoliosFileName);
 
         ClearingEngine clearingEngine = new ClearingEngine(dtccWarehouse);
-
         // get inputs
-        ArrayList<Transaction> inputTransactions = (ArrayList<Transaction>)GetRowsFromCSV(transactionDataFileName, Transaction.class);
+        ArrayList<Transaction> inputTransactions = (ArrayList<Transaction>) CsvHelper.GetRowsFromCSV(transactionDataFileName, Transaction.class);
 
         clearingEngine.ClearTrade(inputTransactions);
 
         // get expected outputs
-        List<MarketParticipantPortfolioRow> finalPortfolioRows = GetRowsFromCSV(finalPortfoliosFileName, MarketParticipantPortfolioRow.class);
-        DTCCWarehouse expectedFinalWarehouse = GetDTCC(finalPortfolioRows);
+        DTCCWarehouse expectedFinalWarehouse = DtccFromCsv.Get(finalPortfoliosFileName);
 
         Assertions.assertThat(dtccWarehouse).usingRecursiveComparison().isEqualTo(expectedFinalWarehouse);
-    }
-
-    private DTCCWarehouse GetDTCC(List<MarketParticipantPortfolioRow> portfolioRows) {
-
-        HashMap<String, HashMap<Integer, SecurityCertificate>> certificatesMap = new HashMap<String, HashMap<Integer, SecurityCertificate>>();
-        HashMap<Integer, MarketParticipantPortfolio> portfoliosMap = new HashMap<Integer, MarketParticipantPortfolio>();
-
-        for (MarketParticipantPortfolioRow row :portfolioRows){
-            if(!portfoliosMap.containsKey(row.userID))
-                portfoliosMap.put(row.userID,
-                        new MarketParticipantPortfolio(new HashMap<String, SecurityCertificate>(), row.cash));
-
-            MarketParticipantPortfolio port = portfoliosMap.get(row.userID);
-            port.getSecurities().put(row.tickerSymbol,
-                    new SecurityCertificate(row.shareHolderName, row.shareHolderName, row.quantity, row.issuedDate));
-
-            if(!certificatesMap.containsKey(row.tickerSymbol))
-                certificatesMap.put(row.tickerSymbol, new HashMap<Integer, SecurityCertificate>());
-
-            certificatesMap.get(row.tickerSymbol).put(row.userID,
-                    new SecurityCertificate(row.shareHolderName, row.shareHolderName, row.quantity, row.issuedDate));
-        }
-
-        DTCCWarehouse warehouse = new DTCCWarehouse();
-        warehouse.certificatesMap = certificatesMap;
-        warehouse.portfoliosMap = portfoliosMap;
-        return warehouse;
-    }
-
-    private <T> List<T> GetRowsFromCSV(String resourcePath, Class<T> type)
-    {
-        ClassLoader classLoader = getClass().getClassLoader();
-
-
-        FileReader reader = null;
-        try {
-            File file = new File(classLoader.getResource(resourcePath).toURI());
-            reader = new FileReader(file);
-        }
-        catch(FileNotFoundException | URISyntaxException fex) {
-            assert false: "Cannot find resource file " + resourcePath;
-            return new ArrayList<T>();
-        }
-
-        List<T> beans = new CsvToBeanBuilder(reader)
-                .withType(type).build().parse();
-
-        return beans;
     }
 }

@@ -88,6 +88,7 @@ public class DTOTest {
         long clientRequestID = 104;
         OrderStatusType type = OrderStatusType.PartiallyFilled;
 
+
         String message = "Congradulation!  " + "Nina" + ", Your order with orderID: " + "1002"
                 + " has been filled with: " + "100" + ", shares, @$" + "500.3" + " per share.";
 
@@ -134,6 +135,49 @@ public class DTOTest {
         ArrayList<MarketDataItem> asks = new ArrayList<MarketDataItem>();
         asks.add(askDataItem1);
         asks.add(askDataItem2);
+
+        MarketDataDTO dto = new MarketDataDTO(clientRequestID,tickerSymbol,bids,asks);
+
+        byte[] dTOByteArray = dto.Serialize();
+
+        MarketDataDTO deserializedDTO = MarketDataDTO.Deserialize(dTOByteArray);
+
+        Assertions.assertThat(deserializedDTO).usingRecursiveComparison().isEqualTo(dto);
+    }
+
+    @Test
+    public void marketDataDTOTestDummyData() throws Exception{
+        //serialize an order then deserialize to see if we will get the same object back
+        //test serialization of the default marketDataDTO
+        long clientRequestID = 106;
+        String tickerSymbol = "Def";
+        MarketDataItem bidDataItem= new MarketDataItem("Def",-1, -1);
+        MarketDataItem askDataItem = new MarketDataItem("Def",-1, -1);
+
+        ArrayList<MarketDataItem> bids = new ArrayList<MarketDataItem>();
+        bids.add(bidDataItem);
+
+        ArrayList<MarketDataItem> asks = new ArrayList<MarketDataItem>();
+        asks.add(askDataItem);
+
+        MarketDataDTO dto = new MarketDataDTO(clientRequestID,tickerSymbol,bids,asks);
+
+        byte[] dTOByteArray = dto.Serialize();
+
+        MarketDataDTO deserializedDTO = MarketDataDTO.Deserialize(dTOByteArray);
+
+        Assertions.assertThat(deserializedDTO).usingRecursiveComparison().isEqualTo(dto);
+    }
+
+    @Test
+    public void marketDataDTOTestEmptyData() throws Exception{
+        //serialize an order then deserialize to see if we will get the same object back
+        //test serialization of the empty marketDataDTO
+        long clientRequestID = 106;
+        String tickerSymbol = "Def";
+
+        ArrayList<MarketDataItem> bids = new ArrayList<MarketDataItem>();
+        ArrayList<MarketDataItem> asks = new ArrayList<MarketDataItem>();
 
         MarketDataDTO dto = new MarketDataDTO(clientRequestID,tickerSymbol,bids,asks);
 

@@ -4,26 +4,36 @@ import common.ServerQueue;
 import common.LimitOrderBookWareHouse;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 
 public class TradingEngineManager{
     private ServerQueue systemServerQueue;
     private LimitOrderBookWareHouse dataWareHouse;
-    private ConcurrentHashMap<String,ReadWriteLock> locks;
+    private static AtomicLong previousTransactionID;
 
-    public TradingEngineManager(ServerQueue systemQueue, LimitOrderBookWareHouse dataWareHouse, ConcurrentHashMap<String,ReadWriteLock> locks) {
+    public TradingEngineManager(ServerQueue systemQueue, LimitOrderBookWareHouse dataWareHouse,
+                                AtomicLong previousTransactionID) {
         this.systemServerQueue = systemQueue;
         this.dataWareHouse = dataWareHouse;
-        this.locks = locks;
+        this.previousTransactionID = previousTransactionID;
     }
 
     public void Start() throws Exception{
         int numOfOrderQueues = systemServerQueue.getNumberOfOrderQueues();
 
         for(int i = 0; i < numOfOrderQueues; i++) {
-            TradingEngineGroup engineGroup = new TradingEngineGroup(systemServerQueue, i, dataWareHouse, locks);
+            TradingEngineGroup engineGroup = new TradingEngineGroup(systemServerQueue, i, dataWareHouse);
             Thread engine = new Thread(engineGroup);
             engine.start();
         }
+    }
+
+    public static long getNewTransactionID() {
+        return previousTransactionID.incrementAndGet();
+    }
+
+    public static long getTransactionID() {
+        return previousTransactionID.get();
     }
 }

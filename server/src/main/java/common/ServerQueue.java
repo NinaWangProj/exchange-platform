@@ -28,8 +28,8 @@ public class ServerQueue {
            orders[i] = new LinkedBlockingQueue<MarketParticipantOrder>();
         }
         tradingEngineResults = new LinkedBlockingQueue[numOfEngineResultQueues];
-        for (int j = 0; j < numberOfOrderQueues; j ++) {
-            orders[j] = new LinkedBlockingQueue<MarketParticipantOrder>();
+        for (int j = 0; j < numOfEngineResultQueues; j ++) {
+            tradingEngineResults[j] = new LinkedBlockingQueue<TradingOutput>();
         }
         sessionOrderStatusMap = new ConcurrentHashMap<Integer,LinkedBlockingQueue<OrderStatus>>();
         sessionResponseDTOMap = new ConcurrentHashMap<Integer,LinkedBlockingQueue<Transferable>>();

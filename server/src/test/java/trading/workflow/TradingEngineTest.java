@@ -1,9 +1,7 @@
 package trading.workflow;
 
-import common.SortedOrderList;
-import common.TradingOutput;
-import common.Transaction;
-import commonData.DTO.MarketDataRequestDTO;
+import clearing.data.DTCCWarehouse;
+import common.*;
 import commonData.Order.Direction;
 import commonData.Order.MarketParticipantOrder;
 import javafx.util.Pair;
@@ -13,8 +11,8 @@ import trading.data.PendingOrder;
 import trading.data.UnfilledOrder;
 import trading.limitOrderBook.AskPriceTimeComparator;
 import trading.limitOrderBook.BidPriceTimeComparator;
-import trading.limitOrderBook.OrderComparator;
 import com.opencsv.bean.CsvToBeanBuilder;
+import trading.limitOrderBook.OrderComparatorType;
 
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -23,20 +21,20 @@ import java.io.File;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class TradingEngineTest {
 
     @Test
-    public void SmallOrderBatchTest()
-    {
+    public void SmallOrderBatchTest() {
         String orderDataFileName = "data/orderflow/small/Order Data1.csv";
         String transactionDataFileName = "data/orderflow/small/Transactions Data1.csv";
         String pendingDataFileName = "data/orderflow/small/Pending Order Data1.csv";
         String unfilledDataFileName = "data/orderflow/small/Unfilled Order Data1.csv";
 
         RunTest(orderDataFileName, transactionDataFileName, pendingDataFileName, unfilledDataFileName);
-       }
+   }
 
     @Test
     public void MediumOrderBatchTest()
@@ -68,9 +66,11 @@ public class TradingEngineTest {
                 new SortedOrderList(new BidPriceTimeComparator(), new ReentrantReadWriteLock(),testTicker, Direction.BUY),
                 new SortedOrderList(new AskPriceTimeComparator(), new ReentrantReadWriteLock(),testTicker, Direction.SELL));
 
+        TradingEngineManager tradingEngineManager = new TradingEngineManager(new ServerQueue(3,3),
+                new LimitOrderBookWareHouse(OrderComparatorType.PriceTimePriority),new AtomicLong(0));
         TradingEngine tradingEngine = new TradingEngine(testTicker,limitOrderBook);
 
-        // get inputs
+        // get input1
         List<MarketParticipantOrder> orderFlow = GetRowsFromCSV(orderDataFileName, MarketParticipantOrder.class);
 
         TradingOutput testResult = null;
@@ -79,16 +79,18 @@ public class TradingEngineTest {
         }
         catch(Exception ex) {assert false: "Exception in Trading Engine";}
 
-        String test = System.getProperty("user.dir");
 
         // get expected outputs
         List<Transaction> expectedTransactions = GetRowsFromCSV(transactionDataFileName, Transaction.class);
         List<PendingOrder> expectedPendingOrders = GetRowsFromCSV(pendingDataFileName, PendingOrder.class);
         List<UnfilledOrder> expectedUnfilledOrders = GetRowsFromCSV(unfilledDataFileName, UnfilledOrder.class);
 
-        Assertions.assertThat(testResult.Transactions).usingRecursiveComparison().isEqualTo(expectedTransactions);
-        Assertions.assertThat(testResult.PendingOrders).usingRecursiveComparison().isEqualTo(expectedPendingOrders);
-        Assertions.assertThat(testResult.UnfilledOrders).usingRecursiveComparison().isEqualTo(expectedUnfilledOrders);
+        Assertions.assertThat(testResult.Transactions).usingRecursiveComparison().ignoringFields("time")
+                .isEqualTo(expectedTransactions);
+        Assertions.assertThat(testResult.PendingOrders).usingRecursiveComparison().ignoringFields("time")
+                .isEqualTo(expectedPendingOrders);
+        Assertions.assertThat(testResult.UnfilledOrders).usingRecursiveComparison().ignoringFields("time")
+                .isEqualTo(expectedUnfilledOrders);
     }
 
     private <T> List<T> GetRowsFromCSV(String resourcePath, Class<T> type)

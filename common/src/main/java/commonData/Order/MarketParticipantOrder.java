@@ -17,8 +17,7 @@ public class MarketParticipantOrder implements Info {
     private final String name;
     @CsvBindByName
     private final int orderID;
-    @CsvBindByName
-    @CsvDate("yyyy-MM-dd HH:mm:ss.SSS")
+    @CsvCustomBindByName(converter = PythonTimeConverter.class)
     private final Date time;
     @CsvCustomBindByName(converter = DirectionEnumConverter.class)
     private final Direction direction;

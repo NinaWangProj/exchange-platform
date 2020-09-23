@@ -6,7 +6,6 @@ import common.Transaction;
 import commonData.Order.MarketParticipantOrder;
 import javafx.util.Pair;
 import commonData.Order.Direction;
-import serverEngine.WrapperEngine;
 import common.SortedOrderList;
 import trading.data.*;
 
@@ -43,12 +42,19 @@ public class TradingEngine{
     public TradingOutput ProcessBatch(ArrayList<MarketParticipantOrder> orders) throws Exception{
         TradingOutput finalTradingOutput = new TradingOutput();
 
-        for (MarketParticipantOrder order : orders) {
-            TradingOutput output = MatchOrder(order);
+        for (int i = 0; i< orders.size(); i++) {
+            TradingOutput output = MatchOrder(orders.get(i));
             finalTradingOutput.Transactions.addAll(output.Transactions);
             finalTradingOutput.UnfilledOrders.addAll(output.UnfilledOrders);
             finalTradingOutput.PendingOrders.addAll(output.PendingOrders);
         }
+
+        /*for (MarketParticipantOrder order : orders) {
+            TradingOutput output = MatchOrder(order);
+            finalTradingOutput.Transactions.addAll(output.Transactions);
+            finalTradingOutput.UnfilledOrders.addAll(output.UnfilledOrders);
+            finalTradingOutput.PendingOrders.addAll(output.PendingOrders);
+        }*/
         return finalTradingOutput;
     }
 
@@ -91,8 +97,7 @@ public class TradingEngine{
                                     ArrayList<UnfilledOrder> unfilledOrders) throws Exception {
         boolean active;
 
-        if(counterPartyLimitOrderBook == null  || counterPartyLimitOrderBook.size() == 0
-                ||!CheckTradeViability(order, counterPartyLimitOrderBook.get(0))) {
+        if(counterPartyLimitOrderBook == null  || counterPartyLimitOrderBook.size() == 0) {
             UnfilledOrder unfilled = new UnfilledOrder(order, "Could not match market order price");
             unfilledOrders.add(unfilled);
             active = false;
@@ -109,6 +114,7 @@ public class TradingEngine{
                 active = false;
             } else if (order.getSize() < topCounterLimitOrder.getSize()) {
                 transactionSize = order.getSize();
+                topCounterLimitOrder.setSize(topCounterLimitOrder.getSize() - transactionSize);
                 active = false;
             } else {
                 transactionSize = topCounterLimitOrder.getSize();
@@ -117,14 +123,14 @@ public class TradingEngine{
                 active = true;
             }
 
-            Transaction counterPartyTransaction = new Transaction(topCounterLimitOrder.getSessionID(),topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), WrapperEngine.previousTransactionID +1, topCounterLimitOrder.getOrderID(), new Date(),
+            Transaction counterPartyTransaction = new Transaction(topCounterLimitOrder.getSessionID(),topCounterLimitOrder.getUserID(),
+                    topCounterLimitOrder.getName(), TradingEngineManager.getNewTransactionID(), topCounterLimitOrder.getOrderID(), new Date(),
                     topCounterLimitOrder.getDirection(), topCounterLimitOrder.getTickerSymbol(), transactionSize, transactionPrice);
-            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +2, order.getOrderID(), new Date(),
+            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), TradingEngineManager.getTransactionID(), order.getOrderID(), new Date(),
                     order.getDirection(), order.getTickerSymbol(), transactionSize, transactionPrice);
 
             transactions.add(currentOrderTransaction);
             transactions.add(counterPartyTransaction);
-            WrapperEngine.previousTransactionID += 2;
         }
         return active;
     }
@@ -167,14 +173,13 @@ public class TradingEngine{
                 active = true;
             }
 
-            Transaction counterSideTransaction = new Transaction(topCounterLimitOrder.getSessionID(),topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), WrapperEngine.previousTransactionID +1, topCounterLimitOrder.getOrderID(), new Date(),
+            Transaction counterSideTransaction = new Transaction(topCounterLimitOrder.getSessionID(),topCounterLimitOrder.getUserID(), topCounterLimitOrder.getName(), TradingEngineManager.getNewTransactionID(), topCounterLimitOrder.getOrderID(), new Date(),
                     topCounterLimitOrder.getDirection(), topCounterLimitOrder.getTickerSymbol(), transactionSize, transactionPrice);
-            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), WrapperEngine.previousTransactionID +2, order.getOrderID(), new Date(),
+            Transaction currentOrderTransaction = new Transaction(order.getSessionID(),order.getUserID(), order.getName(), TradingEngineManager.getTransactionID(), order.getOrderID(), new Date(),
                     order.getDirection(), order.getTickerSymbol(), transactionSize, transactionPrice);
 
             transactions.add(currentOrderTransaction);
             transactions.add(counterSideTransaction);
-            WrapperEngine.previousTransactionID += 2;
         }
         return active;
     }

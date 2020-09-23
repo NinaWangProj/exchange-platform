@@ -7,6 +7,7 @@ import com.opencsv.bean.CsvDate;
 import commonData.Order.Direction;
 import commonData.Order.DirectionEnumConverter;
 import commonData.Order.Info;
+import commonData.Order.PythonTimeConverter;
 
 import java.util.Date;
 
@@ -22,8 +23,7 @@ public class Transaction implements Info {
     public final long transactionID;
     @CsvBindByName
     private final int orderID;
-    @CsvBindByName
-    @CsvDate("yyyy-MM-dd HH:mm:ss.SSS")
+    @CsvCustomBindByName(converter = PythonTimeConverter.class)
     private final Date time;
     @CsvCustomBindByName(converter = DirectionEnumConverter.class)
     private final Direction direction;
