@@ -155,7 +155,7 @@ public class Session {
                     ReadWriteLock lock = locks.get(tickerSymbol);
                     lock.readLock().lock();
                     try{
-                        limitOrderBook = limitOrderBookWareHouse.GetLimitOrderBook(tickerSymbol,marketDataType,this);
+                        limitOrderBook = limitOrderBookWareHouse.GetLimitOrderBook(tickerSymbol);
                     } finally {
                         lock.readLock().unlock();
                     }
@@ -218,8 +218,9 @@ public class Session {
         private void Process() throws Exception{
             OrderStatus orderStatus = serverQueue.TakeOrderStatus(sessionID);
             Long requestID = orderIDRequestIDMap.get(orderStatus.getOrderID());
-            for(String statusMessage : orderStatus.getStatusMessages()) {
-                OrderStatusDTO orderStatusDTO = new OrderStatusDTO(requestID,orderStatus.getMsgType(),statusMessage);
+            for(int i = 0; i < orderStatus.getMsgType().size(); i++) {
+                OrderStatusDTO orderStatusDTO = new OrderStatusDTO(requestID,
+                        orderStatus.getMsgType().get(i),orderStatus.getStatusMessages().get(i));
                 serverQueue.PutResponseDTO(sessionID, orderStatusDTO);
             }
         }
