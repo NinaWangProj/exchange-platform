@@ -7,6 +7,7 @@ public enum ByteArrayType {
     BookChanges_MixedOperations,
     OpenAcctRequest,
     LoginRequest_user1,
+    LoginRequest_user2,
     PortfolioRequest,
     MarketDataRequest_L1,
     MarketDataRequest_L3,

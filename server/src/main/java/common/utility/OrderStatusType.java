@@ -1,6 +1,6 @@
 package common.utility;
 
-public enum MessageType {
+public enum OrderStatusType {
     TransactionMessage,
     UnfilledOrderMessage,
     PendingOrderMessage

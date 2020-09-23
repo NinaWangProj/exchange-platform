@@ -77,33 +77,36 @@ public class SampleDTOFactory {
             case OpenAcctRequest_user1:
                 sampleDTO = ProduceOpenAcctRequestDTO();
                 break;
-            case LoginRequest:
-                sampleDTO = ProduceLoginRequestDTO();
+            case LoginRequest_user1:
+                sampleDTO = ProduceLoginRequestDTO_user1();
+                break;
+            case LoginRequest_user2:
+                sampleDTO = ProduceLoginRequestDTO_user2();
                 break;
         }
         return sampleDTO;
     }
 
-    private static MessageDTO ProduceSampleMessage_UnfilledDTO() {
-        MessageDTO dto = new MessageDTO(101, OrderStatusType.Unfilled,
+    private static OrderStatusDTO ProduceSampleMessage_UnfilledDTO() {
+        OrderStatusDTO dto = new OrderStatusDTO(101, OrderStatusType.Unfilled,
                 "The order is not being filled");
         return dto;
     }
 
-    private static MessageDTO ProduceSampleMessage_PartiallyFilled_1DTO() {
-        MessageDTO dto = new MessageDTO(108, OrderStatusType.PartiallyFilled,
+    private static OrderStatusDTO ProduceSampleMessage_PartiallyFilled_1DTO() {
+        OrderStatusDTO dto = new OrderStatusDTO(108, OrderStatusType.PartiallyFilled,
                 "200 share of GOOG has being filled at $1576.25.");
         return dto;
     }
 
-    private static MessageDTO ProduceSampleMessage_PartiallyFilled_2DTO() {
-        MessageDTO dto = new MessageDTO(102, OrderStatusType.PartiallyFilled,
+    private static OrderStatusDTO ProduceSampleMessage_PartiallyFilled_2DTO() {
+        OrderStatusDTO dto = new OrderStatusDTO(102, OrderStatusType.PartiallyFilled,
                 "200 share of AAPL has being filled at $267.34.");
         return dto;
     }
 
-    private static MessageDTO ProduceSampleMessage_PartiallyFilled_3DTO() {
-        MessageDTO dto = new MessageDTO(1029, OrderStatusType.PartiallyFilled,
+    private static OrderStatusDTO ProduceSampleMessage_PartiallyFilled_3DTO() {
+        OrderStatusDTO dto = new OrderStatusDTO(1029, OrderStatusType.PartiallyFilled,
                 "200 share of TSLA has being filled at $2000.23");
         return dto;
     }
@@ -258,12 +261,18 @@ public class SampleDTOFactory {
     }
 
     private static OpenAcctDTO ProduceOpenAcctRequestDTO() {
-        OpenAcctDTO openAcctDTO = new OpenAcctDTO("user1","user1Password$1");
+        OpenAcctDTO openAcctDTO = new OpenAcctDTO(
+                (long)1,"user1","user1Password$1");
         return openAcctDTO;
     }
 
-    private static LoginDTO ProduceLoginRequestDTO() {
+    private static LoginDTO ProduceLoginRequestDTO_user1() {
         LoginDTO loginDTO = new LoginDTO((long)101,"user1","user1Password$1");
+        return loginDTO;
+    }
+
+    private static LoginDTO ProduceLoginRequestDTO_user2() {
+        LoginDTO loginDTO = new LoginDTO((long)101,"user2","user1Password$2");
         return loginDTO;
     }
 }

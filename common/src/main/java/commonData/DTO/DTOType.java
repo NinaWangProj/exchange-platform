@@ -5,7 +5,7 @@ import java.util.HashMap;
 public enum DTOType {
     Order(1),
     Config(2),
-    Message(3),
+    OrderStatus(3),
     OpenAcctRequest(4),
     LoginRequest(5),
     MarketDataRequest(6),
@@ -14,7 +14,8 @@ public enum DTOType {
     MarketDataItem(9),
     DepositRequest(10),
     PortfolioRequest(11),
-    Portfolio(12);
+    Portfolio(12),
+    Message(13);
 
     private final int value;
     private final byte byteValue;

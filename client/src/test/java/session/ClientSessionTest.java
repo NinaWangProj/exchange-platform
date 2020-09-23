@@ -2,7 +2,7 @@ package session;
 
 import commonData.DTO.BookChangeDTO;
 import commonData.DTO.MarketDataDTO;
-import commonData.DTO.MessageDTO;
+import commonData.DTO.OrderStatusDTO;
 import commonData.marketData.MarketDataItem;
 import marketData.MarketData;
 import marketData.MarketDataWareHouse;
@@ -59,10 +59,10 @@ class ClientSessionTest {
         Assertions.assertThat(dataWareHouse).usingRecursiveComparison().isEqualTo(expectedWareHouse);
 
         //Baseline msg
-        MessageDTO msgDTO = (MessageDTO)SampleDTOFactory.ProduceSampleDTO(DTOTestType.Message_PartiallyFilled_LimitBuyOrder);
+        OrderStatusDTO msgDTO = (OrderStatusDTO)SampleDTOFactory.ProduceSampleDTO(DTOTestType.Message_PartiallyFilled_LimitBuyOrder);
         MockOrderStatusEventHandler mockEventHandler = (MockOrderStatusEventHandler)eventHandler;
         Assertions.assertThat(mockEventHandler.getRequestID()).usingRecursiveComparison().isEqualTo(msgDTO.getClientRequestID());
-        Assertions.assertThat(mockEventHandler.getMsgType()).usingRecursiveComparison().isEqualTo(msgDTO.getMsgType());
+        Assertions.assertThat(mockEventHandler.getMsgType()).usingRecursiveComparison().isEqualTo(msgDTO.getStatusType());
         Assertions.assertThat(mockEventHandler.getMsg()).isEqualTo(msgDTO.getMessage());
     }
 

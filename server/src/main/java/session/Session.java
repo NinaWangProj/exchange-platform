@@ -1,5 +1,7 @@
 package session;
 
+import common.utility.MessageGenerator;
+import commonData.DataType.MessageType;
 import commonData.marketData.MarketDataItem;
 import javafx.util.Pair;
 import clearing.data.CredentialWareHouse;
@@ -74,6 +76,9 @@ public class Session {
 
     public void On_ReceivingDTO(Transferable DTO) throws Exception {
         DTOType type = DTO.getDtoType();
+        MessageType msgType = null;
+        String statusMessage = "";
+        MessageDTO msgDTO = null;
         switch (type) {
             case Order:
                 OrderDTO orderDTO = (OrderDTO)DTO;
@@ -84,64 +89,108 @@ public class Session {
                         orderDTO.getOrderType(),orderDTO.getOrderDuration());
                 serverQueue.PutOrder(order);
                 break;
+
             case OpenAcctRequest:
                 OpenAcctDTO openAcctDTO = (OpenAcctDTO)DTO;
                 String userName = openAcctDTO.getUserName();
                 String password = openAcctDTO.getPassword();
-                boolean pass = credentialWareHouse.CreateAccount(userName,password);
-                if(pass) {
+                boolean success = credentialWareHouse.CreateAccount(userName,password);
+                if(success) {
                     clientUserName = userName;
                     clientUserID = credentialWareHouse.GetUserID(userName);
 
                     //set up portfolio for client when they open an account
                     MarketParticipantPortfolio portfolio = new MarketParticipantPortfolio();
                     portfolioHashMap.put(clientUserID,portfolio);
-                    //clientPortfolio = portfolio;
+                    msgType = MessageType.SuccessMessage;
                 } else {
-                    //send message back to client
+                    msgType = MessageType.ErrorMessage;
                 }
+                statusMessage = MessageGenerator.GenerateStatusMessage(msgType, openAcctDTO.getDtoType());
+                msgDTO = new MessageDTO(openAcctDTO.getClientRequestID(), msgType,statusMessage);
+                serverQueue.PutResponseDTO(sessionID,msgDTO);
                 break;
+
             case LoginRequest:
                 LoginDTO loginDTO = (LoginDTO)DTO;
                 String loginUserName = loginDTO.getUserName();
                 String loginPassword = loginDTO.getPassword();
-                boolean loginPass = credentialWareHouse.ValidateLogin(loginUserName,loginPassword);
-                if(loginPass) {
+                boolean loginSuccessful = credentialWareHouse.ValidateLogin(loginUserName,loginPassword);
+                if(loginSuccessful) {
                     clientUserName = loginUserName;
                     clientUserID = credentialWareHouse.GetUserID(loginUserName);
+                    msgType = MessageType.SuccessMessage;
                 } else {
-                    //session needs to send client a message "wrong credential, please try again"
-                    //implement later
+                    msgType = MessageType.ErrorMessage;
                 }
+                statusMessage = MessageGenerator.GenerateStatusMessage(msgType, loginDTO.getDtoType());
+                msgDTO = new MessageDTO(loginDTO.getClientRequestID(), msgType,statusMessage);
+                serverQueue.PutResponseDTO(sessionID,msgDTO);
                 break;
+
             case DepositRequest:
                 DepositDTO depositDTO = (DepositDTO)DTO;
                 double cashAmt = depositDTO.getCashAmount();
                 portfolioHashMap.get(clientUserID).DepositCash(cashAmt);
                 String message = cashAmt + " dollars have been successfully deposited into your account";
-                MessageDTO messageDTO = new MessageDTO(depositDTO.getClientRequestID(), OrderStatusType.Deposit, message);
-                serverQueue.PutResponseDTO(sessionID,messageDTO);
+                OrderStatusDTO orderStatusDTO = new OrderStatusDTO(depositDTO.getClientRequestID(), OrderStatusType.Deposit, message);
+                serverQueue.PutResponseDTO(sessionID, orderStatusDTO);
                 break;
+
             case PortfolioRequest:
                 PortfolioRequestDTO portfolioRequestDTO = (PortfolioRequestDTO)DTO;
                 PortfolioDTO portfolioDTO = new PortfolioDTO(portfolioRequestDTO.getClientRequestID(),
                         portfolioHashMap.get(clientUserID).getSecurities(),portfolioHashMap.get(clientUserID).getCashAmt());
                 serverQueue.PutResponseDTO(sessionID,portfolioDTO);
                 break;
+
             case MarketDataRequest:
                 MarketDataRequestDTO marketDataRequestDTO = (MarketDataRequestDTO)DTO;
                 String tickerSymbol = marketDataRequestDTO.getTickerSymbol();
                 MarketDataType marketDataType = marketDataRequestDTO.getDataType();
+                boolean found = limitOrderBookWareHouse.ValidateRequest(tickerSymbol);
+                if(found) {
+                    Pair<SortedOrderList, SortedOrderList> limitOrderBook;
 
-                //Create market data dto and put into queue
-                Pair<ArrayList<MarketDataItem>,ArrayList<MarketDataItem>> marketData =
-                        limitOrderBookWareHouse.GetLimitOrderBookCopy(tickerSymbol,marketDataType,this);
+                    ReadWriteLock lock = locks.get(tickerSymbol);
+                    lock.readLock().lock();
+                    try{
+                        limitOrderBook = limitOrderBookWareHouse.GetLimitOrderBook(tickerSymbol);
+                    } finally {
+                        lock.readLock().unlock();
+                    }
 
-                MarketDataDTO marketDataDTO = new MarketDataDTO(marketDataRequestDTO.getClientRequestID(),
-                        tickerSymbol, marketData.getKey(),marketData.getValue());
-                serverQueue.PutResponseDTO(sessionID,marketDataDTO);
+                    if(limitOrderBook.getKey().size() > 0 || limitOrderBook.getValue().size() > 0) {
+                        //Create market data dto and put into queue
+                        Pair<ArrayList<MarketDataItem>,ArrayList<MarketDataItem>> marketData =
+                                FormMarketDataFromOrderBook(limitOrderBook);
+                        MarketDataDTO marketDataDTO = new MarketDataDTO(marketDataRequestDTO.getClientRequestID(),
+                                tickerSymbol, marketData.getKey(),marketData.getValue());
+                        serverQueue.PutResponseDTO(sessionID,marketDataDTO);
+                    }
+                } else {
+                    //send message back to client, no market data for the request ticker symbol is found
+                }
                 break;
         }
+    }
+
+    private Pair<ArrayList<MarketDataItem>,ArrayList<MarketDataItem>> FormMarketDataFromOrderBook(
+        Pair<SortedOrderList, SortedOrderList> limitOrderBook) {
+        ArrayList<MarketDataItem> bids = new ArrayList<MarketDataItem>();
+        ArrayList<MarketDataItem> asks = new ArrayList<MarketDataItem>();
+
+        for(MarketParticipantOrder order : limitOrderBook.getKey().getSortedList()) {
+            MarketDataItem item = new MarketDataItem(order.getTickerSymbol(),order.getSize(),order.getPrice());
+            bids.add(item);
+        }
+
+        for(MarketParticipantOrder order : limitOrderBook.getValue().getSortedList()) {
+            MarketDataItem item = new MarketDataItem(order.getTickerSymbol(),order.getSize(),order.getPrice());
+            asks.add(item);
+        }
+
+        return new Pair<>(bids,asks);
     }
 
     public void On_ReceivingLevel3DataChanges(BookChangeDTO bookChangeDTO) throws Exception {
@@ -169,10 +218,10 @@ public class Session {
         private void Process() throws Exception{
             OrderStatus orderStatus = serverQueue.TakeOrderStatus(sessionID);
             Long requestID = orderIDRequestIDMap.get(orderStatus.getOrderID());
-            for(int i = 0; i < orderStatus.getStatusMessages().size(); i ++) {
-                MessageDTO messageDTO = new MessageDTO(requestID,orderStatus.getMsgType().get(i),
-                        orderStatus.getStatusMessages().get(i));
-                serverQueue.PutResponseDTO(sessionID,messageDTO);
+            for(int i = 0; i < orderStatus.getMsgType().size(); i++) {
+                OrderStatusDTO orderStatusDTO = new OrderStatusDTO(requestID,
+                        orderStatus.getMsgType().get(i),orderStatus.getStatusMessages().get(i));
+                serverQueue.PutResponseDTO(sessionID, orderStatusDTO);
             }
         }
 

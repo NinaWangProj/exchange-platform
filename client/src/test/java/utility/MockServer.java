@@ -1,6 +1,7 @@
 package utility;
 
 import commonData.DTO.*;
+import commonData.DataType.MessageType;
 import commonData.DataType.OrderStatusType;
 import commonData.clearing.SecurityCertificate;
 import commonData.marketData.MarketDataItem;
@@ -16,10 +17,12 @@ public class MockServer implements Runnable{
     private PipedOutputStream serverOutputStream;
     private Transferable ReceivedDTO;
     private Transferable ResponseDTO;
+    private HashMap<String,String> MockCredentialWarehouse;
 
     public MockServer(PipedInputStream serverInputStream, PipedOutputStream serverOutputStream) {
         this.serverInputStream = serverInputStream;
         this.serverOutputStream = serverOutputStream;
+        this.MockCredentialWarehouse = new HashMap<>();
     }
 
     public void ReadRequestFromClient() throws Exception {
@@ -41,6 +44,9 @@ public class MockServer implements Runnable{
             case PortfolioRequest:
                 ReceivedDTO = PortfolioRequestDTO.Deserialize(DTOByteArray);
                 break;
+            case OpenAcctRequest:
+                ReceivedDTO = OpenAcctDTO.Deserialize(DTOByteArray);
+                break;
         }
     }
 
@@ -50,7 +56,7 @@ public class MockServer implements Runnable{
         switch (type) {
             case Order:
                 OrderDTO orderDTO = (OrderDTO) ReceivedDTO;
-                ResponseDTO = new MessageDTO(orderDTO.getClientRequestID(), OrderStatusType.PartiallyFilled,
+                ResponseDTO = new OrderStatusDTO(orderDTO.getClientRequestID(), OrderStatusType.PartiallyFilled,
                         "Your market Order has been filled with 100 shares @ $300");
                 break;
             case MarketDataRequest:
@@ -75,6 +81,35 @@ public class MockServer implements Runnable{
                 securities.put("AAPL", new SecurityCertificate("user1", "AAPL",300, new Date()));
                 ResponseDTO = new PortfolioDTO(portfolioRequestDTO.getClientRequestID(), securities, cash);
                 break;
+            case OpenAcctRequest:
+                OpenAcctDTO openAcctDTO = (OpenAcctDTO) ReceivedDTO;
+                MockCredentialWarehouse.put(openAcctDTO.getUserName(),openAcctDTO.getPassword());
+                MessageType msgType = MessageType.SuccessMessage;
+                String statusMessage =  openAcctDTO.getDtoType() + " completed successfully.";
+                MessageDTO msgDTO = new MessageDTO(openAcctDTO.getClientRequestID(), msgType,statusMessage);
+                ResponseDTO = msgDTO;
+                break;
+            case LoginRequest:
+                LoginDTO loginDTO = (LoginDTO) ReceivedDTO;
+                String userName = loginDTO.getUserName();
+                String password = loginDTO.getPassword();
+                Boolean loginSuccessful = false;
+                String loginStatus = "";
+                MessageType loginMessageType = MessageType.ErrorMessage;
+                if(MockCredentialWarehouse.containsKey(userName)
+                && MockCredentialWarehouse.get(userName).equals(password)) {
+                    loginSuccessful = true;
+                    loginMessageType = MessageType.SuccessMessage;
+                }
+
+                if(loginSuccessful) {
+                    loginStatus = loginDTO.getDtoType() + " completed successfully.";
+                } else {
+                    loginStatus = loginDTO.getDtoType() + " failed.";
+                }
+
+                MessageDTO loginStatusDTO = new MessageDTO(loginDTO.getClientRequestID(), loginMessageType,loginStatus);
+                ResponseDTO = loginStatusDTO;
         }
 
         byte[] DTOByteArray = ResponseDTO.Serialize();
@@ -93,8 +128,10 @@ public class MockServer implements Runnable{
 
     public void run() {
         try{
-            ReadRequestFromClient();
-            RespondToClient();
+            while(true) {
+                ReadRequestFromClient();
+                RespondToClient();
+            }
         } catch(Exception e) {
         }
     }

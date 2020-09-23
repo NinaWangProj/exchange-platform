@@ -1,23 +1,23 @@
 package commonData.DTO;
 
-import commonData.DataType.MessageType;
 import commonData.DataType.OrderStatusType;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.nio.ByteBuffer;
 
-public class MessageDTO implements Transferable{
+public class OrderStatusDTO implements Transferable
+{
     private final DTOType dtoType;
     private final String message;
-    private final MessageType msgType;
+    private final OrderStatusType statusType;
     private final long clientRequestID;
 
-    public MessageDTO(long requestID, MessageType msgType, String message)
+    public OrderStatusDTO(long requestID, OrderStatusType statusType, String message)
     {
         this.message = message;
-        dtoType = DTOType.Message;
-        this.msgType = msgType;
+        dtoType = DTOType.OrderStatus;
+        this.statusType = statusType;
         clientRequestID = requestID;
     }
 
@@ -32,7 +32,7 @@ public class MessageDTO implements Transferable{
             byte[] requestIDByteArray = ByteBuffer.allocate(8).putLong(clientRequestID).array();
 
             outputStream.write(requestIDByteArray);
-            outputStream.write(msgType.getByteValue());
+            outputStream.write(statusType.getByteValue());
             outputStream.write(msgByteSize);
             outputStream.write(msgByteArray);
             msgDTOByteArray = outputStream.toByteArray();
@@ -43,20 +43,20 @@ public class MessageDTO implements Transferable{
         return msgDTOByteArray;
     }
 
-    public static MessageDTO Deserialize(byte[] DTOByteArray) {
+    public static OrderStatusDTO Deserialize(byte[] DTOByteArray) {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(DTOByteArray);
 
         byte[] requestIDBuffer = new byte[8];
         inputStream.read(requestIDBuffer, 0, 8);
         Long requestIDT = ByteBuffer.wrap(requestIDBuffer).getLong();
 
-        MessageType msgTypeT = MessageType.valueOf(inputStream.read());
+        OrderStatusType msgTypeT = OrderStatusType.valueOf(inputStream.read());
         int msgLength = inputStream.read();
         byte[] msgBuffer = new byte[msgLength];
         inputStream.read(msgBuffer, 0, msgLength);
         String msgT = new String(msgBuffer);
 
-        MessageDTO DTO = new MessageDTO(requestIDT,msgTypeT,msgT);
+        OrderStatusDTO DTO = new OrderStatusDTO(requestIDT,msgTypeT,msgT);
         return DTO;
     }
 
@@ -68,8 +68,8 @@ public class MessageDTO implements Transferable{
         return message;
     }
 
-    public MessageType getMsgType() {
-        return msgType;
+    public OrderStatusType getStatusType() {
+        return statusType;
     }
 
     public long getClientRequestID() {
