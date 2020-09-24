@@ -5,9 +5,7 @@ import java.util.HashMap;
 public enum OrderStatusType {
     Pending(1),
     PartiallyFilled(2),
-    Unfilled(3),
-    Deposit(4),
-    MarketOrderComplete(5);
+    Unfilled(3);
 
     private final int value;
     private final byte byteValue;

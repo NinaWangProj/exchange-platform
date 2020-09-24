@@ -5,11 +5,13 @@ import commonData.DataType.MessageType;
 import commonData.Order.Direction;
 import commonData.clearing.MarketParticipantPortfolio;
 import commonData.limitOrderBook.ChangeOperation;
+import commonData.marketData.MarketDataItem;
 import javafx.util.Pair;
 import marketData.MarketDataWareHouse;
 import commonData.DataType.OrderStatusType;
 
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -44,7 +46,13 @@ public class ClientSession {
             case MarketData:
                 MarketDataDTO marketDataDTO = (MarketDataDTO) DTO;
                 String marketDataTickerSymbol = marketDataDTO.getTickerSymbol();
-                marketDataWareHouse.setMarketData(marketDataTickerSymbol, marketDataDTO.getBids(), marketDataDTO.getAsks());
+
+                Boolean pass = ValidateMarketData(marketDataDTO);
+
+                if(pass) {
+                    marketDataWareHouse.setMarketData(marketDataTickerSymbol,
+                            marketDataDTO.getBids(), marketDataDTO.getAsks());
+                }
 
                 Object monitor = requestIDMonitorMap.get(marketDataDTO.getClientRequestID());
                 if (monitor != null) {
@@ -119,5 +127,17 @@ public class ClientSession {
 
     public Pair<MessageType, String> GetMessage(long requestID) {
         return requestIDMessageMap.get(requestID);
+    }
+
+    private boolean ValidateMarketData(MarketDataDTO marketDataDTO) {
+        ArrayList<MarketDataItem> bids = marketDataDTO.getBids();
+        ArrayList<MarketDataItem> asks = marketDataDTO.getAsks();
+        Boolean pass = true;
+
+        if((bids.size()==1 && bids.size() == -1) || (asks.size()==1 && asks.size()==-1)) {
+            pass = false;
+        }
+
+        return pass;
     }
 }
