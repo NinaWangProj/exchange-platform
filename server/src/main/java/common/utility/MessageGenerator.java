@@ -1,8 +1,8 @@
 package common.utility;
 
 import commonData.DTO.DTOType;
-import commonData.DTO.Transferable;
 import commonData.DataType.MessageType;
+import commonData.DataType.OrderStatusType;
 import commonData.Order.Info;
 import common.OrderStatus;
 import common.TradingOutput;
@@ -16,39 +16,29 @@ public class MessageGenerator {
         HashMap<Integer, OrderStatus> userOrderStatusMap = new HashMap<Integer, OrderStatus>();
 
         if (tradingOutput.Transactions.size() >0 ) {
-            GenerateMessagesPerOutputType(userOrderStatusMap, OrderStatusType.TransactionMessage, tradingOutput.Transactions);
+            GenerateMessagesPerOutputType(userOrderStatusMap, OrderStatusType.PartiallyFilled, tradingOutput.Transactions);
         }
         if (tradingOutput.PendingOrders.size() > 0 ) {
-            GenerateMessagesPerOutputType(userOrderStatusMap, OrderStatusType.PendingOrderMessage, tradingOutput.Transactions);
+            GenerateMessagesPerOutputType(userOrderStatusMap, OrderStatusType.Pending, tradingOutput.PendingOrders);
         }
         if(tradingOutput.UnfilledOrders.size() > 0 ) {
-            GenerateMessagesPerOutputType(userOrderStatusMap, OrderStatusType.UnfilledOrderMessage, tradingOutput.Transactions);
+            GenerateMessagesPerOutputType(userOrderStatusMap, OrderStatusType.Unfilled, tradingOutput.UnfilledOrders);
         }
 
         return userOrderStatusMap;
     }
 
-    public static void GenerateMessagesPerOutputType (HashMap<Integer, OrderStatus> userOrderStatusMap, OrderStatusType messageType, ArrayList<? extends Info> TradingOutputs) {
-        commonData.DataType.OrderStatusType orderStatusType = null;
-        switch (messageType) {
-            case TransactionMessage:
-                orderStatusType = commonData.DataType.OrderStatusType.PartiallyFilled;
-                break;
-            case PendingOrderMessage:
-                orderStatusType = commonData.DataType.OrderStatusType.Pending;
-                break;
-            case UnfilledOrderMessage:
-                orderStatusType = commonData.DataType.OrderStatusType.Unfilled;
-                break;
-        }
-
+    public static void GenerateMessagesPerOutputType (HashMap<Integer, OrderStatus> userOrderStatusMap, OrderStatusType orderStatusType, ArrayList<? extends Info> TradingOutputs) {
         for (Info tradingOutput : TradingOutputs) {
             int sessionID = tradingOutput.getSessionID();
             if (!userOrderStatusMap.containsKey(sessionID)) {
-                userOrderStatusMap.put(sessionID, new OrderStatus(tradingOutput.getOrderID(), orderStatusType,new ArrayList<String>()));
+                userOrderStatusMap.put(sessionID, new OrderStatus(new ArrayList<>(), new ArrayList<commonData.DataType.OrderStatusType>(),
+                        new ArrayList<String>()));
             }
-            String statusMessage = GenerateOrderStatusMessage(messageType,tradingOutput);
+            String statusMessage = GenerateOrderStatusMessage(orderStatusType,tradingOutput);
             userOrderStatusMap.get(sessionID).getStatusMessages().add(statusMessage);
+            userOrderStatusMap.get(sessionID).getOrderID().add(tradingOutput.getOrderID());
+            userOrderStatusMap.get(sessionID).getMsgType().add(orderStatusType);
         }
     }
 
@@ -61,15 +51,15 @@ public class MessageGenerator {
         String reason = tradingOutputInfo.getReason();
 
         switch (orderStatusType) {
-            case TransactionMessage:
+            case PartiallyFilled:
                 message = "Congradulation!  " + userName + ", Your order with orderID: " + orderID
                         + " has been filled with: " + size + ", shares, @$" + tradePrice + " per share.";
                 break;
-            case UnfilledOrderMessage:
+            case Unfilled:
                 message = "Sorry " + userName + " .Unfortunately your order with orderID: " + orderID
                         + " is not filled for the reason that " + reason;
                 break;
-            case PendingOrderMessage:
+            case Pending:
                 message = "Dear " + userName + " Your order with orderID: " + orderID
                         + " is in pending now for the resason " + reason;
                 break;
