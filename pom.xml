@@ -12,6 +12,7 @@
         <module>server</module>
         <module>client</module>
         <module>common</module>
+        <module>IntegrationTest</module>
     </modules>
     <dependencies>
         <dependency>

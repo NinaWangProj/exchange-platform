@@ -128,14 +128,14 @@ public class Session {
                 serverQueue.PutResponseDTO(sessionID,msgDTO);
                 break;
 
-            case DepositRequest:
+          /*  case DepositRequest:
                 DepositDTO depositDTO = (DepositDTO)DTO;
                 double cashAmt = depositDTO.getCashAmount();
                 portfolioHashMap.get(clientUserID).DepositCash(cashAmt);
                 String message = cashAmt + " dollars have been successfully deposited into your account";
                 OrderStatusDTO orderStatusDTO = new OrderStatusDTO(depositDTO.getClientRequestID(), OrderStatusType.Deposit, message);
                 serverQueue.PutResponseDTO(sessionID, orderStatusDTO);
-                break;
+                break;*/
 
             case PortfolioRequest:
                 PortfolioRequestDTO portfolioRequestDTO = (PortfolioRequestDTO)DTO;

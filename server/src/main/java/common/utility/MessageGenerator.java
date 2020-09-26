@@ -1,7 +1,6 @@
 package common.utility;
 
 import commonData.DTO.DTOType;
-import commonData.DTO.Transferable;
 import commonData.DataType.MessageType;
 import commonData.DataType.OrderStatusType;
 import commonData.Order.Info;
