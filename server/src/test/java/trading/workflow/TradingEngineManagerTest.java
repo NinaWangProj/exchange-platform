@@ -85,11 +85,11 @@ public class TradingEngineManagerTest {
         }
 
         ExecutorService executorService = Executors.newFixedThreadPool(numOutputQueues);
-        List<Future<Void>> clearingTaskResultState = executorService.invokeAll(mockClearingEngineTasks, 100, TimeUnit.MILLISECONDS);
+        List<Future<Void>> clearingTaskResultState = executorService.invokeAll(mockClearingEngineTasks, 1000, TimeUnit.MILLISECONDS);
 
         for(int i= 0; i < numOutputQueues; i++){
             try {
-                clearingTaskResultState.get(0).get(100, TimeUnit.MILLISECONDS);
+                clearingTaskResultState.get(0).get(1000, TimeUnit.MILLISECONDS);
             } catch(TimeoutException tex) {}
                 catch(CancellationException csex){}
         }

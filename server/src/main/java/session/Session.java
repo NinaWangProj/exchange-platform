@@ -148,29 +148,14 @@ public class Session {
                 MarketDataRequestDTO marketDataRequestDTO = (MarketDataRequestDTO)DTO;
                 String tickerSymbol = marketDataRequestDTO.getTickerSymbol();
                 MarketDataType marketDataType = marketDataRequestDTO.getDataType();
-                boolean found = limitOrderBookWareHouse.ValidateRequest(tickerSymbol);
-                if(found) {
-                    Pair<SortedOrderList, SortedOrderList> limitOrderBook;
 
-                    ReadWriteLock lock = locks.get(tickerSymbol);
-                    lock.readLock().lock();
-                    try{
-                        limitOrderBook = limitOrderBookWareHouse.GetLimitOrderBook(tickerSymbol);
-                    } finally {
-                        lock.readLock().unlock();
-                    }
+                //Create market data dto and put into queue
+                Pair<ArrayList<MarketDataItem>,ArrayList<MarketDataItem>> marketData =
+                        limitOrderBookWareHouse.GetLimitOrderBookCopy(tickerSymbol,marketDataType,this);
 
-                    if(limitOrderBook.getKey().size() > 0 || limitOrderBook.getValue().size() > 0) {
-                        //Create market data dto and put into queue
-                        Pair<ArrayList<MarketDataItem>,ArrayList<MarketDataItem>> marketData =
-                                FormMarketDataFromOrderBook(limitOrderBook);
-                        MarketDataDTO marketDataDTO = new MarketDataDTO(marketDataRequestDTO.getClientRequestID(),
-                                tickerSymbol, marketData.getKey(),marketData.getValue());
-                        serverQueue.PutResponseDTO(sessionID,marketDataDTO);
-                    }
-                } else {
-                    //send message back to client, no market data for the request ticker symbol is found
-                }
+                MarketDataDTO marketDataDTO = new MarketDataDTO(marketDataRequestDTO.getClientRequestID(),
+                        tickerSymbol, marketData.getKey(),marketData.getValue());
+                serverQueue.PutResponseDTO(sessionID,marketDataDTO);
                 break;
         }
     }

@@ -9,6 +9,7 @@ import common.TradingOutput;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import org.json.simple.JSONObject;
 
 public class MessageGenerator {
 
@@ -43,28 +44,29 @@ public class MessageGenerator {
     }
 
     public static String GenerateOrderStatusMessage(OrderStatusType orderStatusType, Info tradingOutputInfo) {
-        String message = "";
         String userName = tradingOutputInfo.getName();
         String orderID = String.valueOf(tradingOutputInfo.getOrderID());
         String size = String.valueOf(tradingOutputInfo.getSize());
         String tradePrice = String.valueOf(tradingOutputInfo.getPrice());
         String reason = tradingOutputInfo.getReason();
 
+        JSONObject message = new JSONObject();
+        message.put("name", userName);
+        message.put("orderID", orderID);
+
         switch (orderStatusType) {
             case PartiallyFilled:
-                message = "Congradulation!  " + userName + ", Your order with orderID: " + orderID
-                        + " has been filled with: " + size + ", shares, @$" + tradePrice + " per share.";
+                message.put("size", size);
+                message.put("price", tradePrice);
+                message.put("reason", "Congratulations, order partially filled");
                 break;
             case Unfilled:
-                message = "Sorry " + userName + " .Unfortunately your order with orderID: " + orderID
-                        + " is not filled for the reason that " + reason;
-                break;
             case Pending:
-                message = "Dear " + userName + " Your order with orderID: " + orderID
-                        + " is in pending now for the resason " + reason;
+                message.put("reason", reason);
                 break;
         }
-        return message;
+
+        return message.toJSONString();
     }
 
     public static String GenerateStatusMessage(MessageType messageType, DTOType dtoType) {
