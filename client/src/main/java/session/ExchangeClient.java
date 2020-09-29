@@ -27,8 +27,8 @@ public class ExchangeClient {
     private Boolean loggedIn;
     private Boolean hasAccount;
 
-    public ExchangeClient() {
-        serverIP = "192.168.0.20";
+    public ExchangeClient() throws Exception{
+        serverIP = InetAddress.getLocalHost().getHostAddress();
         serverPort = 58673;
         marketDataWareHouse = new MarketDataWareHouse();
         clientRequestID = new AtomicLong(0);

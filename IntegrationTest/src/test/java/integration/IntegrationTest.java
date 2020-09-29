@@ -22,6 +22,8 @@ public class IntegrationTest {
                 new AtomicLong(0));
         ServerEngine server = new ServerEngine(config);
         server.Start();
+
+        Thread.sleep(3000000);
     }
 
     @Test
@@ -32,13 +34,11 @@ public class IntegrationTest {
         boolean connected = client.ConnectWithServer();
         OrderStatusEventHandler orderStatusEventHandler = new OrderStatusEventHandler() {
             private long requestID;
-            private OrderStatusType msgType;
             private String msg;
 
             @Override
             public void On_ReceiveOrderStatusChange(long requestID, OrderStatusType msgType, String msg) {
                 this.requestID = requestID;
-                this.msgType = msgType;
                 this.msg = msg;
             }
         };
