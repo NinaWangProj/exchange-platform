@@ -7,5 +7,5 @@
 .idea/
 
 # Default ignored files
-.iml/
+*.iml
 
