@@ -3,6 +3,7 @@ package integration;
 import commonData.DataType.MarketDataType;
 import commonData.DataType.OrderStatusType;
 import marketData.MarketData;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import serverEngine.ServerConfig;
 import serverEngine.ServerEngine;
@@ -15,7 +16,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class IntegrationTest {
 
     @Test
-    public void IntegrationTest1() throws Exception {
+    public void ServerTestIT() throws Exception {
 
         ServerConfig config = new ServerConfig(5,5,
                 58673,0, OrderComparatorType.PriceTimePriority,
@@ -23,13 +24,11 @@ public class IntegrationTest {
         ServerEngine server = new ServerEngine(config);
         server.Start();
 
-        Thread.sleep(3000000);
+        Thread.sleep(5000);
     }
 
     @Test
-    public void IntegrationTest2() throws Exception {
-        int a = 3;
-
+    public void SingleClientTestIT() throws Exception {
         ExchangeClient client = new ExchangeClient();
         boolean connected = client.ConnectWithServer();
         OrderStatusEventHandler orderStatusEventHandler = new OrderStatusEventHandler() {
@@ -54,6 +53,7 @@ public class IntegrationTest {
         //MarketParticipantPortfolio portfolio = client.SubmitPortfolioDataRequest();
 
         MarketData marketData = client.SubmitMarketDataRequest(MarketDataType.Level1, "AAPL");
-        //System.out.print(marketData);
+        Assertions.assertThat(marketData).
+                usingRecursiveComparison().isEqualTo(null);
     }
 }

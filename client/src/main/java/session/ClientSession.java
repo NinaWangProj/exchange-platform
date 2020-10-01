@@ -134,7 +134,7 @@ public class ClientSession {
         ArrayList<MarketDataItem> asks = marketDataDTO.getAsks();
         Boolean pass = true;
 
-        if((bids.size()==1 && bids.size() == -1) || (asks.size()==1 && asks.size()==-1)) {
+        if((bids.size()==1 && bids.get(0).getSize() == -1) || (asks.size()==1 && asks.get(0).getSize() ==-1)) {
             pass = false;
         }
 
