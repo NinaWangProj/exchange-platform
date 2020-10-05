@@ -1,9 +1,14 @@
 sessionID,userID,name,orderID,time,direction,tickerSymbol,size,price,orderType,orderDuration,pendingMessage
-4,4,Default Name,24,2020-08-31 09:30:00.114000,Direction.BUY,AAPL,8,102.58,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
-4,4,Default Name,0,2020-08-31 09:30:00.006000,Direction.BUY,MSFT,23,199.66,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
-4,4,Default Name,1,2020-08-31 09:30:00.011000,Direction.BUY,MSFT,17,205.97,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
-4,4,Default Name,8,2020-08-31 09:30:00.039000,Direction.SELL,MSFT,14,204.56,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
-4,4,Default Name,9,2020-08-31 09:30:00.047000,Direction.BUY,MSFT,17,203.67,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
-1,1,Default Name,4,2020-08-31 09:30:00.025000,Direction.BUY,ZM,10,305.57,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
-3,3,Default Name,19,2020-08-31 09:30:00.104000,Direction.BUY,ZM,24,308.61,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
-0,0,Default Name,27,2020-08-31 09:30:00.122000,Direction.SELL,ZM,2,314.9,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
+4,4,Default Name,0,2020-08-31 09:30:00.006000,Direction.BUY,INTC,22,99.66,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
+4,4,Default Name,1,2020-08-31 09:30:00.011000,Direction.BUY,INTC,16,105.97,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
+1,1,Default Name,4,2020-08-31 09:30:00.025000,Direction.BUY,ZM,10,155.57,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
+4,4,Default Name,8,2020-08-31 09:30:00.039000,Direction.SELL,INTC,14,104.56,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
+4,4,Default Name,9,2020-08-31 09:30:00.047000,Direction.BUY,INTC,17,103.67,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
+4,4,Default Name,12,2020-08-31 09:30:00.063000,Direction.BUY,ZM,1,164.65,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
+3,3,Default Name,19,2020-08-31 09:30:00.089000,Direction.BUY,ZM,22,158.61,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
+4,4,Default Name,24,2020-08-31 09:30:00.099000,Direction.BUY,AAPL,5,52.58,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
+0,0,Default Name,27,2020-08-31 09:30:00.107000,Direction.SELL,ZM,2,164.9,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
+2,2,Default Name,34,2020-08-31 09:30:00.134000,Direction.BUY,INTC,7,108.02,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
+5,0,Default Name,39,2020-08-31 09:30:00.145000,Direction.SELL,INTC,2,109.44,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
+1,1,Default Name,41,2020-08-31 09:30:00.150000,Direction.BUY,ZM,10,165.79,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match
+2,2,Default Name,43,2020-08-31 09:30:00.150000,Direction.BUY,AAPL,4,50,OrderType.LIMITORDER,OrderDuration.DAY,Your order has been processed. Will notify you when we find a match

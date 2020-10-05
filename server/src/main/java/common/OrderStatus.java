@@ -2,29 +2,27 @@ package common;
 
 import commonData.DataType.OrderStatusType;
 
-import java.util.ArrayList;
-
 public class OrderStatus {
-    private final ArrayList<String> statusMessages;
-    private final ArrayList<OrderStatusType> msgType;
-    private final ArrayList<Integer> orderID;
+    private final String statusMessage;
+    private final OrderStatusType msgType;
+    private final Integer orderID;
 
-    public OrderStatus(ArrayList<Integer> orderID, ArrayList<OrderStatusType> msgType, ArrayList<String> statusMessages)
+    public OrderStatus(Integer orderID, OrderStatusType msgType, String statusMessage)
     {
-        this.statusMessages = statusMessages;
+        this.statusMessage = statusMessage;
         this.msgType = msgType;
         this.orderID = orderID;
     }
 
-    public ArrayList<String> getStatusMessages() {
-        return statusMessages;
+    public String getStatusMessage() {
+        return statusMessage;
     }
 
-    public ArrayList<OrderStatusType> getMsgType() {
+    public OrderStatusType getMsgType() {
         return msgType;
     }
 
-    public ArrayList<Integer> getOrderID() {
+    public Integer getOrderID() {
         return orderID;
     }
 }
