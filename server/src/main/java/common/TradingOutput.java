@@ -19,10 +19,11 @@ public class TradingOutput {
         this.OrderID = OrderID;
     }
 
-    public TradingOutput() {
+    public TradingOutput(int orderID) {
         Transactions = new ArrayList<>();
         UnfilledOrders = new ArrayList<>();
         PendingOrders = new ArrayList<>();
+        OrderID = orderID;
     }
 
 

@@ -9,12 +9,14 @@ import common.TradingOutput;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+
 import org.json.simple.JSONObject;
 
 public class MessageGenerator {
 
-    public static HashMap<Integer, OrderStatus> GenerateMessages (TradingOutput tradingOutput) {
-        HashMap<Integer, OrderStatus> userOrderStatusMap = new HashMap<Integer, OrderStatus>();
+    public static HashMap<Integer, List<OrderStatus>> GenerateMessages (TradingOutput tradingOutput) {
+        HashMap<Integer, List<OrderStatus>> userOrderStatusMap = new HashMap<>();
 
         if (tradingOutput.Transactions.size() >0 ) {
             GenerateMessagesPerOutputType(userOrderStatusMap, OrderStatusType.PartiallyFilled, tradingOutput.Transactions);
@@ -29,40 +31,39 @@ public class MessageGenerator {
         return userOrderStatusMap;
     }
 
-    public static void GenerateMessagesPerOutputType (HashMap<Integer, OrderStatus> userOrderStatusMap, OrderStatusType orderStatusType, ArrayList<? extends Info> TradingOutputs) {
+    public static void GenerateMessagesPerOutputType (HashMap<Integer, List<OrderStatus>> userOrderStatusMap, OrderStatusType orderStatusType, ArrayList<? extends Info> TradingOutputs) {
         for (Info tradingOutput : TradingOutputs) {
             int sessionID = tradingOutput.getSessionID();
             if (!userOrderStatusMap.containsKey(sessionID)) {
-                userOrderStatusMap.put(sessionID, new OrderStatus(new ArrayList<>(), new ArrayList<commonData.DataType.OrderStatusType>(),
-                        new ArrayList<String>()));
+                userOrderStatusMap.put(sessionID, new ArrayList<>());
             }
             String statusMessage = GenerateOrderStatusMessage(orderStatusType,tradingOutput);
-            userOrderStatusMap.get(sessionID).getStatusMessages().add(statusMessage);
-            userOrderStatusMap.get(sessionID).getOrderID().add(tradingOutput.getOrderID());
-            userOrderStatusMap.get(sessionID).getMsgType().add(orderStatusType);
+            OrderStatus status = new OrderStatus(tradingOutput.getOrderID(), orderStatusType, statusMessage);
+            userOrderStatusMap.get(sessionID).add(status);
         }
     }
 
     public static String GenerateOrderStatusMessage(OrderStatusType orderStatusType, Info tradingOutputInfo) {
         String userName = tradingOutputInfo.getName();
-        String orderID = String.valueOf(tradingOutputInfo.getOrderID());
-        String size = String.valueOf(tradingOutputInfo.getSize());
-        String tradePrice = String.valueOf(tradingOutputInfo.getPrice());
+        int orderID = tradingOutputInfo.getOrderID();
+        int size = tradingOutputInfo.getSize();
+        String tradePrice = String.format(java.util.Locale.US,"%.2f", tradingOutputInfo.getPrice());
         String reason = tradingOutputInfo.getReason();
 
         JSONObject message = new JSONObject();
-        message.put("name", userName);
-        message.put("orderID", orderID);
+        message.put(MessageJSONConstants.name, userName);
+        message.put(MessageJSONConstants.orderID, orderID);
+        message.put(MessageJSONConstants.tickerSymbol, tradingOutputInfo.getTickerSymbol());
 
         switch (orderStatusType) {
             case PartiallyFilled:
-                message.put("size", size);
-                message.put("price", tradePrice);
-                message.put("reason", "Congratulations, order partially filled");
+                message.put(MessageJSONConstants.size, size);
+                message.put(MessageJSONConstants.price, tradePrice);
+                message.put(MessageJSONConstants.reason, MessageJSONConstants.congrats);
                 break;
             case Unfilled:
             case Pending:
-                message.put("reason", reason);
+                message.put(MessageJSONConstants.reason, reason);
                 break;
         }
 

@@ -1,0 +1,11 @@
+This data was created by a Python Script with the following settings:
+num_companies = 8
+ticker_symbols = AAPL,GOOG,FB,INTC,MSFT,NVDA,QCOM,ZM
+num_shares_per_company = 50
+num_participants = 10
+participants_with_multiple_sesions = 2
+average_inter_order_time_ms = 5
+standard_deviaton_price = 5
+seed = 0
+num_order_needed = 1000
+starting_price = 50,100,150,200,250,300,350,400

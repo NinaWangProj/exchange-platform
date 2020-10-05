@@ -4,7 +4,14 @@ import clearing.data.DTCCWarehouse;
 import common.*;
 import common.csv.CsvHelper;
 import common.csv.DtccFromCsv;
+import common.csv.SessionMessageMapRow;
 import common.utility.BinSelector;
+import common.utility.MessageJSONConstants;
+import javafx.util.Pair;
+import org.assertj.core.api.Assertions;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.junit.jupiter.api.Test;
 import trading.data.PendingOrder;
 import trading.data.UnfilledOrder;
@@ -13,54 +20,65 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.groupingBy;
 
 public class ClearingEngineManagerTest {
+    private final double threshold = 1e-6;
+
     @Test
     public void SmallOrderFlowTest() throws Exception {
-        String orderDataFileName = "data/orderflow/multistock/small/Order Data4.csv";
         String transactionDataFileName = "data/orderflow/multistock/small/Transactions Data4.csv";
         String pendingDataFileName = "data/orderflow/multistock/small/Pending Order Data4.csv";
         String unfilledDataFileName = "data/orderflow/multistock/small/Unfilled Order Data4.csv";
 
+        String initialPortfoliosFileName = "data/orderflow/multistock/small/Initial Portfolios4.csv";
+        String finalPortfoliosFileName = "data/orderflow/multistock/small/Final Portfolios4.csv";
+        String clientMessagesFileName = "data/orderflow/multistock/small/Messages4.csv";
+
         int numSimulatedTradingEngines = 3;
-        int numInputOrderQueues = 3;
-        int numSessions = 3;
-        RunTest(numSimulatedTradingEngines, numInputOrderQueues, numSessions, orderDataFileName, transactionDataFileName,
-                pendingDataFileName, unfilledDataFileName);
+        int numClearingEngineQueues = 3;
+        int numSessions = 6;
+        RunTest(numSimulatedTradingEngines, numClearingEngineQueues, numSessions, transactionDataFileName, pendingDataFileName,
+                unfilledDataFileName, initialPortfoliosFileName, finalPortfoliosFileName, clientMessagesFileName);
     }
 
     @Test
     public void MediumOrderFlowTest() throws Exception {
-        String orderDataFileName = "data/orderflow/multistock/medium/Order Data5.csv";
         String transactionDataFileName = "data/orderflow/multistock/medium/Transactions Data5.csv";
         String pendingDataFileName = "data/orderflow/multistock/medium/Pending Order Data5.csv";
         String unfilledDataFileName = "data/orderflow/multistock/medium/Unfilled Order Data5.csv";
 
+        String initialPortfoliosFileName = "data/orderflow/multistock/medium/Initial Portfolios5.csv";
+        String finalPortfoliosFileName = "data/orderflow/multistock/medium/Final Portfolios5.csv";
+        String clientMessagesFileName = "data/orderflow/multistock/medium/Messages5.csv";
+
         int numSimulatedTradingEngines = 3;
-        int numInputOrderQueues = 3;
-        int numSessions = 3;
-        RunTest(numSimulatedTradingEngines, numInputOrderQueues, numSessions, orderDataFileName, transactionDataFileName,
-                pendingDataFileName, unfilledDataFileName);
+        int numClearingEngineQueues = 5;
+        int numSessions = 12;
+        RunTest(numSimulatedTradingEngines, numClearingEngineQueues, numSessions, transactionDataFileName, pendingDataFileName,
+                unfilledDataFileName, initialPortfoliosFileName, finalPortfoliosFileName, clientMessagesFileName);
     }
 
     @Test
     public void LargeOrderFlowTest() throws Exception {
-        String orderDataFileName = "data/orderflow/multistock/large/Order Data6.csv";
         String transactionDataFileName = "data/orderflow/multistock/large/Transactions Data6.csv";
         String pendingDataFileName = "data/orderflow/multistock/large/Pending Order Data6.csv";
         String unfilledDataFileName = "data/orderflow/multistock/large/Unfilled Order Data6.csv";
 
+        String initialPortfoliosFileName = "data/orderflow/multistock/large/Initial Portfolios6.csv";
+        String finalPortfoliosFileName = "data/orderflow/multistock/large/Final Portfolios6.csv";
+        String clientMessagesFileName = "data/orderflow/multistock/large/Messages6.csv";
+
         int numSimulatedTradingEngines = 3;
-        int numInputOrderQueues = 3;
-        int numSessions = 3;
-        RunTest(numSimulatedTradingEngines, numInputOrderQueues, numSessions, orderDataFileName, transactionDataFileName,
-                pendingDataFileName, unfilledDataFileName);
+        int numClearingEngineQueues = 5;
+        int numSessions = 12;
+        RunTest(numSimulatedTradingEngines, numClearingEngineQueues, numSessions, transactionDataFileName, pendingDataFileName,
+                unfilledDataFileName, initialPortfoliosFileName, finalPortfoliosFileName, clientMessagesFileName);
     }
 
 
     private void RunTest(int numSimulatedTradingGroups, int numTradingOutputQueues, int numSessions, String transactionDataFileName,
-                         String pendingDataFileName, String unfilledDataFileName, String initialPortfoliosFileName) throws Exception {
+                         String pendingDataFileName, String unfilledDataFileName, String initialPortfoliosFileName,
+                         String finalPortfoliosFileName, String clientMessagesFilePath) throws Exception {
 
         ServerQueue centralQueue = new ServerQueue(0, numTradingOutputQueues);
         DTCCWarehouse dtccWarehouse  = DtccFromCsv.Get(initialPortfoliosFileName);
@@ -68,9 +86,10 @@ public class ClearingEngineManagerTest {
         clearingEngineManager.Start();
 
         // Create Mock Session tasks to collect OrderStatus from queues
-        ConcurrentMap<Integer, List<OrderStatus>> orderStatusFromQueue = new ConcurrentHashMap<>();
+        // <sessionId, tickerSymbol>, OrderStatus
+        ConcurrentMap<Pair<Integer, String>, List<OrderStatus>> orderStatusFromQueue = new ConcurrentHashMap<>();
         ExecutorService executorService = Executors.newFixedThreadPool(numSessions);
-        List<Future<Void>> sessionResultStates = new ArrayList<Future<Void>>();
+        List<Future<Void>> sessionResultStates = new ArrayList<>();
         for(int sessionId= 0; sessionId < numSessions; sessionId++){
             centralQueue.RegisterSessionWithQueue(sessionId);
             Future<Void> sessionResultState = executorService.submit(new MockSessionTask(centralQueue, sessionId, orderStatusFromQueue));
@@ -94,103 +113,131 @@ public class ClearingEngineManagerTest {
             try {
                 tradingTaskResultState.get(0).get(100, TimeUnit.MILLISECONDS);
             } catch(TimeoutException tex) {}
-            catch(CancellationException csex){}
+            catch(CancellationException canex){}
         }
 
         //Collect any errors from Mock Session Tasks
         for(int i= 0; i < numSessions; i++){
             try {
                 sessionResultStates.get(0).get(100, TimeUnit.MILLISECONDS);
-            } catch(TimeoutException tex) {}
+            }
+//            catch(RuntimeException rex)
+//            {
+//                System.out.println("Exception from session Id: " + i);
+//                rex.printStackTrace();
+//            }
+            catch(TimeoutException tex) {}
             catch(CancellationException csex){}
         }
 
+        // Get expected outputs
+        Map<Pair<Integer, String>, List<OrderStatus>> expectedMessageMap = GetClientMessages(clientMessagesFilePath);
+        DTCCWarehouse expectedFinalWarehouse = DtccFromCsv.Get(finalPortfoliosFileName);
 
-        // get expected outputs
+        Comparator<Double> closeEnough = (d1, d2) -> {
+            if((d1 < threshold) && (d2 < threshold) ||
+                (Math.abs((d1 - d2) / Math.max(d1, d2)) < threshold))
+                return 0;
+            else
+                return 1;
+        };
 
-
-    }
-
-    private Map<Integer, List<TradingOutput>>
-    GetTradingOutputs(int numberOfTradingBins, String transactionDataFileName, String pendingDataFileName, String unfilledDataFileName) {
-
-        Map<Integer, Map<Integer, TradingOutput>> outputByBinByOrder = new HashMap<>();
-
-        List<Transaction> transactions = CsvHelper.GetRowsFromCSV(transactionDataFileName, Transaction.class);
-        List<PendingOrder> pendingOrders = CsvHelper.GetRowsFromCSV(pendingDataFileName, PendingOrder.class);
-        List<UnfilledOrder> unfilledOrders = CsvHelper.GetRowsFromCSV(unfilledDataFileName, UnfilledOrder.class);
-
-        // group by bin and then orderID
-        Map<Integer, Map<Integer, List<Transaction>>> groupedTransactions = transactions.stream()
-                .collect(groupingBy(t -> BinSelector.ChooseAlphabeticalBin(t.getTickerSymbol(), numberOfTradingBins),
-                        groupingBy(Transaction::getOrderID)));
-
-        Map<Integer, Map<Integer, List<PendingOrder>>> groupedPendingOrders = pendingOrders.stream()
-                .collect(groupingBy(p -> BinSelector.ChooseAlphabeticalBin(p.getTickerSymbol(), numberOfTradingBins),
-                        groupingBy(PendingOrder::getOrderID)));
-
-        Map<Integer, Map<Integer, List<UnfilledOrder>>> groupedUnfilledOrders = unfilledOrders.stream()
-                .collect(groupingBy(u -> BinSelector.ChooseAlphabeticalBin(u.getTickerSymbol(), numberOfTradingBins),
-                        groupingBy(UnfilledOrder::getOrderID)));
-
-        TestingMapUtils.MergeNested(groupedTransactions, outputByBinByOrder,
-                (orderId, tList) ->
-                        new TradingOutput(orderId, (ArrayList<Transaction>)tList, new ArrayList<>(), new ArrayList<>()),
-                (tList, tradeOutput) ->
-                        new TradingOutput(tradeOutput.OrderID, (ArrayList<Transaction>)tList, tradeOutput.UnfilledOrders, tradeOutput.PendingOrders));
-
-        TestingMapUtils.MergeNested(groupedUnfilledOrders, outputByBinByOrder,
-                (orderId, uList) ->
-                        new TradingOutput(orderId, new ArrayList<>(), (ArrayList<UnfilledOrder>)uList, new ArrayList<>()),
-                (uList, tradeOutput) ->
-                        new TradingOutput(tradeOutput.OrderID,  tradeOutput.Transactions, (ArrayList<UnfilledOrder>)uList, tradeOutput.PendingOrders));
-
-        TestingMapUtils.MergeNested(groupedPendingOrders, outputByBinByOrder,
-                (orderId, pList) ->
-                        new TradingOutput(orderId, new ArrayList<>() , new ArrayList<>(), (ArrayList<PendingOrder>)pList),
-                (pList, tradeOutput) ->
-                        new TradingOutput(tradeOutput.OrderID,  tradeOutput.Transactions, tradeOutput.UnfilledOrders, (ArrayList<PendingOrder>)pList));
-
-
-        Map<Integer, List<TradingOutput>> result = outputByBinByOrder.entrySet().stream()
-                .collect(Collectors.toMap(entry -> entry.getKey(),
-                                            entry -> (List)entry.getValue().values()));
-
-        return result;
-    }
-
-
-    private List<Transaction> GetAllTransactions(Map<Integer, List<TradingOutput>> tradingOutput){
-        List<Transaction> allTransactions = new ArrayList<>();
-        for(List<TradingOutput> outputForGroup : tradingOutput.values()){
-            for (TradingOutput output: outputForGroup){
-                allTransactions.addAll(output.Transactions);
+        JSONParser parser = new JSONParser();
+        Comparator<String> jsonComparator = (js1, js2) -> {
+            try {
+                JSONObject jObj1 = (JSONObject)parser.parse(js1);
+                JSONObject jObj2 = (JSONObject)parser.parse(js2);
+                return jObj1.equals(jObj2) ? 0 : 1;
+            } catch(ParseException pex)
+            {
+                System.out.println("Error parsing JSON string when asserting comparison");
+                pex.printStackTrace();
+                return 1;
             }
+        };
+
+        Assertions.assertThat(dtccWarehouse).usingRecursiveComparison().withComparatorForType(closeEnough, Double.class)
+                .isEqualTo(expectedFinalWarehouse);
+        Assertions.assertThat(orderStatusFromQueue).usingRecursiveComparison()
+                .withComparatorForType(closeEnough, Double.class)
+                .withComparatorForFields(jsonComparator, "statusMessage")
+                .isEqualTo(expectedMessageMap);
+
+    }
+
+    private Map<Pair<Integer, String>, List<OrderStatus>> GetClientMessages(String clientMessagesFilePath) {
+        List<SessionMessageMapRow> messageMapRows = CsvHelper.GetRowsFromCSV(clientMessagesFilePath, SessionMessageMapRow.class);
+
+        Map<Pair<Integer, String>, List<OrderStatus>> messageMap = new HashMap<>();
+
+        for(SessionMessageMapRow row : messageMapRows){
+            Pair<Integer, String> key = new Pair<> (row.sessionID, row.tickerSymbol);
+            if(!messageMap.containsKey(key))
+                messageMap.put(key, new ArrayList<>());
+
+            OrderStatus status = new OrderStatus(row.orderID, row.orderStatus, row.message);
+            messageMap.get(key).add(status);
         }
 
-        return allTransactions;
+        return messageMap;
     }
 
-    private List<UnfilledOrder> GetAllUnfilledOrders(Map<Integer, List<TradingOutput>> tradingOutput){
-        List<UnfilledOrder> allUnfilledOrders = new ArrayList<>();
-        for(List<TradingOutput> outputForGroup : tradingOutput.values()){
-            for (TradingOutput output: outputForGroup){
-                allUnfilledOrders.addAll(output.UnfilledOrders);
+
+    private Map<Integer, List<TradingOutput>> GetTradingOutputs(int numberOfTradingBins, String transactionDataFileName,
+                                                                String pendingDataFileName, String unfilledDataFileName) {
+
+        Map<Integer, List<TradingOutput>> binToTradingOutputs = new HashMap<>();
+
+        Comparator<Transaction> transactComparator = Comparator.comparing(Transaction::getTransactionID)
+                .thenComparing(Comparator.comparing(Transaction::getOrderID).reversed());
+        List<Transaction> transactions = CsvHelper.GetRowsFromCSV(transactionDataFileName, Transaction.class)
+                .stream().sorted(transactComparator).collect(Collectors.toList());
+
+        List<PendingOrder> pendingOrders = CsvHelper.GetRowsFromCSV(pendingDataFileName, PendingOrder.class)
+                .stream().sorted(Comparator.comparing(PendingOrder::getOrderID)).collect(Collectors.toList());
+        List<UnfilledOrder> unfilledOrders = CsvHelper.GetRowsFromCSV(unfilledDataFileName, UnfilledOrder.class)
+                .stream().sorted(Comparator.comparing(UnfilledOrder::getOrderID)).collect(Collectors.toList());
+
+        // Get list of all orderIds
+        Set<Integer> orderIds = transactions.stream().map(Transaction::getOrderID).collect(Collectors.toSet());
+        orderIds.addAll(pendingOrders.stream().map(PendingOrder::getOrderID).collect(Collectors.toSet()));
+        orderIds.addAll(unfilledOrders.stream().map(UnfilledOrder::getOrderID).collect(Collectors.toSet()));
+        List<Integer> sortedOrderIds = new ArrayList<>(orderIds);
+        Collections.sort(sortedOrderIds);
+
+        // Loop through orderIds and build TradingOutputs
+        for (Integer orderId: sortedOrderIds) {
+            ArrayList<Transaction> transactionForOutput = new ArrayList<>();
+            ArrayList<PendingOrder> pendingOrderForOutput = new ArrayList<>();
+            ArrayList<UnfilledOrder> unfilledOrderForOutput = new ArrayList<>();
+            String tickerSymbol = "";
+
+            while(transactions.size() > 0 && transactions.get(0).getOrderID() == orderId){
+                tickerSymbol = transactions.get(0).getTickerSymbol();
+                transactionForOutput.add(transactions.remove(0));
+                transactionForOutput.add(transactions.remove(0));
             }
+
+            if(pendingOrders.size() > 0 && pendingOrders.get(0).getOrderID() == orderId) {
+                tickerSymbol = pendingOrders.get(0).getTickerSymbol();
+                pendingOrderForOutput.add(pendingOrders.remove(0));
+            }
+
+            if(unfilledOrders.size() > 0 && unfilledOrders.get(0).getOrderID() == orderId){
+                tickerSymbol = unfilledOrders.get(0).getTickerSymbol();
+                unfilledOrderForOutput.add(unfilledOrders.remove(0));
+            }
+
+            TradingOutput output = new TradingOutput(orderId, transactionForOutput, unfilledOrderForOutput, pendingOrderForOutput);
+            int binId = BinSelector.ChooseAlphabeticalBin(tickerSymbol, numberOfTradingBins);
+
+            if(!binToTradingOutputs.containsKey(binId))
+                binToTradingOutputs.put(binId, new ArrayList<>());
+
+            binToTradingOutputs.get(binId).add(output);
         }
 
-        return allUnfilledOrders;
-    }
-
-    private List<PendingOrder> GetAllPendingOrders(Map<Integer, List<TradingOutput>> tradingOutput){
-        List<PendingOrder> allPendingOrders = new ArrayList<>();
-        for(List<TradingOutput> outputForGroup : tradingOutput.values()){
-            for (TradingOutput output: outputForGroup){
-                allPendingOrders.addAll(output.PendingOrders);
-            }
-        }
-
-        return allPendingOrders;
+        return binToTradingOutputs;
     }
 
     public class MockTradingEngineTask implements Callable<Void> {
@@ -223,10 +270,11 @@ public class ClearingEngineManagerTest {
 
         private final ServerQueue centralQueue;
         private final Integer sessionId;
-        private final ConcurrentMap<Integer, List<OrderStatus>> orderStatusBuffer;
+        private final ConcurrentMap<Pair<Integer, String>, List<OrderStatus>> orderStatusBuffer;
+        private JSONParser parser = new JSONParser();
 
         public MockSessionTask(ServerQueue centralQueue, Integer sessionId,
-                                      ConcurrentMap<Integer, List<OrderStatus>> orderStatusBuffer)
+                                      ConcurrentMap<Pair<Integer, String>, List<OrderStatus>> orderStatusBuffer)
         {
             this.centralQueue = centralQueue;
             this.sessionId = sessionId;
@@ -237,8 +285,13 @@ public class ClearingEngineManagerTest {
 
             while(true) {
                 OrderStatus status = centralQueue.TakeOrderStatus(sessionId);
-                orderStatusBuffer.putIfAbsent(sessionId, new ArrayList<>());
-                orderStatusBuffer.get(sessionId).add(status);
+                JSONObject jsonObj = (JSONObject)parser.parse(status.getStatusMessage());
+
+                Pair<Integer, String> sessionTickerPair = new Pair<>
+                        (sessionId, (String)jsonObj.get(MessageJSONConstants.tickerSymbol));
+
+                orderStatusBuffer.putIfAbsent(sessionTickerPair, new ArrayList<>());
+                orderStatusBuffer.get(sessionTickerPair).add(status);
             }
         }
     }

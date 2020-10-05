@@ -104,6 +104,10 @@ public class Transaction implements Info {
         return sessionID;
     }
 
+    public long getTransactionID() {
+        return transactionID;
+    }
+
     @Override
     public String toString() {
         String result = getSessionID() + "," +

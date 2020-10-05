@@ -67,11 +67,14 @@ public class ServerQueue {
 
     private Map<Integer,TradingOutput> GroupOutputsByUserID(TradingOutput result) {
         Map<Integer,TradingOutput> groupedTradingOutputs = new HashMap<Integer,TradingOutput>();
+        int orderId = result.OrderID;
+
         if(result.Transactions != null) {
             for (Transaction transaction : result.Transactions) {
                 int userID = transaction.getUserID();
                 if (!groupedTradingOutputs.containsKey(userID)) {
-                    groupedTradingOutputs.put(userID, new TradingOutput());
+                    groupedTradingOutputs.put(userID, new TradingOutput(orderId));
+
                 }
                 groupedTradingOutputs.get(userID).Transactions.add(transaction);
             }
@@ -81,7 +84,7 @@ public class ServerQueue {
             for(PendingOrder pendingOrder : result.PendingOrders) {
                 int userID = pendingOrder.getUserID();
                 if(!groupedTradingOutputs.containsKey(userID)) {
-                    groupedTradingOutputs.put(userID, new TradingOutput());
+                    groupedTradingOutputs.put(userID, new TradingOutput(orderId));
                 }
                 groupedTradingOutputs.get(userID).PendingOrders.add(pendingOrder);
             }
@@ -91,7 +94,7 @@ public class ServerQueue {
             for(UnfilledOrder unfilledOrder : result.UnfilledOrders) {
                 int userID = unfilledOrder.getUserID();
                 if(!groupedTradingOutputs.containsKey(userID)) {
-                    groupedTradingOutputs.put(userID, new TradingOutput());
+                    groupedTradingOutputs.put(userID, new TradingOutput(orderId));
                 }
                 groupedTradingOutputs.get(userID).UnfilledOrders.add(unfilledOrder);
             }
@@ -101,11 +104,13 @@ public class ServerQueue {
 
     private Map<Integer,TradingOutput> GroupOutputsBySessionID(TradingOutput result) {
         Map<Integer,TradingOutput> groupedTradingOutputs = new HashMap<Integer,TradingOutput>();
+        int orderId = result.OrderID;
+
         if(result.Transactions != null) {
             for (Transaction transaction : result.Transactions) {
                 int sessionID = transaction.getSessionID();
                 if (!groupedTradingOutputs.containsKey(sessionID)) {
-                    groupedTradingOutputs.put(sessionID, new TradingOutput());
+                    groupedTradingOutputs.put(sessionID, new TradingOutput(orderId));
                 }
                 groupedTradingOutputs.get(sessionID).Transactions.add(transaction);
             }
@@ -115,7 +120,7 @@ public class ServerQueue {
             for(PendingOrder pendingOrder : result.PendingOrders) {
                 int userID = pendingOrder.getUserID();
                 if(!groupedTradingOutputs.containsKey(userID)) {
-                    groupedTradingOutputs.put(userID, new TradingOutput());
+                    groupedTradingOutputs.put(userID, new TradingOutput(orderId));
                 }
                 groupedTradingOutputs.get(userID).PendingOrders.add(pendingOrder);
             }
@@ -125,7 +130,7 @@ public class ServerQueue {
             for(UnfilledOrder unfilledOrder : result.UnfilledOrders) {
                 int userID = unfilledOrder.getUserID();
                 if(!groupedTradingOutputs.containsKey(userID)) {
-                    groupedTradingOutputs.put(userID, new TradingOutput());
+                    groupedTradingOutputs.put(userID, new TradingOutput(orderId));
                 }
                 groupedTradingOutputs.get(userID).UnfilledOrders.add(unfilledOrder);
             }

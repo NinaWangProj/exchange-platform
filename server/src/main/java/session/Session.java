@@ -7,7 +7,6 @@ import javafx.util.Pair;
 import clearing.data.CredentialWareHouse;
 import commonData.clearing.MarketParticipantPortfolio;
 import commonData.DTO.*;
-import commonData.DataType.OrderStatusType;
 import common.ServerQueue;
 import commonData.DataType.MarketDataType;
 import common.LimitOrderBookWareHouse;
@@ -203,11 +202,11 @@ public class Session {
         private void Process() throws Exception{
             OrderStatus orderStatus = serverQueue.TakeOrderStatus(sessionID);
             Long requestID = orderIDRequestIDMap.get(orderStatus.getOrderID());
-            for(int i = 0; i < orderStatus.getMsgType().size(); i++) {
-                OrderStatusDTO orderStatusDTO = new OrderStatusDTO(requestID,
-                        orderStatus.getMsgType().get(i),orderStatus.getStatusMessages().get(i));
-                serverQueue.PutResponseDTO(sessionID, orderStatusDTO);
-            }
+
+            OrderStatusDTO orderStatusDTO = new OrderStatusDTO(requestID,
+                    orderStatus.getMsgType(),orderStatus.getStatusMessage());
+
+            serverQueue.PutResponseDTO(sessionID, orderStatusDTO);
         }
 
         public void run() {

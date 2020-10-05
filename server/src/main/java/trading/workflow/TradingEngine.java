@@ -29,7 +29,7 @@ public class TradingEngine{
 
     //public methods
     public TradingOutput Process(MarketParticipantOrder order) throws Exception {
-        TradingOutput finalTradingOutput = new TradingOutput();
+        TradingOutput finalTradingOutput = new TradingOutput(order.getOrderID());
 
         TradingOutput output = MatchOrder(order);
         finalTradingOutput.Transactions.addAll(output.Transactions);
@@ -39,8 +39,10 @@ public class TradingEngine{
         return finalTradingOutput;
     }
 
+    // TradingOutput can no longer be result of a batch of orders, only a single order
+    @Deprecated
     public TradingOutput ProcessBatch(ArrayList<MarketParticipantOrder> orders) throws Exception{
-        TradingOutput finalTradingOutput = new TradingOutput();
+        TradingOutput finalTradingOutput = new TradingOutput(-1);
 
         for (int i = 0; i< orders.size(); i++) {
             TradingOutput output = MatchOrder(orders.get(i));
