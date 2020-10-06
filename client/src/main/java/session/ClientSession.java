@@ -46,12 +46,19 @@ public class ClientSession {
             case MarketData:
                 MarketDataDTO marketDataDTO = (MarketDataDTO) DTO;
                 String marketDataTickerSymbol = marketDataDTO.getTickerSymbol();
+                ArrayList<MarketDataItem> bids = marketDataDTO.getBids();
+                ArrayList<MarketDataItem> asks = marketDataDTO.getAsks();
 
-                Boolean pass = ValidateMarketData(marketDataDTO);
+                Boolean bidsPass = ValidateMarketData(bids);
+                Boolean asksPass = ValidateMarketData(asks);
 
-                if(pass) {
-                    marketDataWareHouse.setMarketData(marketDataTickerSymbol,
-                            marketDataDTO.getBids(), marketDataDTO.getAsks());
+                if(!bidsPass)
+                    bids.clear();
+                if(!asksPass)
+                    asks.clear();
+
+                if(bidsPass || asksPass) {
+                    marketDataWareHouse.setMarketData(marketDataTickerSymbol,bids,asks);
                 }
 
                 Object monitor = requestIDMonitorMap.get(marketDataDTO.getClientRequestID());
@@ -129,12 +136,10 @@ public class ClientSession {
         return requestIDMessageMap.get(requestID);
     }
 
-    private boolean ValidateMarketData(MarketDataDTO marketDataDTO) {
-        ArrayList<MarketDataItem> bids = marketDataDTO.getBids();
-        ArrayList<MarketDataItem> asks = marketDataDTO.getAsks();
+    private Boolean ValidateMarketData(ArrayList<MarketDataItem> marketDataItems) {
         Boolean pass = true;
 
-        if((bids.size()==1 && bids.size() == -1) || (asks.size()==1 && asks.size()==-1)) {
+        if((marketDataItems.size()==1 && marketDataItems.get(0).getSize()==-1)) {
             pass = false;
         }
 
