@@ -15,9 +15,13 @@ import session.OrderStatusEventHandler;
 import trading.limitOrderBook.OrderComparatorType;
 
 import java.util.ArrayList;
+import java.util.concurrent.Exchanger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class IntegrationTest {
+    private ExchangeClient client1;
+    private ExchangeClient client2;
+    private ExchangeClient client3;
 
     @Test
     public void ServerTestIT() throws Exception {
@@ -28,7 +32,7 @@ public class IntegrationTest {
         ServerEngine server = new ServerEngine(config);
         server.Start();
 
-        Thread.sleep(20000);
+        Thread.sleep(60000);
     }
 
     @Test
@@ -41,21 +45,13 @@ public class IntegrationTest {
         ExchangeClient client3 = new ExchangeClient();
         boolean connectedClient3 = client3.ConnectWithServer();
 
-        OrderStatusEventHandler orderStatusEventHandler = new OrderStatusEventHandler() {
-            private long requestID;
-            private String msg;
-
-            @Override
-            public void On_ReceiveOrderStatusChange(long requestID, OrderStatusType msgType, String msg) {
-                this.requestID = requestID;
-                this.msg = msg;
-            }
-        };
+        Object monitor = new Object();
+        TestEventHandler eventHandler = new TestEventHandler(monitor);
 
         //set up clients
-        client1.SetupClient(orderStatusEventHandler);
-        client2.SetupClient(orderStatusEventHandler);
-        client3.SetupClient(orderStatusEventHandler);
+        client1.SetupClient(eventHandler);
+        client2.SetupClient(eventHandler);
+        client3.SetupClient(eventHandler);
 
         //Create account for clients
         Boolean acctCreatedClient1 = client1.SubmitOpenAcctRequest("User1", "user1Password$1");
@@ -85,11 +81,13 @@ public class IntegrationTest {
         client3.SubmitMarketOrder(Direction.SELL,"AAPL",102,OrderDuration.DAY);
         client3.SubmitLimitOrder(Direction.SELL,"AAPL", 50, 115.50, OrderDuration.DAY);
         client2.SubmitMarketOrder(Direction.BUY, "AAPL", 50,OrderDuration.DAY);
-        client1.SubmitLimitOrder(Direction.BUY, "AAPL", 400,118.23,OrderDuration.DAY);
+        long requestID = client1.SubmitLimitOrder(Direction.BUY, "AAPL", 400,118.23,OrderDuration.DAY);
+        long requestID2 = client2.SubmitMarketOrder(Direction.BUY,"AAPL",102, OrderDuration.DAY);
 
-        Thread.sleep(10000);
-        //submit market data request
-        MarketData marketData = client1.SubmitMarketDataRequest(MarketDataType.Level3, "AAPL");
+        synchronized (monitor) {
+            monitor.wait();
+        }
+        MarketData marketData  = client1.SubmitMarketDataRequest(MarketDataType.Level3,"AAPL");
 
         //expected
         int expectedNumOfAsks = 0;
@@ -101,8 +99,30 @@ public class IntegrationTest {
         expectedBids.add(expectedItem2);
 
         //compare results
-        //Assertions.assertThat(expectedNumOfAsks).isEqualTo(marketData.getAsks().size());
+        Assertions.assertThat(expectedNumOfAsks).isEqualTo(marketData.getAsks().size());
         Assertions.assertThat(expectedNumOfBids).isEqualTo(marketData.getBids().size());
-        //Assertions.assertThat(expectedBids).usingRecursiveComparison().isEqualTo(marketData.getBids());
+        Assertions.assertThat(expectedBids).usingRecursiveComparison().isEqualTo(marketData.getBids());
+
+        Thread.sleep(40000);
+    }
+
+    private MarketData SubmitMarketDataRequest() throws Exception {
+        //for testing purpose; will let client1 submit market data request
+        MarketData marketData = client1.SubmitMarketDataRequest(MarketDataType.Level3, "AAPL");
+        return marketData;
+    }
+}
+
+class TestEventHandler implements OrderStatusEventHandler {
+    private Object monitor;
+    public TestEventHandler(Object monitor) {
+        this.monitor = monitor;
+    }
+
+    @Override
+    public void On_ReceiveOrderStatusChange(long requestID, OrderStatusType msgType, String msg) throws Exception {
+        if(requestID == (long)7) {
+            monitor.notifyAll();
+        }
     }
 }
