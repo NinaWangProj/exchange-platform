@@ -32,7 +32,7 @@ public class IntegrationTest {
         ServerEngine server = new ServerEngine(config);
         server.Start();
 
-        Thread.sleep(60000);
+        Thread.sleep(5000);
     }
 
     @Test
@@ -69,24 +69,8 @@ public class IntegrationTest {
         Boolean loginClient3 = client3.SubmitLoginRequest("User3", "user3Password$3");
         System.out.print(loginClient3);
 
-        //submit orders from diff clients in serial
-        client1.SubmitLimitOrder(Direction.BUY,"AAPL",100, 116.01, OrderDuration.DAY);
-        client1.SubmitLimitOrder(Direction.BUY,"TSLA",1, 425.23, OrderDuration.DAY);
-        client2.SubmitLimitOrder(Direction.BUY,"AAPL",102, 115.23, OrderDuration.DAY);
-        client2.SubmitMarketOrder(Direction.BUY,"AAPL",102, OrderDuration.DAY);
-        client1.SubmitLimitOrder(Direction.BUY,"AAPL",50, 116.50, OrderDuration.DAY);
-        client2.SubmitLimitOrder(Direction.BUY,"AAPL",2, 115.50, OrderDuration.DAY);
-        client3.SubmitLimitOrder(Direction.SELL,"AAPL",200, 117.17, OrderDuration.DAY);
-        client3.SubmitLimitOrder(Direction.SELL,"AAPL",102, 116.97, OrderDuration.DAY);
-        client3.SubmitMarketOrder(Direction.SELL,"AAPL",102,OrderDuration.DAY);
-        client3.SubmitLimitOrder(Direction.SELL,"AAPL", 50, 115.50, OrderDuration.DAY);
-        client2.SubmitMarketOrder(Direction.BUY, "AAPL", 50,OrderDuration.DAY);
-        long requestID = client1.SubmitLimitOrder(Direction.BUY, "AAPL", 400,118.23,OrderDuration.DAY);
-        long requestID2 = client2.SubmitMarketOrder(Direction.BUY,"AAPL",102, OrderDuration.DAY);
 
-        synchronized (monitor) {
-            monitor.wait();
-        }
+
         MarketData marketData  = client1.SubmitMarketDataRequest(MarketDataType.Level3,"AAPL");
 
         //expected
@@ -103,26 +87,60 @@ public class IntegrationTest {
         Assertions.assertThat(expectedNumOfBids).isEqualTo(marketData.getBids().size());
         Assertions.assertThat(expectedBids).usingRecursiveComparison().isEqualTo(marketData.getBids());
 
-        Thread.sleep(40000);
+        Thread.sleep(3000);
     }
 
-    private MarketData SubmitMarketDataRequest() throws Exception {
-        //for testing purpose; will let client1 submit market data request
-        MarketData marketData = client1.SubmitMarketDataRequest(MarketDataType.Level3, "AAPL");
-        return marketData;
+    private void SubmitSerialOrders(Object monitor) throws Exception {
+        //Three clients submitting orders in serial
+        client1.SubmitLimitOrder(Direction.BUY,"AAPL",100, 116.01, OrderDuration.DAY);
+        synchronized (monitor) {
+            monitor.wait();
+        }
+        client1.SubmitLimitOrder(Direction.BUY,"TSLA",1, 425.23, OrderDuration.DAY);
+
+        client2.SubmitLimitOrder(Direction.BUY,"AAPL",102, 115.23, OrderDuration.DAY);
+        client2.SubmitMarketOrder(Direction.BUY,"AAPL",102, OrderDuration.DAY);
+
+
+        client1.SubmitLimitOrder(Direction.BUY,"AAPL",50, 116.50, OrderDuration.DAY);
+
+        client2.SubmitLimitOrder(Direction.BUY,"AAPL",2, 115.50, OrderDuration.DAY);
+
+        client3.SubmitLimitOrder(Direction.SELL,"AAPL",200, 117.17, OrderDuration.DAY);
+        client3.SubmitLimitOrder(Direction.SELL,"AAPL",102, 116.97, OrderDuration.DAY);
+        client3.SubmitMarketOrder(Direction.SELL,"AAPL",102,OrderDuration.DAY);
+        client3.SubmitLimitOrder(Direction.SELL,"AAPL", 50, 115.50, OrderDuration.DAY);
+
+
+        client2.SubmitMarketOrder(Direction.BUY, "AAPL", 50,OrderDuration.DAY);
+
+
+        long requestID = client1.SubmitLimitOrder(Direction.BUY, "AAPL", 400,118.23,OrderDuration.DAY);
+
+
+        long requestID2 = client2.SubmitMarketOrder(Direction.BUY,"AAPL",102, OrderDuration.DAY);
+
+        synchronized (monitor) {
+            monitor.wait();
+        }
     }
+
+
 }
 
 class TestEventHandler implements OrderStatusEventHandler {
     private Object monitor;
+
     public TestEventHandler(Object monitor) {
         this.monitor = monitor;
     }
 
     @Override
     public void On_ReceiveOrderStatusChange(long requestID, OrderStatusType msgType, String msg) throws Exception {
-        if(requestID == (long)7) {
-            monitor.notifyAll();
+        synchronized (monitor) {
+            if (monitor != null)
+                monitor.notify();
         }
+        System.out.print(requestID);
     }
 }

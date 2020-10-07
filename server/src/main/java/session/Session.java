@@ -200,13 +200,15 @@ public class Session {
 
     private class OrderStatusProcessor implements Runnable {
         private void Process() throws Exception{
-            OrderStatus orderStatus = serverQueue.TakeOrderStatus(sessionID);
-            Long requestID = orderIDRequestIDMap.get(orderStatus.getOrderID());
+            while(true) {
+                OrderStatus orderStatus = serverQueue.TakeOrderStatus(sessionID);
+                Long requestID = orderIDRequestIDMap.get(orderStatus.getOrderID());
 
-            OrderStatusDTO orderStatusDTO = new OrderStatusDTO(requestID,
-                    orderStatus.getMsgType(),orderStatus.getStatusMessage());
+                OrderStatusDTO orderStatusDTO = new OrderStatusDTO(requestID,
+                        orderStatus.getMsgType(), orderStatus.getStatusMessage());
 
-            serverQueue.PutResponseDTO(sessionID, orderStatusDTO);
+                serverQueue.PutResponseDTO(sessionID, orderStatusDTO);
+            }
         }
 
         public void run() {

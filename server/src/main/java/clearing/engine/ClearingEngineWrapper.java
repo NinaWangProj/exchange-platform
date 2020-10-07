@@ -24,8 +24,9 @@ public class ClearingEngineWrapper implements Runnable {
     }
 
     public void Start() throws Exception {
+        ClearingEngine clearingEngine = new ClearingEngine(DTCC);
+
         while(true) {
-            ClearingEngine clearingEngine = new ClearingEngine(DTCC);
             TradingOutput output = systemServerQueue.TakeTradingOutput(clearingEngineWrapperIndex);
 
             clearingEngine.ClearTrade(output.Transactions);
