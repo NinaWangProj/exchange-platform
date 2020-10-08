@@ -31,7 +31,7 @@ public class IntegrationTest {
         ServerEngine server = new ServerEngine(config);
         server.Start();
 
-        Thread.sleep(1500000);
+        Thread.sleep(3000);
     }
 
     @Test
@@ -91,7 +91,7 @@ public class IntegrationTest {
         Assertions.assertThat(expectedNumOfBids).isEqualTo(marketData.getBids().size());
         Assertions.assertThat(expectedBids).usingRecursiveComparison().isEqualTo(marketData.getBids());
 
-        Thread.sleep(3000);
+        Thread.sleep(1000);
     }
 
     private void SubmitMarketOrder(ExchangeClient client, Object clientMonitor, Direction direction, String tickerSymbol, int size,
