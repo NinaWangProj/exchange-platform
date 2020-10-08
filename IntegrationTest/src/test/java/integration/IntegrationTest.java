@@ -15,7 +15,6 @@ import session.OrderStatusEventHandler;
 import trading.limitOrderBook.OrderComparatorType;
 
 import java.util.ArrayList;
-import java.util.concurrent.Exchanger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class IntegrationTest {
@@ -32,26 +31,32 @@ public class IntegrationTest {
         ServerEngine server = new ServerEngine(config);
         server.Start();
 
-        Thread.sleep(5000);
+        Thread.sleep(1500000);
     }
 
     @Test
     public void SingleClientTestIT() throws Exception {
         //connect clients with server
-        ExchangeClient client1 = new ExchangeClient();
+        client1 = new ExchangeClient();
         boolean connectedClient1 = client1.ConnectWithServer();
-        ExchangeClient client2 = new ExchangeClient();
+        client2 = new ExchangeClient();
         boolean connectedClient2 = client2.ConnectWithServer();
-        ExchangeClient client3 = new ExchangeClient();
+        client3 = new ExchangeClient();
         boolean connectedClient3 = client3.ConnectWithServer();
 
-        Object monitor = new Object();
-        TestEventHandler eventHandler = new TestEventHandler(monitor);
+        Object client1Monitor = new Object();
+        TestEventHandler eventHandler1 = new TestEventHandler(client1Monitor);
+
+        Object client2Monitor = new Object();
+        TestEventHandler eventHandler2 = new TestEventHandler(client2Monitor);
+
+        Object client3Monitor = new Object();
+        TestEventHandler eventHandler3 = new TestEventHandler(client3Monitor);
 
         //set up clients
-        client1.SetupClient(eventHandler);
-        client2.SetupClient(eventHandler);
-        client3.SetupClient(eventHandler);
+        client1.SetupClient(eventHandler1);
+        client2.SetupClient(eventHandler2);
+        client3.SetupClient(eventHandler3);
 
         //Create account for clients
         Boolean acctCreatedClient1 = client1.SubmitOpenAcctRequest("User1", "user1Password$1");
@@ -69,8 +74,7 @@ public class IntegrationTest {
         Boolean loginClient3 = client3.SubmitLoginRequest("User3", "user3Password$3");
         System.out.print(loginClient3);
 
-
-
+        SubmitSerialOrders(client1Monitor,client2Monitor,client3Monitor);
         MarketData marketData  = client1.SubmitMarketDataRequest(MarketDataType.Level3,"AAPL");
 
         //expected
@@ -90,56 +94,57 @@ public class IntegrationTest {
         Thread.sleep(3000);
     }
 
-    private void SubmitSerialOrders(Object monitor) throws Exception {
-        //Three clients submitting orders in serial
-        client1.SubmitLimitOrder(Direction.BUY,"AAPL",100, 116.01, OrderDuration.DAY);
-        synchronized (monitor) {
-            monitor.wait();
-        }
-        client1.SubmitLimitOrder(Direction.BUY,"TSLA",1, 425.23, OrderDuration.DAY);
-
-        client2.SubmitLimitOrder(Direction.BUY,"AAPL",102, 115.23, OrderDuration.DAY);
-        client2.SubmitMarketOrder(Direction.BUY,"AAPL",102, OrderDuration.DAY);
-
-
-        client1.SubmitLimitOrder(Direction.BUY,"AAPL",50, 116.50, OrderDuration.DAY);
-
-        client2.SubmitLimitOrder(Direction.BUY,"AAPL",2, 115.50, OrderDuration.DAY);
-
-        client3.SubmitLimitOrder(Direction.SELL,"AAPL",200, 117.17, OrderDuration.DAY);
-        client3.SubmitLimitOrder(Direction.SELL,"AAPL",102, 116.97, OrderDuration.DAY);
-        client3.SubmitMarketOrder(Direction.SELL,"AAPL",102,OrderDuration.DAY);
-        client3.SubmitLimitOrder(Direction.SELL,"AAPL", 50, 115.50, OrderDuration.DAY);
-
-
-        client2.SubmitMarketOrder(Direction.BUY, "AAPL", 50,OrderDuration.DAY);
-
-
-        long requestID = client1.SubmitLimitOrder(Direction.BUY, "AAPL", 400,118.23,OrderDuration.DAY);
-
-
-        long requestID2 = client2.SubmitMarketOrder(Direction.BUY,"AAPL",102, OrderDuration.DAY);
-
-        synchronized (monitor) {
-            monitor.wait();
+    private void SubmitMarketOrder(ExchangeClient client, Object clientMonitor, Direction direction, String tickerSymbol, int size,
+                                   OrderDuration duration) throws Exception {
+        client.SubmitMarketOrder(direction,tickerSymbol,size,duration);
+        synchronized (clientMonitor) {
+            clientMonitor.wait();
         }
     }
 
+    private void SubmitLimitOrder(ExchangeClient client, Object clientMonitor, Direction direction, String tickerSymbol, int size,
+                                  double price, OrderDuration duration) throws Exception {
+        client.SubmitLimitOrder(direction,tickerSymbol,size,price,duration);
+        synchronized (clientMonitor) {
+            clientMonitor.wait();
+        }
+    }
 
+    private void SubmitSerialOrders(Object client1Monitor, Object client2Monitor, Object client3Monitor) throws Exception {
+        //Three clients submitting orders in serial
+        SubmitLimitOrder(client1,client1Monitor, Direction.BUY,"AAPL",100, 116.01, OrderDuration.DAY);
+        SubmitLimitOrder(client1, client1Monitor, Direction.BUY,"TSLA",1, 425.23, OrderDuration.DAY);
+        SubmitLimitOrder(client2, client2Monitor, Direction.BUY,"AAPL",102, 115.23, OrderDuration.DAY);
+        SubmitMarketOrder(client2, client2Monitor, Direction.BUY,"AAPL",102, OrderDuration.DAY);
+        SubmitLimitOrder(client1, client1Monitor,Direction.BUY,"AAPL",50, 116.50, OrderDuration.DAY);
+        SubmitLimitOrder(client2, client2Monitor,Direction.BUY,"AAPL",2, 115.50, OrderDuration.DAY);
+        SubmitLimitOrder(client3, client3Monitor,Direction.SELL,"AAPL",200, 117.17, OrderDuration.DAY);
+        SubmitLimitOrder(client3, client3Monitor,Direction.SELL,"AAPL",102, 116.97, OrderDuration.DAY);
+        SubmitMarketOrder(client3, client3Monitor,Direction.SELL,"AAPL",102,OrderDuration.DAY);
+        SubmitLimitOrder(client3, client3Monitor,Direction.SELL,"AAPL", 50, 115.50, OrderDuration.DAY);
+        SubmitMarketOrder(client2, client2Monitor,Direction.BUY, "AAPL", 50,OrderDuration.DAY);
+        SubmitLimitOrder(client1,client1Monitor,Direction.BUY, "AAPL", 400,118.23,OrderDuration.DAY);
+        SubmitMarketOrder(client2, client2Monitor,Direction.BUY,"AAPL",102, OrderDuration.DAY);
+    }
 }
 
 class TestEventHandler implements OrderStatusEventHandler {
     private Object monitor;
+    private ArrayList<Long> requestIDs;
 
     public TestEventHandler(Object monitor) {
         this.monitor = monitor;
+        requestIDs = new ArrayList<>();
     }
 
     @Override
     public void On_ReceiveOrderStatusChange(long requestID, OrderStatusType msgType, String msg) throws Exception {
-        synchronized (monitor) {
-            if (monitor != null)
-                monitor.notify();
+        if (!requestIDs.contains(requestID)) {
+            requestIDs.add(requestID);
+            synchronized (monitor) {
+                if (monitor != null)
+                    monitor.notifyAll();
+            }
         }
         System.out.print(requestID);
     }
