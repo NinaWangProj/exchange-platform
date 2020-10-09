@@ -94,37 +94,37 @@ public class IntegrationTest {
         Thread.sleep(1000);
     }
 
-    private void SubmitMarketOrder(ExchangeClient client, Object clientMonitor, Direction direction, String tickerSymbol, int size,
-                                   OrderDuration duration) throws Exception {
+    private void SubmitSerialOrders(Object client1Monitor, Object client2Monitor, Object client3Monitor) throws Exception {
+        //Three clients submitting orders in serial
+        SubmitLimitOrderInSerial(client1,client1Monitor, Direction.BUY,"AAPL",100, 116.01, OrderDuration.DAY);
+        SubmitLimitOrderInSerial(client1, client1Monitor, Direction.BUY,"TSLA",1, 425.23, OrderDuration.DAY);
+        SubmitLimitOrderInSerial(client2, client2Monitor, Direction.BUY,"AAPL",102, 115.23, OrderDuration.DAY);
+        SubmitMarketOrderInSerial(client2, client2Monitor, Direction.BUY,"AAPL",102, OrderDuration.DAY);
+        SubmitLimitOrderInSerial(client1, client1Monitor,Direction.BUY,"AAPL",50, 116.50, OrderDuration.DAY);
+        SubmitLimitOrderInSerial(client2, client2Monitor,Direction.BUY,"AAPL",2, 115.50, OrderDuration.DAY);
+        SubmitLimitOrderInSerial(client3, client3Monitor,Direction.SELL,"AAPL",200, 117.17, OrderDuration.DAY);
+        SubmitLimitOrderInSerial(client3, client3Monitor,Direction.SELL,"AAPL",102, 116.97, OrderDuration.DAY);
+        SubmitMarketOrderInSerial(client3, client3Monitor,Direction.SELL,"AAPL",102,OrderDuration.DAY);
+        SubmitLimitOrderInSerial(client3, client3Monitor,Direction.SELL,"AAPL", 50, 115.50, OrderDuration.DAY);
+        SubmitMarketOrderInSerial(client2, client2Monitor,Direction.BUY, "AAPL", 50,OrderDuration.DAY);
+        SubmitLimitOrderInSerial(client1,client1Monitor,Direction.BUY, "AAPL", 400,118.23,OrderDuration.DAY);
+        SubmitMarketOrderInSerial(client2, client2Monitor,Direction.BUY,"AAPL",102, OrderDuration.DAY);
+    }
+
+    private void SubmitMarketOrderInSerial(ExchangeClient client, Object clientMonitor, Direction direction, String tickerSymbol, int size,
+                                           OrderDuration duration) throws Exception {
         client.SubmitMarketOrder(direction,tickerSymbol,size,duration);
         synchronized (clientMonitor) {
             clientMonitor.wait();
         }
     }
 
-    private void SubmitLimitOrder(ExchangeClient client, Object clientMonitor, Direction direction, String tickerSymbol, int size,
-                                  double price, OrderDuration duration) throws Exception {
+    private void SubmitLimitOrderInSerial(ExchangeClient client, Object clientMonitor, Direction direction, String tickerSymbol, int size,
+                                          double price, OrderDuration duration) throws Exception {
         client.SubmitLimitOrder(direction,tickerSymbol,size,price,duration);
         synchronized (clientMonitor) {
             clientMonitor.wait();
         }
-    }
-
-    private void SubmitSerialOrders(Object client1Monitor, Object client2Monitor, Object client3Monitor) throws Exception {
-        //Three clients submitting orders in serial
-        SubmitLimitOrder(client1,client1Monitor, Direction.BUY,"AAPL",100, 116.01, OrderDuration.DAY);
-        SubmitLimitOrder(client1, client1Monitor, Direction.BUY,"TSLA",1, 425.23, OrderDuration.DAY);
-        SubmitLimitOrder(client2, client2Monitor, Direction.BUY,"AAPL",102, 115.23, OrderDuration.DAY);
-        SubmitMarketOrder(client2, client2Monitor, Direction.BUY,"AAPL",102, OrderDuration.DAY);
-        SubmitLimitOrder(client1, client1Monitor,Direction.BUY,"AAPL",50, 116.50, OrderDuration.DAY);
-        SubmitLimitOrder(client2, client2Monitor,Direction.BUY,"AAPL",2, 115.50, OrderDuration.DAY);
-        SubmitLimitOrder(client3, client3Monitor,Direction.SELL,"AAPL",200, 117.17, OrderDuration.DAY);
-        SubmitLimitOrder(client3, client3Monitor,Direction.SELL,"AAPL",102, 116.97, OrderDuration.DAY);
-        SubmitMarketOrder(client3, client3Monitor,Direction.SELL,"AAPL",102,OrderDuration.DAY);
-        SubmitLimitOrder(client3, client3Monitor,Direction.SELL,"AAPL", 50, 115.50, OrderDuration.DAY);
-        SubmitMarketOrder(client2, client2Monitor,Direction.BUY, "AAPL", 50,OrderDuration.DAY);
-        SubmitLimitOrder(client1,client1Monitor,Direction.BUY, "AAPL", 400,118.23,OrderDuration.DAY);
-        SubmitMarketOrder(client2, client2Monitor,Direction.BUY,"AAPL",102, OrderDuration.DAY);
     }
 }
 
