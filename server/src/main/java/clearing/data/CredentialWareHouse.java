@@ -1,16 +1,18 @@
 package clearing.data;
 
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import javafx.util.Pair;
 import org.supercsv.io.CsvListWriter;
 import org.supercsv.io.ICsvListWriter;
 import org.supercsv.prefs.CsvPreference;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class CredentialWareHouse {
     //<userName,<passWord,userID>>
@@ -81,4 +83,20 @@ public class CredentialWareHouse {
             e.printStackTrace();
         }
     }
+
+    public void WriteToCSVFile2(OutputStream outputStream) {
+        OutputStreamWriter outputWriter = new OutputStreamWriter(outputStream);
+        List<CredentialRow> credentials = LoginCredentialMap.entrySet().stream().map(e ->
+                new CredentialRow(e.getKey(), e.getValue().getKey(), e.getValue().getValue())).collect(Collectors.toList());
+
+        StatefulBeanToCsv credentialsToCsv = new StatefulBeanToCsvBuilder(outputWriter).build();
+
+        try {
+            credentialsToCsv.write(credentials);
+            outputWriter.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
