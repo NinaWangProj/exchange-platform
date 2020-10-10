@@ -1,5 +1,6 @@
 package common;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import commonData.Order.Direction;
 import commonData.Order.MarketParticipantOrder;
 import commonData.marketData.MarketDataItem;
@@ -12,6 +13,9 @@ import trading.limitOrderBook.OrderComparator;
 import trading.limitOrderBook.OrderComparatorType;
 
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -117,5 +121,17 @@ public class LimitOrderBookWareHouse {
         }
 
         return new Pair<>(bids,asks);
+    }
+
+    public void WriteToJSONString(OutputStream outputStream) {
+        OutputStreamWriter outputWriter = new OutputStreamWriter(outputStream);
+        ObjectMapper JSONObjectMapper = new ObjectMapper();
+        try {
+            String jsonStr = JSONObjectMapper.writeValueAsString(this);
+            outputWriter.write(jsonStr);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

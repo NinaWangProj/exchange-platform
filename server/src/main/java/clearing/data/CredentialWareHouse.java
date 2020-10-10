@@ -1,11 +1,19 @@
 package clearing.data;
 
 import javafx.util.Pair;
+import org.supercsv.io.CsvListWriter;
+import org.supercsv.io.ICsvListWriter;
+import org.supercsv.prefs.CsvPreference;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CredentialWareHouse {
+    //<userName,<passWord,userID>>
     private HashMap<String, Pair<String,Integer>> LoginCredentialMap;
     private AtomicInteger currentAvailableMaxUserID;
 
@@ -52,5 +60,25 @@ public class CredentialWareHouse {
 
     public HashMap<String, Pair<String, Integer>> getLoginCredentialMap() {
         return LoginCredentialMap;
+    }
+
+    public void WriteToCSVFile(OutputStream outputStream) {
+        OutputStreamWriter outputWriter = new OutputStreamWriter(outputStream);
+        try (ICsvListWriter listWriter = new CsvListWriter(outputWriter, CsvPreference.STANDARD_PREFERENCE)){
+            int count = 0;
+            // write the header
+            final String[] header = new String[] { "UserName", "Password", "UserID", "currentAvailableMaxUserID"};
+            listWriter.writeHeader(header);
+
+            for (Map.Entry<String, Pair<String,Integer>> entry : LoginCredentialMap.entrySet()){
+                if(count == 0) {
+                    listWriter.write(entry.getKey(), entry.getValue().getKey(), entry.getValue().getValue(),currentAvailableMaxUserID);
+                }
+                listWriter.write(entry.getKey(), entry.getValue().getKey(), entry.getValue().getValue());
+                count++;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
