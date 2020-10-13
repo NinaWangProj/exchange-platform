@@ -37,7 +37,7 @@ public class LimitOrderBookWareHouse {
     private OrderComparator askComparator;
     private ConcurrentHashMap<String,ReadWriteLock> locks;
 
-    public LimitOrderBookWareHouse(OrderComparatorType comparatorType,
+    public LimitOrderBookWareHouse(OrderComparatorType comparatorType,ConcurrentHashMap<String,ReadWriteLock> locks,
                                    ConcurrentHashMap<String, Pair<SortedOrderList, SortedOrderList>> limitOrderBooks) {
         this.limitOrderBooks = limitOrderBooks;
 
@@ -46,7 +46,7 @@ public class LimitOrderBookWareHouse {
             askComparator = new AskPriceTimeComparator();
         }
 
-        locks = new ConcurrentHashMap<String,ReadWriteLock>();
+        this.locks = locks;
     }
 
     public LimitOrderBookWareHouse(OrderComparatorType comparatorType) {
@@ -57,14 +57,6 @@ public class LimitOrderBookWareHouse {
         }
 
         locks = new ConcurrentHashMap<String,ReadWriteLock>();
-    }
-
-    public boolean ValidateRequest(String tickerSymbol) {
-        boolean found = false;
-        if(limitOrderBooks.containsKey(tickerSymbol)) {
-            found = true;
-        }
-        return found;
     }
 
     public Pair<SortedOrderList, SortedOrderList> GetLimitOrderBook(String tickerSymbol) {
@@ -218,11 +210,19 @@ public class LimitOrderBookWareHouse {
 
         for(Map.Entry<String, ArrayList<MarketParticipantOrder>> entry : bidBooks.entrySet()) {
             String tickerSymbol = entry.getKey();
-            if(!deserializedOrderBooks.contains(entry.getKey()))
-                deserializedOrderBooks.put(tickerSymbol, null);
+            ReadWriteLock lock = new ReentrantReadWriteLock();
+            locks.put(tickerSymbol, lock);
+            SortedOrderList bidsList = new SortedOrderList(bidComparator, entry.getValue(), lock,
+                    tickerSymbol, Direction.BUY);
+            SortedOrderList asksList;
+            if(askBooks.containsKey(tickerSymbol)) {
+                asksList = new SortedOrderList(askComparator,askBooks.get(tickerSymbol), lock,
+                        tickerSymbol, Direction.SELL);
+            } else {
+                asksList = new SortedOrderList(askComparator,lock,tickerSymbol,Direction.SELL);
+            }
 
-            SortedOrderList bidsList = new SortedOrderList(bidComparator, )
-            deserializedOrderBooks.get(tickerSymbol) = new Pair<SortedOrderList, SortedOrderList>();
+            deserializedOrderBooks.putIfAbsent(tickerSymbol, new Pair<>(bidsList, asksList));
         }
 
         for(Map.Entry<String, ArrayList<MarketParticipantOrder>> entry : askBooks.entrySet()) {
