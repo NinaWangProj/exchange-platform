@@ -225,17 +225,18 @@ public class LimitOrderBookWareHouse {
             deserializedOrderBooks.get(tickerSymbol) = new Pair<SortedOrderList, SortedOrderList>();
         }
 
-        for(Map.Entry entry : askBooks.entrySet()) {
+        for(Map.Entry<String, ArrayList<MarketParticipantOrder>> entry : askBooks.entrySet()) {
+            String tickerSymbol = entry.getKey();
+            ReadWriteLock lock = new ReentrantReadWriteLock();
+            locks.put(tickerSymbol, lock);
+            SortedOrderList asksList = new SortedOrderList(askComparator, entry.getValue(), lock,
+                    tickerSymbol, Direction.SELL);
 
+            deserializedOrderBooks.putIfAbsent(tickerSymbol, new Pair<>(new SortedOrderList(bidComparator,lock,tickerSymbol, Direction.BUY)
+                    , asksList));
         }
 
-
-
-
-
-        limitOrderBookWareHouse = new LimitOrderBookWareHouse(comparatorType,deserializedOrderBooks);
-
-
+        limitOrderBookWareHouse = new LimitOrderBookWareHouse(comparatorType, locks, deserializedOrderBooks);
 
         return limitOrderBookWareHouse;
     }

@@ -20,19 +20,17 @@ public class SessionManager implements Runnable{
     private int baseOrderID;
     private CredentialWareHouse credentialWareHouse;
     private LimitOrderBookWareHouse dataWareHouse;
-    private ConcurrentHashMap<String,ReadWriteLock> locks;
     private HashMap<Integer, MarketParticipantPortfolio> portfoliosMap;
 
     public SessionManager(ServerSocket serverSocket, ServerQueue systemServerQueue, int baseOrderID,
                           CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse dataWareHouse,
-                          ConcurrentHashMap<String,ReadWriteLock> locks, HashMap<Integer, MarketParticipantPortfolio> portfoliosMap) {
+                          HashMap<Integer, MarketParticipantPortfolio> portfoliosMap) {
         this.sessionUniverse = new ArrayList<Session>();
         this.serverSocket = serverSocket;
         this.systemServerQueue = systemServerQueue;
         this.baseOrderID = baseOrderID;
         this.credentialWareHouse = credentialWareHouse;
         this.dataWareHouse = dataWareHouse;
-        this.locks = locks;
         this.portfoliosMap = portfoliosMap;
         nextAvailableSessionID = 0;
     }
@@ -41,7 +39,7 @@ public class SessionManager implements Runnable{
         while (true) {
             Socket clientSocket = serverSocket.accept();
             Session session = new Session(clientSocket, nextAvailableSessionID, systemServerQueue, baseOrderID,
-                    credentialWareHouse,dataWareHouse,locks, portfoliosMap);
+                    credentialWareHouse,dataWareHouse, portfoliosMap);
             sessionUniverse.add(session);
             nextAvailableSessionID += 1;
             session.RunCurrentSession();

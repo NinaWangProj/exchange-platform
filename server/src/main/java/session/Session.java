@@ -30,10 +30,7 @@ public class Session {
     private CredentialWareHouse credentialWareHouse;
     private LimitOrderBookWareHouse limitOrderBookWareHouse;
     private HashMap<Integer, MarketParticipantPortfolio> portfolioHashMap;
-    //private MarketParticipantPortfolio clientPortfolio;
-    private ConcurrentHashMap<String,ReadWriteLock> locks;
     private HashMap<Integer,Long> orderIDRequestIDMap;
-
     public static AtomicInteger currentAvailableOrderID;
 
     static {
@@ -42,13 +39,12 @@ public class Session {
 
     public Session(Socket clientSocket, int sessionID, ServerQueue serverQueue, int baseOrderID,
                    CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse limitOrderBookWareHouse,
-                   ConcurrentHashMap<String,ReadWriteLock> locks, HashMap<Integer, MarketParticipantPortfolio> portfolioHashMap) {
+                   HashMap<Integer, MarketParticipantPortfolio> portfolioHashMap) {
         this.clientSocket = clientSocket;
         this.sessionID = sessionID;
         this.serverQueue = serverQueue;
         this.credentialWareHouse = credentialWareHouse;
         this.limitOrderBookWareHouse = limitOrderBookWareHouse;
-        this.locks = locks;
         this.portfolioHashMap = portfolioHashMap;
         this.orderIDRequestIDMap = new HashMap<Integer,Long>();
         if(currentAvailableOrderID == null) {
