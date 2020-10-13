@@ -185,8 +185,8 @@ public class LimitOrderBookWareHouse {
         }
     }
 
-    public static LimitOrderBookWareHouse ReadFromCSV(InputStream bidsInputStream, InputStream asksInputStream,
-                                                      OrderComparatorType comparatorType) {
+    public static LimitOrderBookWareHouse BuildFromCSV(InputStream bidsInputStream, InputStream asksInputStream,
+                                                       OrderComparatorType comparatorType) {
         LimitOrderBookWareHouse limitOrderBookWareHouse = null;
 
         InputStreamReader bidsInputReader = new InputStreamReader(bidsInputStream);

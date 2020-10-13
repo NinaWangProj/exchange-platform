@@ -113,7 +113,7 @@ public class CredentialWareHouse {
         }
     }
 
-    public static CredentialWareHouse ReadFromJSON(InputStream inputStream) {
+    public static CredentialWareHouse BuildFromJSON(InputStream inputStream) {
         ObjectMapper JSONObjectMapper = new ObjectMapper();
         CredentialWareHouse credentialWareHouse = null;
         try {
