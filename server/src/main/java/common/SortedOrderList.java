@@ -34,6 +34,16 @@ public class SortedOrderList {
         this.direction = direction;
     }
 
+    public SortedOrderList(OrderComparator comparator, ArrayList<MarketParticipantOrder> sortedList, ReadWriteLock lock,
+                           String tickerSymbol, Direction direction) {
+        this.sortedList = sortedList;
+        this.comparator = comparator;
+        tracker = new ChangeTracker();
+        this.lock = lock;
+        this.tickerSymbol = tickerSymbol;
+        this.direction = direction;
+    }
+
     public SortedOrderList(OrderComparator comparator, Direction direction) {
         sortedList = new ArrayList<MarketParticipantOrder>();
         this.comparator = comparator;

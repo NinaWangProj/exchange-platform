@@ -1,5 +1,6 @@
 package clearing.data;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import javafx.util.Pair;
@@ -97,6 +98,31 @@ public class CredentialWareHouse {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void WriteToJSONString(OutputStream outputStream) {
+        OutputStreamWriter outputWriter = new OutputStreamWriter(outputStream);
+        ObjectMapper JSONObjectMapper = new ObjectMapper();
+        try {
+            String jsonStr = JSONObjectMapper.writeValueAsString(this);
+            outputWriter.write(jsonStr);
+            //JSONObjectMapper.writeValue(outputStream,this);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static CredentialWareHouse ReadFromJSON(InputStream inputStream) {
+        ObjectMapper JSONObjectMapper = new ObjectMapper();
+        CredentialWareHouse credentialWareHouse = null;
+        try {
+            credentialWareHouse = JSONObjectMapper.readValue(inputStream,CredentialWareHouse.class);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return credentialWareHouse;
     }
 
 }

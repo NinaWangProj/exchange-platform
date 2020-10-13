@@ -5,6 +5,7 @@ import commonData.clearing.MarketParticipantPortfolio;
 import commonData.clearing.SecurityCertificate;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.HashMap;
@@ -35,5 +36,17 @@ public class DTCCWarehouse {
             outputWriter.flush();
             outputWriter.close();
         }
+    }
+
+    public static DTCCWarehouse ReadFromJSON(InputStream inputStream) {
+        ObjectMapper JSONObjectMapper = new ObjectMapper();
+        DTCCWarehouse dtccWarehouse = null;
+        try {
+            dtccWarehouse = JSONObjectMapper.readValue(inputStream,DTCCWarehouse.class);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return dtccWarehouse;
     }
 }

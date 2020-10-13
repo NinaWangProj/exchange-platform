@@ -1,11 +1,19 @@
 package common;
 
+import clearing.data.CredentialRow;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.opencsv.bean.CsvToBean;
+import com.opencsv.bean.CsvToBeanBuilder;
+import com.opencsv.bean.StatefulBeanToCsv;
+import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import commonData.Order.Direction;
 import commonData.Order.MarketParticipantOrder;
 import commonData.marketData.MarketDataItem;
 import javafx.util.Pair;
 import commonData.DataType.MarketDataType;
+import jdk.internal.util.xml.impl.Input;
+import jdk.javadoc.internal.doclets.toolkit.util.DocFinder;
+import org.graalvm.compiler.core.common.type.ArithmeticOpTable;
 import session.Session;
 import trading.limitOrderBook.AskPriceTimeComparator;
 import trading.limitOrderBook.BidPriceTimeComparator;
@@ -13,19 +21,33 @@ import trading.limitOrderBook.OrderComparator;
 import trading.limitOrderBook.OrderComparatorType;
 
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 public class LimitOrderBookWareHouse {
     private ConcurrentHashMap<String, Pair<SortedOrderList, SortedOrderList>> limitOrderBooks;
     private OrderComparator bidComparator;
     private OrderComparator askComparator;
     private ConcurrentHashMap<String,ReadWriteLock> locks;
+
+    public LimitOrderBookWareHouse(OrderComparatorType comparatorType,
+                                   ConcurrentHashMap<String, Pair<SortedOrderList, SortedOrderList>> limitOrderBooks) {
+        this.limitOrderBooks = limitOrderBooks;
+
+        if(comparatorType==OrderComparatorType.PriceTimePriority) {
+            bidComparator = new BidPriceTimeComparator();
+            askComparator = new AskPriceTimeComparator();
+        }
+
+        locks = new ConcurrentHashMap<String,ReadWriteLock>();
+    }
 
     public LimitOrderBookWareHouse(OrderComparatorType comparatorType) {
         limitOrderBooks = new ConcurrentHashMap<String, Pair<SortedOrderList, SortedOrderList>>();
@@ -133,5 +155,88 @@ public class LimitOrderBookWareHouse {
         catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public void WriteToCSV(OutputStream bidsOutputStream, OutputStream asksOutputStream) {
+        OutputStreamWriter bidsOutputWriter = new OutputStreamWriter(bidsOutputStream);
+        OutputStreamWriter asksOutputWriter = new OutputStreamWriter(asksOutputStream);
+
+
+        List<MarketParticipantOrder> bids = limitOrderBooks.entrySet()
+                .stream()
+                .flatMap(e->e.getValue().getKey().getSortedList().stream())
+                .collect(Collectors.toList());
+
+        List<MarketParticipantOrder> asks = limitOrderBooks.entrySet()
+                .stream()
+                .flatMap(e->e.getValue().getValue().getSortedList().stream())
+                .collect(Collectors.toList());
+
+        StatefulBeanToCsv bidsToCsv = new StatefulBeanToCsvBuilder(bidsOutputWriter).build();
+        StatefulBeanToCsv asksToCsv = new StatefulBeanToCsvBuilder(asksOutputWriter).build();
+
+        try {
+            bidsToCsv.write(bids);
+            asksToCsv.write(asks);
+            bidsOutputWriter.close();
+            asksOutputWriter.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static LimitOrderBookWareHouse ReadFromCSV(InputStream bidsInputStream, InputStream asksInputStream,
+                                                      OrderComparatorType comparatorType) {
+        LimitOrderBookWareHouse limitOrderBookWareHouse = null;
+
+        InputStreamReader bidsInputReader = new InputStreamReader(bidsInputStream);
+        InputStreamReader asksInputReader = new InputStreamReader(asksInputStream);
+
+        CsvToBean<MarketParticipantOrder> csvBidsReader = new CsvToBeanBuilder(bidsInputReader)
+                .withType(MarketParticipantOrder.class)
+                .withSeparator(',')
+                .withIgnoreLeadingWhiteSpace(true)
+                .build();
+        List<MarketParticipantOrder> bids = csvBidsReader.parse();
+
+        CsvToBean<MarketParticipantOrder> csvAsksReader = new CsvToBeanBuilder(asksInputReader)
+                .withType(MarketParticipantOrder.class)
+                .withSeparator(',')
+                .withIgnoreLeadingWhiteSpace(true)
+                .build();
+        List<MarketParticipantOrder> asks = csvAsksReader.parse();
+
+        Map<String, ArrayList<MarketParticipantOrder>> bidBooks = bids.stream().collect(Collectors.groupingBy(
+                MarketParticipantOrder::getTickerSymbol, Collectors.toCollection(ArrayList::new)));
+        Map<String, ArrayList<MarketParticipantOrder>> askBooks = asks.stream().collect(Collectors.groupingBy(
+                MarketParticipantOrder::getTickerSymbol, Collectors.toCollection(ArrayList::new)));
+
+        ConcurrentHashMap<String, Pair<SortedOrderList, SortedOrderList>> deserializedOrderBooks = new ConcurrentHashMap<>();
+        OrderComparator bidComparator = new BidPriceTimeComparator();
+        OrderComparator askComparator = new AskPriceTimeComparator();
+        ConcurrentHashMap<String,ReadWriteLock> locks = new ConcurrentHashMap<>();
+
+        for(Map.Entry<String, ArrayList<MarketParticipantOrder>> entry : bidBooks.entrySet()) {
+            String tickerSymbol = entry.getKey();
+            if(!deserializedOrderBooks.contains(entry.getKey()))
+                deserializedOrderBooks.put(tickerSymbol, null);
+
+            SortedOrderList bidsList = new SortedOrderList(bidComparator, )
+            deserializedOrderBooks.get(tickerSymbol) = new Pair<SortedOrderList, SortedOrderList>();
+        }
+
+        for(Map.Entry entry : askBooks.entrySet()) {
+
+        }
+
+
+
+
+
+        limitOrderBookWareHouse = new LimitOrderBookWareHouse(comparatorType,deserializedOrderBooks);
+
+
+
+        return limitOrderBookWareHouse;
     }
 }
