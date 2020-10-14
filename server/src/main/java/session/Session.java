@@ -31,13 +31,8 @@ public class Session {
     private LimitOrderBookWareHouse limitOrderBookWareHouse;
     private HashMap<Integer, MarketParticipantPortfolio> portfolioHashMap;
     private HashMap<Integer,Long> orderIDRequestIDMap;
-    public static AtomicInteger currentAvailableOrderID;
 
-    static {
-        currentAvailableOrderID = null;
-    }
-
-    public Session(Socket clientSocket, int sessionID, ServerQueue serverQueue, int baseOrderID,
+    public Session(Socket clientSocket, int sessionID, ServerQueue serverQueue,
                    CredentialWareHouse credentialWareHouse, LimitOrderBookWareHouse limitOrderBookWareHouse,
                    HashMap<Integer, MarketParticipantPortfolio> portfolioHashMap) {
         this.clientSocket = clientSocket;
@@ -47,9 +42,6 @@ public class Session {
         this.limitOrderBookWareHouse = limitOrderBookWareHouse;
         this.portfolioHashMap = portfolioHashMap;
         this.orderIDRequestIDMap = new HashMap<Integer,Long>();
-        if(currentAvailableOrderID == null) {
-            currentAvailableOrderID = new AtomicInteger(baseOrderID);
-        }
     }
 
     public void RunCurrentSession() throws Exception{
@@ -77,7 +69,7 @@ public class Session {
         switch (type) {
             case Order:
                 OrderDTO orderDTO = (OrderDTO)DTO;
-                int orderID = currentAvailableOrderID.getAndIncrement();
+                int orderID = SessionManager.getAvailableOrderID();
                 orderIDRequestIDMap.put(orderID, orderDTO.getClientRequestID());
                 MarketParticipantOrder order = new MarketParticipantOrder(sessionID,clientUserID,clientUserName, orderID,
                         new Date(),orderDTO.getDirection(),orderDTO.getTickerSymbol(),orderDTO.getSize(),orderDTO.getPrice(),

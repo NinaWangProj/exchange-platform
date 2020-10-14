@@ -16,11 +16,11 @@ public class ServerConfig {
     private final int serverPortID;
     private final int baseOrderID;
     private final OrderComparatorType comparatorType;
-    private final AtomicLong previousTransactionID;
+    private final long previousTransactionID;
     private final String snapShotFolderPath;
 
     public ServerConfig(int numOfOrderQueues, int numOfEngineResultQueues, int serverPortID, int baseOrderID,
-                        OrderComparatorType comparatorType, AtomicLong previousTransactionID,
+                        OrderComparatorType comparatorType, long previousTransactionID,
                         String snapShotFolderPath) {
         this.numOfOrderQueues = numOfOrderQueues;
         this.numOfEngineResultQueues = numOfEngineResultQueues;
@@ -51,7 +51,7 @@ public class ServerConfig {
         return comparatorType;
     }
 
-    public AtomicLong getPreviousTransactionID() {
+    public long getPreviousTransactionID() {
         return previousTransactionID;
     }
 
@@ -83,7 +83,7 @@ public class ServerConfig {
         return config;
     }
 
-    public void UpdateConfigs(int baseOrderID, int previousTransactionID) {
+    public void UpdateConfigs(int baseOrderID, long previousTransactionID) {
 
     }
 

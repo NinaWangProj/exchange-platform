@@ -22,10 +22,7 @@ import trading.limitOrderBook.OrderComparatorType;
 
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -202,19 +199,30 @@ public class LimitOrderBookWareHouse {
                 MarketParticipantOrder::getTickerSymbol, Collectors.toCollection(ArrayList::new)));
         Map<String, ArrayList<MarketParticipantOrder>> askBooks = asks.stream().collect(Collectors.groupingBy(
                 MarketParticipantOrder::getTickerSymbol, Collectors.toCollection(ArrayList::new)));
+        //Get union of ticker symbol from bids and asks:
+        Set<String> bidTickerSymbols = bidBooks.keySet();
+        Set<String> askTickerSymbols = askBooks.keySet();
+        Set<String> unionTickerSymbols = new HashSet<String>(bidTickerSymbols);
+        unionTickerSymbols.addAll(askTickerSymbols);
 
         ConcurrentHashMap<String, Pair<SortedOrderList, SortedOrderList>> deserializedOrderBooks = new ConcurrentHashMap<>();
         OrderComparator bidComparator = new BidPriceTimeComparator();
         OrderComparator askComparator = new AskPriceTimeComparator();
         ConcurrentHashMap<String,ReadWriteLock> locks = new ConcurrentHashMap<>();
 
-        for(Map.Entry<String, ArrayList<MarketParticipantOrder>> entry : bidBooks.entrySet()) {
-            String tickerSymbol = entry.getKey();
+        for(String tickerSymbol : unionTickerSymbols) {
             ReadWriteLock lock = new ReentrantReadWriteLock();
             locks.put(tickerSymbol, lock);
-            SortedOrderList bidsList = new SortedOrderList(bidComparator, entry.getValue(), lock,
-                    tickerSymbol, Direction.BUY);
             SortedOrderList asksList;
+            SortedOrderList bidsList;
+
+            if(bidBooks.containsKey(tickerSymbol)) {
+                bidsList = new SortedOrderList(bidComparator,bidBooks.get(tickerSymbol), lock,
+                        tickerSymbol, Direction.SELL);
+            } else {
+                bidsList = new SortedOrderList(bidComparator,lock,tickerSymbol,Direction.BUY);
+            }
+
             if(askBooks.containsKey(tickerSymbol)) {
                 asksList = new SortedOrderList(askComparator,askBooks.get(tickerSymbol), lock,
                         tickerSymbol, Direction.SELL);
@@ -223,17 +231,6 @@ public class LimitOrderBookWareHouse {
             }
 
             deserializedOrderBooks.putIfAbsent(tickerSymbol, new Pair<>(bidsList, asksList));
-        }
-
-        for(Map.Entry<String, ArrayList<MarketParticipantOrder>> entry : askBooks.entrySet()) {
-            String tickerSymbol = entry.getKey();
-            ReadWriteLock lock = new ReentrantReadWriteLock();
-            locks.put(tickerSymbol, lock);
-            SortedOrderList asksList = new SortedOrderList(askComparator, entry.getValue(), lock,
-                    tickerSymbol, Direction.SELL);
-
-            deserializedOrderBooks.putIfAbsent(tickerSymbol, new Pair<>(new SortedOrderList(bidComparator,lock,tickerSymbol, Direction.BUY)
-                    , asksList));
         }
 
         limitOrderBookWareHouse = new LimitOrderBookWareHouse(comparatorType, locks, deserializedOrderBooks);

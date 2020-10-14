@@ -13,10 +13,10 @@ public class TradingEngineManager{
     private static AtomicLong previousTransactionID;
 
     public TradingEngineManager(ServerQueue systemQueue, LimitOrderBookWareHouse dataWareHouse,
-                                AtomicLong previousTransactionID) {
+                                long previousTransactionID) {
         this.systemServerQueue = systemQueue;
         this.dataWareHouse = dataWareHouse;
-        this.previousTransactionID = previousTransactionID;
+        this.previousTransactionID = new AtomicLong(previousTransactionID);
     }
 
     public void Start() throws Exception{

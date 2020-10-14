@@ -10,6 +10,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 
 public class SessionManager implements Runnable{
@@ -17,7 +18,7 @@ public class SessionManager implements Runnable{
     private ArrayList<Session> sessionUniverse;
     private ServerSocket serverSocket;
     private ServerQueue systemServerQueue;
-    private int baseOrderID;
+    private static AtomicInteger baseOrderID;
     private CredentialWareHouse credentialWareHouse;
     private LimitOrderBookWareHouse dataWareHouse;
     private HashMap<Integer, MarketParticipantPortfolio> portfoliosMap;
@@ -28,7 +29,7 @@ public class SessionManager implements Runnable{
         this.sessionUniverse = new ArrayList<Session>();
         this.serverSocket = serverSocket;
         this.systemServerQueue = systemServerQueue;
-        this.baseOrderID = baseOrderID;
+        this.baseOrderID = new AtomicInteger(baseOrderID);
         this.credentialWareHouse = credentialWareHouse;
         this.dataWareHouse = dataWareHouse;
         this.portfoliosMap = portfoliosMap;
@@ -38,12 +39,16 @@ public class SessionManager implements Runnable{
     public void Start() throws Exception{
         while (true) {
             Socket clientSocket = serverSocket.accept();
-            Session session = new Session(clientSocket, nextAvailableSessionID, systemServerQueue, baseOrderID,
+            Session session = new Session(clientSocket, nextAvailableSessionID, systemServerQueue,
                     credentialWareHouse,dataWareHouse, portfoliosMap);
             sessionUniverse.add(session);
             nextAvailableSessionID += 1;
             session.RunCurrentSession();
         }
+    }
+
+    public static int getAvailableOrderID() {
+        return baseOrderID.incrementAndGet();
     }
 
     public void run() {
